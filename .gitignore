@@ -1,6 +1,9 @@
 # All non wanted fiels
 TEST/*
 G1
+.scon*
+.sconsign.dblite
+#*
 
 # Compiled Object files
 *.slo

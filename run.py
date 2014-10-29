@@ -20,6 +20,6 @@ try:
 except:
     pass
 try:
-    subprocess.call('python ../Routine/TEST/Load.py', shell=True)
+    subprocess.call('python ../../Routine/TEST/Load.py', shell=True)
 except:
     sys.exit()
