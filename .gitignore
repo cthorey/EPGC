@@ -1,6 +1,6 @@
 # All non wanted fiels
 TEST/*
-
+G1
 
 # Compiled Object files
 *.slo
