@@ -37,7 +37,7 @@ CONTAINS
     M = 2000    
     Dt = 1D-6
     Dr = 1D-2
-    eps_1 = 1D-3
+    eps_1 = 1D-4
 
     ! Nombre sans dimensions
     el = 1D0
@@ -46,7 +46,7 @@ CONTAINS
     sigma = 2D-2
     nu = 1D-3
     Pe = 1D0
-    psi = 0D0
+    psi = -3D-1
     N1 = 1D5
 
     ! Variable pour l'outxsput
@@ -55,8 +55,8 @@ CONTAINS
     Input_Data_Name =  'Backup_0000041.dat'
     Root = '/Users/thorey/Documents/These/Projet/Refroidissement&
          &/Skin_Model/'
-    Input_Racine = Root//'Code/ELAS/Test/Run/'
-    Output_Racine = Root//'Code/ELAS/Test/Run/'
+    Input_Racine = Root//'Code_Draft/Elas_Test/Test/Run/'
+    Output_Racine = Root//'Code_Draft/Elas_Test/Test/Run/'
 
     ! Ecriture du nom des fichiers
     write(I_Racine,'(I3)'),len(trim(Input_Racine))
@@ -86,6 +86,8 @@ CONTAINS
        WRITE(Output_Name_NSD,Format_NSD_Init_0),Output_Racine&
             &,'NbSsDim.txt'
        OPEN(unit=1,file=Output_Name_NSD,status='replace')
+       WRITE(1,'(24(A,2X))')'el', 'grav', 'delta0', 'sigma', 'nu', 'Pe','Psi',&
+            &'N1','M','Dt','Dr','eps'
        WRITE(1,Format_NSD),el,grav,delta0,sigma,nu,Pe,Psi,N1,M,Dt,Dr&
             &,eps_1
        CLOSE(1)
@@ -167,7 +169,10 @@ CONTAINS
        INQUIRE(FILE = Input_Name_NSD, EXIST = FILE_EXISTS)
        IF (FILE_EXISTS) THEN
           OPEN(1,file = Input_Name_NSD)
+          READ(1,*) ! Read the header but don't do nothing with it
           READ(1,Format_NSD),el,grav,delta0,sigma,nu,Pe,Psi,N1,M,Dt,Dr,eps_1
+          print*,el,grav,delta0
+          STOP
           CLOSE(1)
        ELSEIF( .NOT. FILE_EXISTS) THEN
           PRINT*,'ERREUR: PAS DE FICHIER AVEC LES NOMBRES SANS DIMENSIONS. RECOMMENCER LA SIMU DEPUIS LE DEPART'

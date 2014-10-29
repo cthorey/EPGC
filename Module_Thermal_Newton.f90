@@ -55,9 +55,9 @@ CONTAINS
     END IF
 
     col=1
-    CALL TEMPERATURE_BALMFORTH(Xi_tmps,col,N,Xi,H,T,Ts,BL,P,dist,ray,Dr,nu,Pe,delta0,el,grav,N1,tmps+Dt)
+    CALL TEMPERATURE_BALMFORTH(Xi_tmps,col,N,Xi,H,T,Ts,BL,P,dist,ray,Dr,nu,Pe,delta0,el,grav,N1,tmps+Dt,psi,Dt)
     col=2
-    CALL TEMPERATURE_BALMFORTH(Xi_guess,col,N,Xi,H,T,Ts,BL,P,dist,ray,Dr,nu,Pe,delta0,el,grav,N1,tmps+Dt)
+    CALL TEMPERATURE_BALMFORTH(Xi_guess,col,N,Xi,H,T,Ts,BL,P,dist,ray,Dr,nu,Pe,delta0,el,grav,N1,tmps+Dt,psi,Dt)
 
     ! Jacobienner
     ALLOCATE(a1(1:N),b1(1:N),c1(1:N),stat=err1)
@@ -365,7 +365,7 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
   !-------------------------------------------------------------------------------------
   !-------------------------------------------------------------------------------------
 
-  SUBROUTINE TEMPERATURE_BALMFORTH(f,col,N,Xi,H,T,Ts,BL,P,dist,ray,Dr,nu,Pe,delta0,el,grav,N1,tmps)
+  SUBROUTINE TEMPERATURE_BALMFORTH(f,col,N,Xi,H,T,Ts,BL,P,dist,ray,Dr,nu,Pe,delta0,el,grav,N1,tmps,psi,Dt)
 
     !*****************************************************************
     ! Give the vector f
@@ -383,7 +383,7 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
     INTEGER ,INTENT(IN) :: col,N
 
     ! Nombre sans dimension
-    DOUBLE PRECISION ,INTENT(IN) :: nu,Pe,delta0,el,grav,N1,tmps
+    DOUBLE PRECISION ,INTENT(IN) :: nu,Pe,delta0,el,grav,N1,tmps,psi,Dt
 
     ! Parametre pour le sous programme
     DOUBLE PRECISION, PARAMETER :: pi=3.14159265
@@ -394,6 +394,7 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
     DOUBLE PRECISION :: h_b,delta_b,delta_b2,eta_b,Bi,T_b
     DOUBLE PRECISIOn :: omega_b,sigma_b,Ts_a,Ts_b,Ds_b,Ds_a
     DOUBLE PRECISION :: loss,beta
+    DOUBLE PRECISION :: Crys
     INTEGER :: i,Na
 
     ! Remplissage de f
@@ -432,19 +433,19 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
                &(1-nu)*(22.d0*Ds_a*delta_a-35.d0*Ds_a*h_a-98.d0*T_a*delta_a+105.d0*T_a*h_a))
        END IF IF2
 
-       
+       Crys = 0.5D0*psi*(1.D0-T(i,col))*(H(i,3)-H(i,1))/Dt
        beta = N1*Pe**(-0.5d0)/(sqrt(pi*tmps))
        loss = Pe*beta*Ts(i,col)
        
        IF4: IF (i==1) THEN
-          f(i)=loss+Ai*Omega_a*Xi(i,col)+Ai*Sigma_a
+          f(i)=loss+Ai*Omega_a*Xi(i,col)+Ai*Sigma_a-Crys
        ELSEIF (i==N) THEN
-          f(i)=loss-Bi*Omega_b*Xi(i-1,col)-Bi*Sigma_b
+          f(i)=loss-Bi*Omega_b*Xi(i-1,col)-Bi*Sigma_b-Crys
        ELSE
           f(i)=Ai*Omega_a*Xi(i,col)&
                &-Bi*Omega_b*Xi(i-1,col)&
                &+Ai*Sigma_a-Bi*Sigma_b &
-               &+loss
+               &+loss-Crys
        END IF IF4
 
     END DO

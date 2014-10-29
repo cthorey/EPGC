@@ -84,6 +84,8 @@ CONTAINS
     IF (Init==0) THEN
        WRITE(Output_Name_NSD,Format_NSD_Init_0),Output_Racine,'NbSsDim.txt'
        OPEN(unit=1,file=Output_Name_NSD,status='replace')
+       WRITE(1,'(24(A,2X))')'el', 'grav', 'delta0', 'sigma', 'nu', 'Pe','Psi',&
+            &'N1','M','Dt','Dr','eps'
        WRITE(1,Format_NSD),el,grav,delta0,sigma,nu,Pe,Psi,N1,M,Dt,Dr,eps_1
        CLOSE(1)
     END IF
@@ -152,6 +154,7 @@ CONTAINS
        INQUIRE(FILE = Input_Name_NSD, EXIST = FILE_EXISTS)
        IF (FILE_EXISTS) THEN
           OPEN(1,file = Input_Name_NSD)
+          READ(1,*)
           READ(1,Format_NSD),el,grav,delta0,sigma,nu,Pe,Psi,N1,M,Dt,Dr,eps_1
           CLOSE(1)
        ELSEIF( .NOT. FILE_EXISTS) THEN

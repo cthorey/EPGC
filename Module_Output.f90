@@ -82,6 +82,13 @@ CONTAINS
              END IF
           ENDDO
 
+          ! Header
+          WRITE(2,'(24(A,2X))')'tm', 'dist', 'H',&
+               &'Te','BL','Xi','Ts','P','Srr','Stt',&
+               &'R','E_c','Phi','Vm','Tm','Mum',&
+               &'Vm01','Mum01','Vm02','Mum02','Vm05','Mum05',&
+               &'Vm005','Mum005'
+
           DO i=1,M,1
              IF (H(i,3) == delta0) EXIT
              WRITE(2,Format_Data)tmps,dist(i),H(i,3)&
