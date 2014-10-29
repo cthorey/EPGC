@@ -55,8 +55,8 @@ CONTAINS
     Input_Data_Name =  'Backup_0000041.dat'
     Root = '/Users/thorey/Documents/These/Projet/Refroidissement&
          &/Skin_Model/'
-    Input_Racine = Root//'Code_Draft/Elas_Test/Test/Run/'
-    Output_Racine = Root//'Code_Draft/Elas_Test/Test/Run/'
+    Input_Racine = Root//'Code/Code_ELAS/Test/Run/'
+    Output_Racine = Root//'Code/Code_ELAS/Test/Run/'
 
     ! Ecriture du nom des fichiers
     write(I_Racine,'(I3)'),len(trim(Input_Racine))
