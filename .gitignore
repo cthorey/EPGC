@@ -3,7 +3,10 @@ TEST/*
 G1
 .scon*
 .sconsign.dblite
-#*
+E1D0*
+log*
+*_tmp.f90
+
 
 # Compiled Object files
 *.slo
@@ -33,3 +36,5 @@ G1
 *.exe
 *.out
 *.app
+
+*_tmp.sh

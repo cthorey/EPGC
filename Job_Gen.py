@@ -27,19 +27,19 @@ import datetime
 
 if _platform == "linux" or _platform == "linux2":
     Root = '//gpfs/users/thorey/'
-    Racine = '/home/thorey/code/'
-    Root_Run = 'ELAS/Run/'
+    Racine = '/home/thorey/Code_ELAS/'
+    Root_Run = 'ELAS/Run_New/'
     Bactrack_Run = 'Bactrack_ELAS.txt'
     Compilateur = 'ifort'
 elif _platform == "darwin":
     Root = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/'
     Racine = Root+'Code/'
-    Root_Run = 'Code/Test/Run/'
-    Bactrack_Run = 'Bactrack_Run.txt'
+    Root_Run = 'Code_ELAS/Test/Run/'
+    Bactrack_Run = 'Bactrack_ELAS.txt'
     Compilateur = 'gfortran'
     
 Dict_Param = {'Sigma': ['2D-2'],
-              'Delta0': ['1D-2'],
+              'Delta0': ['5D-3'],
               'Grav': ['0D0'],
               'El': ['1D0'],
               'Nu': ['1D0','1D-2','1D-3'],
