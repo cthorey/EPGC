@@ -1,3 +1,7 @@
+# All non wanted fiels
+TEST/*
+
+
 # Compiled Object files
 *.slo
 *.lo
