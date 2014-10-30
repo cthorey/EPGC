@@ -150,7 +150,7 @@ CONTAINS
     ! Energie dans l'intrusion au temps t+dt
     En_t2 = Int_1_t2
     ! Energie sources en J s
-    Phi_s = (1D0-psi*Int_2)
+    Phi_s = 1D0-psi*Int_2
     ! Energie lost en J s
     Phi_l = 4D0*Pe*Int_3
     

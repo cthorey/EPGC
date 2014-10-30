@@ -159,7 +159,7 @@ PROGRAM MAIN
      ! On incremente les compteurs et le temps
      k = k+1
      ! PRINT*,'ite',k,tmps,Mum/Vm,Mum01/Vm01,Mum005/Vm005,Mum05/Vm05
-     print*,'ite',k,Phi_l,Phi_s
+
      tmps = tmps+Dt
 
   END DO TEMPS
