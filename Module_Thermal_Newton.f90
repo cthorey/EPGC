@@ -75,9 +75,9 @@ CONTAINS
 
     DO i=1,N,1
        a(i)=-theta*Dt*a1(i)
-       b(i)=(1D0-psi)-theta*Dt*b1(i)
+       b(i)=(1D0+psi)-theta*Dt*b1(i)
        c(i)=-theta*Dt*c1(i)
-       S(i)=(1D0-psi)*(Xi(i,1)-Xi(i,2))+theta*Dt*Xi_guess(i)+(1-theta)*Dt*Xi_tmps(i)
+       S(i)=(1D0+psi)*(Xi(i,1)-Xi(i,2))+theta*Dt*Xi_guess(i)+(1-theta)*Dt*Xi_tmps(i)
     END DO
 
     a(1)=0
@@ -433,7 +433,7 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
                &(1-nu)*(22.d0*Ds_a*delta_a-35.d0*Ds_a*h_a-98.d0*T_a*delta_a+105.d0*T_a*h_a))
        END IF IF2
 
-       Crys = 0.5D0*psi*(1D0-T(i,col))*(H(i,3)-H(i,1))/Dt
+       Crys = 0.5D0*psi*(T(i,col)-1)*(H(i,3)-H(i,1))/Dt
        beta = N1*Pe**(-0.5d0)/(sqrt(pi*tmps))
        loss = Pe*beta*Ts(i,col)
 
