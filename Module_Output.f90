@@ -3,9 +3,10 @@ MODULE MODULE_OUTPUT
 CONTAINS
 
   SUBROUTINE  OUTPUT(Format,Dt,M,H,T,Xi,BL,Ts,P,dist,ray,k,k1,k2,z,compteur,tmps,&
-       &Output_Racine,delta0,Cas,sample,Format_RV,Format_Backup&
-       &,E_c,Phim,Vm,Tm,Mum,Srr,Stt,&
-       &Vm01,Mum01,Vm02,Mum02,Vm05,Mum05,Vm005,Mum005)
+          &Output_Racine,delta0,Cas,sample,Format_RV,Format_Backup&
+          &,Phim,Vm,Tm,Mum,Srr,Stt,&
+          &Vm01,Mum01,Vm02,Mum02,Vm05,Mum05,Vm005,Mum005,&
+          &BV_a,BV_b,V_t1,V_t2,BE_a,BE_b,En_t1,En_t2,Phi_s,Phi_l)
 
     IMPLICIT NONE
 
@@ -15,8 +16,13 @@ CONTAINS
 
     ! Parametre du model
     DOUBLE PRECISION , INTENT(INOUT) :: tmps,delta0,Dt
-    DOUBLE PRECISION , INTENT(INOUT) :: E_c,Phim,Vm,Tm,Mum
+    DOUBLE PRECISION , INTENT(INOUT) :: Phim,Vm,Tm,Mum
     DOUBLE PRECISION , INTENT(INOUT) :: Vm01,Mum01,Vm02,Mum02,Vm05,Mum05,Vm005,Mum005
+    DOUBLE PRECISION ,INTENT(INOUT) :: BE_a,BE_b
+    DOUBLE PRECISION ,INTENT(INOUT) :: En_t1,En_t2,Phi_s,Phi_l
+    DOUBLE PRECISION ,INTENT(INOUT) :: BV_a,BV_b
+    DOUBLE PRECISION ,INTENT(INOUT) :: V_t1,V_t2
+
     INTEGER , INTENT(INOUT) :: k,k1,k2,z,M,compteur
 
     ! Format files
@@ -71,7 +77,7 @@ CONTAINS
           ! Data pour chaque point de la grille
           WRITE(Data_File,Format_RV)Output_Racine,'RV_',compteur,'.dat'
           OPEN(unit=2,file=Data_File,status='replace')
-          Format_Data='(24(D30.24,2X))'
+          Format_Data='(33(D30.24,2X))'
           
           R = 0.d0
           DO i=1,M,1
@@ -83,18 +89,21 @@ CONTAINS
           ENDDO
 
           ! Header
-          WRITE(2,'(24(A,2X))')'tm', 'dist', 'H',&
+          WRITE(2,'(33(A,2X))')'tm', 'dist', 'H',&
                &'Te','BL','Xi','Ts','P','Srr','Stt',&
-               &'R','E_c','Phi','Vm','Tm','Mum',&
+               &'R','Phi','Vm','Tm','Mum',&
                &'Vm01','Mum01','Vm02','Mum02','Vm05','Mum05',&
-               &'Vm005','Mum005'
+               &'Vm005','Mum005',&
+               &'BV_a','BV_b','V_t1','V_t2','BE_a','BE_b','En_t1',&
+               &'En_t2','Phi_s','Phi_l'
 
           DO i=1,M,1
              IF (H(i,3) == delta0) EXIT
              WRITE(2,Format_Data)tmps,dist(i),H(i,3)&
                   &,T(i,3),BL(i,3),Xi(i,3),Ts(i,3),P(i,3),Srr(i),Stt(i)&
-                  &,R,E_c,Phim,Vm,Tm,Mum,&
-                  &Vm01,Mum01,Vm02,Mum02,Vm05,Mum05,Vm005,Mum005
+                  &,R,Phim,Vm,Tm,Mum,&
+                  &Vm01,Mum01,Vm02,Mum02,Vm05,Mum05,Vm005,Mum005,&
+                  &BV_a,BV_b,V_t1,V_t2,BE_a,BE_b,En_t1,En_t2,Phi_s,Phi_l
           END DO
           CLOSE(2)
          
