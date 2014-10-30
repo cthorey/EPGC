@@ -2,44 +2,65 @@ MODULE MODULE_CONSERVATION
 
 CONTAINS
 
-  SUBROUTINE ENERGY_CONSERVATION(H,BL,T,Ts,Xi,E_c,Phi_s,Pe,M,tmps,Dt,dist,ray,k)
+  SUBROUTINE MASS_CONSERVATION(H,Dt,dist,ray,k,BV_a,BV_b,V_t1,V_t2)
 
     !*****************************************************************
-    ! Control the energy conservation at each time step
+    ! Control the mass conservation at each time step pour le code balmforth
     !*****************************************************************
 
     IMPLICIT NONE
 
     ! Tableaux
-    DOUBLE PRECISION, DIMENSION(:,:) ,INTENT(IN) :: Xi,Ts,H,T,BL
+    DOUBLE PRECISION, DIMENSION(:,:) ,INTENT(IN) :: H
     DOUBLE PRECISION, DIMENSION(:), INTENT(IN) :: dist,ray
 
     ! Parametre du model
-    DOUBLE PRECISION ,INTENT(INOUT) :: E_c,Phi_s
-    INTEGER ,INTENT(IN) :: M,k
+    DOUBLE PRECISION ,INTENT(INOUT) :: BV_a,BV_b
+    DOUBLE PRECISION ,INTENT(INOUT) :: V_t1,V_t2
+    INTEGER ,INTENT(IN) :: k
 
     ! Nombre sans dimension
-    DOUBLE PRECISION ,INTENT(IN) :: Pe,tmps,Dt
+    DOUBLE PRECISION ,INTENT(IN) :: Dt
 
     !Parametre du sous programme
-    DOUBLE PRECISION :: E_n,D_p,D_c
-    INTEGER :: i
-    
-    E_n = Xi(1,3)
-    Phi_s = ((T(1,3)-Ts(1,3))/BL(1,3))
-    DO i=2,M,-1
-       E_n = E_n + Xi(i,3)*(ray(i)**2-ray(i-1)**2)
-       Phi_s = Phi_s+((T(i,3)-Ts(i,3))/BL(i,3))*(ray(i)**2-ray(i-1)**2)
-    ENDDO
-    E_n = E_n + Xi(M,3)*(dist(M)**2-ray(M-1)**2)
-    Phi_s = Phi_s +((T(M,3)-Ts(M,3))/BL(M,3))*(dist(M)**2-ray(M-1)**2)
-    
-    D_p = (E_n-E_c)
-    D_c = (1.D0-4.D0*Pe*Phi_s)*Dt
-    E_c = E_n
-  END SUBROUTINE ENERGY_CONSERVATION
+    DOUBLE PRECISION :: A_t1,Int_t1,A_t2,Int_t2,Dr
+    INTEGER :: i,N
 
-SUBROUTINE ENERGY_CONSERVATION_2(H,BL,T,Ts,Xi,E_c,Phi_s,Pe,M,tmps,Dt,dist,ray,k)
+    N = COUNT(H(:,1)>0)
+    Dr = ray(1)
+
+    ! temps t
+    A_t1 = H(1,1)
+    Int_t1 = A_t1*Dr**2
+    DO i=2,N-1
+       A_t1 = H(i,1)
+       Int_t1 = Int_t1+A_t1*(ray(i)**2-ray(i-1)**2)
+    ENDDO
+    A_t1 = H(N,1)
+    Int_t1 = Int_t1+A_t1*(dist(N)**2-ray(N-1)**2)
+    
+    ! temps t+dt
+    A_t2 = H(1,3)
+    Int_t2 = A_t2*Dr**2
+    DO i=2,N-1
+       A_t2 = H(i,3)
+       Int_t2 = Int_t2+A_t2*(ray(i)**2-ray(i-1)**2)
+    ENDDO
+    A_t2 = H(N,3)
+    Int_t2 = Int_t2+A_t2*(dist(N)**2-ray(N-1)**2)
+
+    ! Volume de l'energie au temps t+Dt
+    BV_a = Int_t2
+    ! Volume de l'intrusion au temp t + ce qu'on a rajoute
+    BV_b = Int_t1+ Dt
+    ! Volume temps t
+    V_t1 = Int_t1
+    ! Volume temps t+dt
+    V_t2 = Int_t2
+
+  END SUBROUTINE MASS_CONSERVATION
+
+  SUBROUTINE ENERGY_CONSERVATION(H,BL,T,Ts,Pe,Dt,dist,ray,k,psi,BE_a,BE_b,En_t1,En_t2,Phi_s,Phi_l)
 
     !*****************************************************************
     ! Control the energy conservation at each time step pour le code balmforth
@@ -48,37 +69,99 @@ SUBROUTINE ENERGY_CONSERVATION_2(H,BL,T,Ts,Xi,E_c,Phi_s,Pe,M,tmps,Dt,dist,ray,k)
     IMPLICIT NONE
 
     ! Tableaux
-    DOUBLE PRECISION, DIMENSION(:,:) ,INTENT(IN) :: Xi,Ts,H,T,BL
+    DOUBLE PRECISION, DIMENSION(:,:) ,INTENT(IN) :: Ts,H,T,BL
     DOUBLE PRECISION, DIMENSION(:), INTENT(IN) :: dist,ray
 
     ! Parametre du model
-    DOUBLE PRECISION ,INTENT(INOUT) :: E_c,Phi_s
-    INTEGER ,INTENT(IN) :: M,k
+    DOUBLE PRECISION ,INTENT(INOUT) :: BE_a,BE_b
+    DOUBLE PRECISION ,INTENT(INOUT) :: En_t1,En_t2,Phi_s,Phi_l
+    INTEGER ,INTENT(IN) :: k
 
     ! Nombre sans dimension
-    DOUBLE PRECISION ,INTENT(IN) :: Pe,tmps,Dt
+    DOUBLE PRECISION ,INTENT(IN) :: Pe,Dt,psi
 
     !Parametre du sous programme
-    DOUBLE PRECISION :: E_n,D_p,D_c,hthetabar
-    INTEGER :: i
+    DOUBLE PRECISION :: tbar_t1,A_1_t1,A_2_t1,A_3_t1,Int_1_t1,Int_2_t1,Int_3_t1
+    DOUBLE PRECISION :: tbar_t2,A_1_t2,A_2_t2,A_3_t2,Int_1_t2,Int_2_t2,Int_3_t2
+    DOUBLE PRECISION :: E_ta,E_tb,Dr
+    INTEGER :: i,N
     
-    hthetabar = -2*(T(1,3)-Ts(1,3))/3.d0*BL(1,3)+T(1,3)*H(1,3)
-    E_n = hthetabar
-    Phi_s = ((T(1,3)-Ts(1,3))/BL(1,3))
-    DO i=2,M,-1
-       hthetabar = -2*(T(i,3)-Ts(i,3))/3.d0*BL(i,3)+T(i,3)*H(i,3)
-       E_n = E_n + hthetabar*(ray(i)**2-ray(i-1)**2)
-       Phi_s = Phi_s+((T(i,3)-Ts(i,3))/BL(i,3))*(ray(i)**2-ray(i-1)**2)
+    N = COUNT(H(:,1)>0)
+    Dr = ray(1)
+
+    ! Calcule au temps t
+    tbar_t1 = -(2*(T(1,1)-Ts(1,1))*BL(1,1))/(3.d0*H(1,1))+T(1,1)
+    A_1_t1 = tbar_t1*H(1,1)
+    A_2_t1 = H(1,1)*(1D0-tbar_t1)
+    A_3_t1 = ((T(1,1)-Ts(1,1))/BL(1,1))
+    Int_1_t1 = A_1_t1*Dr**2
+    Int_2_t1 = A_2_t1*Dr**2
+    Int_3_t1 = A_3_t1*Dr**2
+    
+    DO i=2,N-1
+       tbar_t1 = -(2*(T(i,1)-Ts(i,1))*BL(i,1))/(3.d0*H(i,1))+T(i,1)
+       A_1_t1 = tbar_t1*H(i,1)
+       A_2_t1 = H(i,1)*(1D0-tbar_t1)
+       A_3_t1 = ((T(i,1)-Ts(i,1))/BL(i,1))
+       Int_1_t1 = Int_1_t1 + A_1_t1*(ray(i)**2-ray(i-1)**2)
+       Int_2_t1 = Int_2_t1 + A_2_t1*(ray(i)**2-ray(i-1)**2)
+       Int_3_t1 = Int_3_t1 + A_3_t1*(ray(i)**2-ray(i-1)**2)
     ENDDO
-    hthetabar = -2*(T(M,3)-Ts(M,3))/3.d0*BL(M,3)+T(M,3)*H(M,3)
-    E_n = E_n + hthetabar*(dist(M)**2-ray(M-1)**2)
-    Phi_s = Phi_s +((T(M,3)-Ts(M,3))/BL(M,3))*(dist(M)**2-ray(M-1)**2)
     
-    D_p = E_n
-    D_c = (1.D0-4.D0*Pe*Phi_s)*Dt+E_c
-    E_c = E_n
+    tbar_t1 = -(2*(T(N,1)-Ts(N,1))*BL(N,1))/(3.d0*H(N,1))+T(N,1)
+    A_1_t1 = tbar_t1*H(N,1)
+    A_2_t1 = H(N,1)*(1D0-tbar_t1)
+    A_3_t1 = ((T(N,1)-Ts(N,1))/BL(N,1))
+    Int_1_t1 = Int_1_t1 + A_1_t1*(dist(N)**2-ray(N-1)**2)
+    Int_2_t1 = Int_2_t1 + A_2_t1*(dist(N)**2-ray(N-1)**2)
+    Int_3_t1 = Int_3_t1 + A_3_t1*(dist(N)**2-ray(N-1)**2)
+
+    ! Calcule au temps t+dt
+    tbar_t2 = -(2*(T(1,3)-Ts(1,3))*BL(1,3))/(3.d0*H(1,3))+T(1,3)
+    A_1_t2 = tbar_t2*H(1,3)
+    A_2_t2 = H(1,3)*(1D0-tbar_t2)
+    A_3_t2 = ((T(1,3)-Ts(1,3))/BL(1,3))
+    Int_1_t2 = A_1_t2*Dr**2
+    Int_2_t2 = A_2_t2*Dr**2
+    Int_3_t2 = A_3_t2*Dr**2
+    
+    DO i=2,N-1
+       tbar_t2 = -(2*(T(i,3)-Ts(i,3))*BL(i,3))/(3.d0*H(i,3))+T(i,3)
+       A_1_t2 = tbar_t2*H(i,3)
+       A_2_t2 = H(i,3)*(1D0-tbar_t2)
+       A_3_t2 = ((T(i,3)-Ts(i,3))/BL(i,3))
+       Int_1_t2 = Int_1_t2 + A_1_t2*(ray(i)**2-ray(i-1)**2)
+       Int_2_t2 = Int_2_t2 + A_2_t2*(ray(i)**2-ray(i-1)**2)
+       Int_3_t2 = Int_3_t2 + A_3_t2*(ray(i)**2-ray(i-1)**2)
+    ENDDO
+    
+    tbar_t2 = -(2*(T(N,3)-Ts(N,3))*BL(N,3))/(3.d0*H(N,3))+T(N,3)
+    A_1_t2 = tbar_t2*H(N,3)
+    A_2_t2 = H(N,3)*(1D0-tbar_t2)
+    A_3_t2 = ((T(N,3)-Ts(N,3))/BL(N,3))
+    Int_1_t2 = Int_1_t2 + A_1_t2*(dist(N)**2-ray(N-1)**2)
+    Int_2_t2 = Int_2_t2 + A_2_t2*(dist(N)**2-ray(N-1)**2)
+    Int_3_t2 = Int_3_t2 + A_3_t2*(dist(N)**2-ray(N-1)**2)    
+
+    ! Bilan d'energie
+    
+    !E_t2a: Energie Billan calculer a partir de l'intrusin au temps t+dt
+    BE_a = Int_1_t2
+    !E_t2b: Energie Bilan calculer a partir de l'intrusion aut temps t + gane perdu
+    BE_b = Int_1_t1+(1D0+psi*(Int_2_t2-Int_2_t1)/Dt-4D0*Pe*Int_3_t1)*Dt
+    ! Energie dans l'intrusion au temps t
+    En_t1 = Int_1_t1
+    ! Energie dans l'intrusion au temps t+dt
+    En_t2 = Int_1_t2
+    ! Energie sources en J s
+    Phi_s = 1D0+psi*(Int_2_t2-Int_2_t1)/Dt
+    ! Energie lost en J s
+    Phi_l = 4D0*Pe*Int_3_t1
+
+    
+    
     ! PRINT*,'Conservation chaleur',tmps,D_p-D_c,D_p
-  END SUBROUTINE ENERGY_CONSERVATION_2
+  END SUBROUTINE ENERGY_CONSERVATION
 
 END MODULE MODULE_CONSERVATION
 

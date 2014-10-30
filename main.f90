@@ -90,7 +90,6 @@ PROGRAM MAIN
        &,Format_NSD_Init_0,Format_NSD_Init_1,Format_Input_Data,Format_RV,Format_Backup)
 
   ! Debut de la boucle sur le temps
-  E_c = 0.d0
 
   TEMPS: DO WHILE (tmps<tmps_m)
 
@@ -141,7 +140,8 @@ PROGRAM MAIN
 
      END DO ITERATION_GLOBALE
 
-     CALL ENERGY_CONSERVATION_2(H,BL,T,Ts,Xi,E_c,Phi_s,Pe,M,tmps,Dt,dist,ray,k)
+     CALL MASS_CONSERVATION(H,Dt,dist,ray,k,BV_a,BV_b,V_t1,V_t2)
+     CALL ENERGY_CONSERVATION(H,BL,T,Ts,Pe,Dt,dist,ray,k,psi,BE_a,BE_b,En_t1,En_t2,Phi_s,Phi_l)
      CALL STRESS_ELASTIC_FIELD(Srr,Stt,H,dist,Dr,M)
      CALL AVERAGE_QUANTITY(Xi,H,T,Ts,BL,dist,ray,Dt,Dr,el,grav,N1,Pe,Psi,nu,Tm,Vm,Mum,Phim,M,tmps,delta0,&
        &Vm01,Mum01,Vm02,Mum02,Vm05,Mum05,Vm005,Mum005)
