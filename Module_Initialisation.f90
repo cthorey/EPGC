@@ -46,7 +46,7 @@ CONTAINS
     sigma = 2D-2
     nu = 1D-3
     Pe = 1D0
-    psi = -3D-1
+    psi = 3D-1
     N1 = 1D5
 
     ! Variable pour l'outxsput
