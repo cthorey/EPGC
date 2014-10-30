@@ -105,6 +105,7 @@ PROGRAM MAIN
 
      H(:,1) = H(:,3); H(:,4) = H(:,1)
      Xi(:,1) = Xi(:,3); Xi(:,4) = Xi(:,1)
+     T(:,1) = T(:,3); BL(:,1)=BL(:,3)
      Ts(:,1) = Ts(:,3); Ts(:,4) = Ts(:,1)
 
      Ite_Glob = 0
@@ -140,8 +141,8 @@ PROGRAM MAIN
 
      END DO ITERATION_GLOBALE
 
-     CALL MASS_CONSERVATION(H,Dt,dist,ray,k,BV_a,BV_b,V_t1,V_t2)
-     CALL ENERGY_CONSERVATION(H,BL,T,Ts,Pe,Dt,dist,ray,k,psi,BE_a,BE_b,En_t1,En_t2,Phi_s,Phi_l)
+     CALL MASS_CONSERVATION(H,Dt,dist,ray,k,BV_a,BV_b,V_t1,V_t2,delta0)
+     CALL ENERGY_CONSERVATION(H,BL,T,Ts,Pe,Dt,dist,ray,k,psi,BE_a,BE_b,En_t1,En_t2,Phi_s,Phi_l,delta0)
      CALL STRESS_ELASTIC_FIELD(Srr,Stt,H,dist,Dr,M)
      CALL AVERAGE_QUANTITY(Xi,H,T,Ts,BL,dist,ray,Dt,Dr,el,grav,N1,Pe,Psi,nu,Tm,Vm,Mum,Phim,M,tmps,delta0,&
        &Vm01,Mum01,Vm02,Mum02,Vm05,Mum05,Vm005,Mum005)
@@ -158,6 +159,7 @@ PROGRAM MAIN
      ! On incremente les compteurs et le temps
      k = k+1
      ! PRINT*,'ite',k,tmps,Mum/Vm,Mum01/Vm01,Mum005/Vm005,Mum05/Vm05
+
      tmps = tmps+Dt
 
   END DO TEMPS
