@@ -150,7 +150,7 @@ CONTAINS
           ray(i) = dist(i)+0.5d0*Dr
        END DO
        H = delta0
-       T = 0.d0
+       T = 0d0
        ! DO i = 1,10
        !    H(i,:) = (dist(10)-dist(i)**2)**2
        !    BL(i,:) = H(i,:)/2.d0

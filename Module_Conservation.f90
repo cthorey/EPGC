@@ -104,7 +104,7 @@ CONTAINS
 
     A_1_t1 = tbar_t1*H(1,1)
     A_1_t2 = tbar_t2*H(1,3)
-    A_2 = (tbar_t2*H(1,3)-tbar_t1*H(1,1))/Dt
+    A_2 = (tbar_t2*H(1,3)-tbar_t1*H(1,1))/Dt-Ts(1,1)*(H(1,3)-H(1,1))/Dt
     A_3 = ((T(1,1)-Ts(1,1))/BL(1,1))
 
     Int_1_t1 = A_1_t1*Dr**2
@@ -118,7 +118,7 @@ CONTAINS
 
        A_1_t1 = tbar_t1*H(1,1)
        A_1_t2 = tbar_t2*H(1,3)
-       A_2 = (tbar_t2*H(1,3)-tbar_t1*H(1,1))/Dt
+       A_2 = (tbar_t2*H(1,3)-tbar_t1*H(1,1))/Dt-Ts(i,1)*(H(i,3)-H(i,1))/Dt
        A_3 = ((T(1,1)-Ts(1,1))/BL(1,1))
 
        Int_1_t1 = Int_1_t1 + A_1_t1*(ray(i)**2-ray(i-1)**2)
@@ -131,7 +131,7 @@ CONTAINS
     tbar_t2 = -(2*(T(N,3)-Ts(N,3))*BL(N,3))/(3.d0*H(N,3))+T(N,3)
     A_1_t1 = tbar_t1*H(N,1)
     A_1_t2 = tbar_t2*H(N,3)
-    A_2 = (tbar_t2*H(N,3)-tbar_t1*H(N,1))/Dt
+    A_2 = (tbar_t2*H(N,3)-tbar_t1*H(N,1))/Dt-Ts(N,1)*(H(N,3)-H(N,1))/Dt
     A_3 = ((T(N,1)-Ts(N,1))/BL(N,1))
 
     Int_1_t1 = Int_1_t1 + A_1_t1*(dist(N)**2-ray(N-1)**2)
