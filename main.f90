@@ -32,7 +32,11 @@ PROGRAM MAIN
   DOUBLE PRECISION :: el,grav,delta0,sigma,nu,Pe,psi,N1
 
   ! Conservation quantityes
-  DOUBLE PRECISION :: E_c,Phi_s
+  ! Mass
+  DOUBLE PRECISION  :: BV_a,BV_b,V_t1,V_t2
+  ! Energie
+  DOUBLE PRECISION  :: BE_a,BE_b ! Voir module conservation pour definition
+  DOUBLE PRECISION  :: En_t1,En_t2,Phi_s,Phi_l
   
   !Average quantity
   DOUBLE PRECISION :: Tm,Vm,Mum,Phim
@@ -93,10 +97,11 @@ PROGRAM MAIN
      OPEN(unit=3,file='Output.txt')
 
      Cas=0
-     CALL   OUTPUT(Format_O,Dt,M,H,T,Xi,BL,Ts,P,dist,ray,k,k1,k2,z,compteur,tmps,&
-       &Output_Racine,delta0,Cas,sample,Format_RV,Format_Backup&
-       &,E_c,Phim,Vm,Tm,Mum,Srr,Stt,&
-       &Vm01,Mum01,Vm02,Mum02,Vm05,Mum05,Vm005,Mum005)
+     CALL OUTPUT(Format_O,Dt,M,H,T,Xi,BL,Ts,P,dist,ray,k,k1,k2,z,compteur,tmps,&
+          &Output_Racine,delta0,Cas,sample,Format_RV,Format_Backup&
+          &,Phim,Vm,Tm,Mum,Srr,Stt,&
+          &Vm01,Mum01,Vm02,Mum02,Vm05,Mum05,Vm005,Mum005,&
+          &BV_a,BV_b,V_t1,V_t2,BE_a,BE_b,En_t1,En_t2,Phi_s,Phi_l)
 
 
      H(:,1) = H(:,3); H(:,4) = H(:,1)
@@ -144,10 +149,11 @@ PROGRAM MAIN
      ! print*,k,Mum/Vm,Tm/Vm,Vm,tmps
      ! Ecriture des donne dans un fichier
      Cas = 1
-     CALL   OUTPUT(Format_O,Dt,M,H,T,Xi,BL,Ts,P,dist,ray,k,k1,k2,z,compteur,tmps,&
-       &Output_Racine,delta0,Cas,sample,Format_RV,Format_Backup&
-       &,E_c,Phim,Vm,Tm,Mum,Srr,Stt,&
-       &Vm01,Mum01,Vm02,Mum02,Vm05,Mum05,Vm005,Mum005)
+     CALL OUTPUT(Format_O,Dt,M,H,T,Xi,BL,Ts,P,dist,ray,k,k1,k2,z,compteur,tmps,&
+          &Output_Racine,delta0,Cas,sample,Format_RV,Format_Backup&
+          &,Phim,Vm,Tm,Mum,Srr,Stt,&
+          &Vm01,Mum01,Vm02,Mum02,Vm05,Mum05,Vm005,Mum005,&
+          &BV_a,BV_b,V_t1,V_t2,BE_a,BE_b,En_t1,En_t2,Phi_s,Phi_l)
 
      ! On incremente les compteurs et le temps
      k = k+1
