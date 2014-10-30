@@ -2,7 +2,7 @@ MODULE MODULE_CONSERVATION
 
 CONTAINS
 
-  SUBROUTINE MASS_CONSERVATION(H,Dt,dist,ray,k,BV_a,BV_b,V_t1,V_t2)
+  SUBROUTINE MASS_CONSERVATION(H,Dt,dist,ray,k,BV_a,BV_b,V_t1,V_t2,delta0)
 
     !*****************************************************************
     ! Control the mass conservation at each time step pour le code balmforth
@@ -20,13 +20,13 @@ CONTAINS
     INTEGER ,INTENT(IN) :: k
 
     ! Nombre sans dimension
-    DOUBLE PRECISION ,INTENT(IN) :: Dt
+    DOUBLE PRECISION ,INTENT(IN) :: Dt,delta0
 
     !Parametre du sous programme
     DOUBLE PRECISION :: A_t1,Int_t1,A_t2,Int_t2,Dr
     INTEGER :: i,N
 
-    N = COUNT(H(:,1)>0)
+    N = COUNT(H(:,1)>delta0)
     Dr = ray(1)
 
     ! temps t
@@ -60,7 +60,7 @@ CONTAINS
 
   END SUBROUTINE MASS_CONSERVATION
 
-  SUBROUTINE ENERGY_CONSERVATION(H,BL,T,Ts,Pe,Dt,dist,ray,k,psi,BE_a,BE_b,En_t1,En_t2,Phi_s,Phi_l)
+  SUBROUTINE ENERGY_CONSERVATION(H,BL,T,Ts,Pe,Dt,dist,ray,k,psi,BE_a,BE_b,En_t1,En_t2,Phi_s,Phi_l,delta0)
 
     !*****************************************************************
     ! Control the energy conservation at each time step pour le code balmforth
@@ -78,7 +78,7 @@ CONTAINS
     INTEGER ,INTENT(IN) :: k
 
     ! Nombre sans dimension
-    DOUBLE PRECISION ,INTENT(IN) :: Pe,Dt,psi
+    DOUBLE PRECISION ,INTENT(IN) :: Pe,Dt,psi,delta0
 
     !Parametre du sous programme
     DOUBLE PRECISION :: tbar_t1,A_1_t1,A_2_t1,A_3_t1,Int_1_t1,Int_2_t1,Int_3_t1
@@ -86,7 +86,7 @@ CONTAINS
     DOUBLE PRECISION :: E_ta,E_tb,Dr
     INTEGER :: i,N
     
-    N = COUNT(H(:,1)>0)
+    N = COUNT(H(:,1)>delta0)
     Dr = ray(1)
 
     ! Calcule au temps t
@@ -157,7 +157,6 @@ CONTAINS
     Phi_s = 1D0+psi*(Int_2_t2-Int_2_t1)/Dt
     ! Energie lost en J s
     Phi_l = 4D0*Pe*Int_3_t1
-
     
     
     ! PRINT*,'Conservation chaleur',tmps,D_p-D_c,D_p
