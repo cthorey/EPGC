@@ -41,6 +41,7 @@ PROGRAM MAIN
   !Average quantity
   DOUBLE PRECISION :: Tm,Vm,Mum,Phim
   DOUBLE PRECISION :: Vm01,Mum01,Vm02,Mum02,Vm05,Mum05,Vm005,Mum005
+  DOUBLE PRECISION :: Tm01,Tm02,Tm05,Tm005
   ! Seuil de confiance
   DOUBLE PRECISION :: eps_1
 
@@ -100,7 +101,8 @@ PROGRAM MAIN
           &Output_Racine,delta0,Cas,sample,Format_RV,Format_Backup&
           &,Phim,Vm,Tm,Mum,Srr,Stt,&
           &Vm01,Mum01,Vm02,Mum02,Vm05,Mum05,Vm005,Mum005,&
-          &BV_a,BV_b,V_t1,V_t2,BE_a,BE_b,En_t1,En_t2,Phi_s,Phi_l)
+          &BV_a,BV_b,V_t1,V_t2,BE_a,BE_b,En_t1,En_t2,Phi_s,Phi_l,&
+          &Tm01,Tm02,Tm05,Tm005)
 
 
      H(:,1) = H(:,3); H(:,4) = H(:,1)
@@ -145,7 +147,7 @@ PROGRAM MAIN
      CALL ENERGY_CONSERVATION(H,BL,T,Ts,Pe,Dt,dist,ray,k,psi,BE_a,BE_b,En_t1,En_t2,Phi_s,Phi_l,delta0)
      CALL STRESS_ELASTIC_FIELD(Srr,Stt,H,dist,Dr,M)
      CALL AVERAGE_QUANTITY(Xi,H,T,Ts,BL,dist,ray,Dt,Dr,el,grav,N1,Pe,Psi,nu,Tm,Vm,Mum,Phim,M,tmps,delta0,&
-       &Vm01,Mum01,Vm02,Mum02,Vm05,Mum05,Vm005,Mum005)
+       &Vm01,Mum01,Vm02,Mum02,Vm05,Mum05,Vm005,Mum005,Tm01,Tm02,Tm05,Tm005)
      
      ! print*,k,Mum/Vm,Tm/Vm,Vm,tmps
      ! Ecriture des donne dans un fichier
@@ -154,11 +156,12 @@ PROGRAM MAIN
           &Output_Racine,delta0,Cas,sample,Format_RV,Format_Backup&
           &,Phim,Vm,Tm,Mum,Srr,Stt,&
           &Vm01,Mum01,Vm02,Mum02,Vm05,Mum05,Vm005,Mum005,&
-          &BV_a,BV_b,V_t1,V_t2,BE_a,BE_b,En_t1,En_t2,Phi_s,Phi_l)
+          &BV_a,BV_b,V_t1,V_t2,BE_a,BE_b,En_t1,En_t2,Phi_s,Phi_l,&
+          &Tm01,Tm02,Tm05,Tm005)
 
      ! On incremente les compteurs et le temps
      k = k+1
-     ! PRINT*,'ite',k,tmps,Tm/Vm
+     PRINT*,'ite',k,Tm/Vm,Mum05/Vm05,Mum02/Vm02
      tmps = tmps+Dt
 
   END DO TEMPS
