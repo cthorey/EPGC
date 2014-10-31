@@ -140,7 +140,7 @@ CONTAINS
           ray(i) = dist(i)+0.5d0*Dr
        END DO
        H = delta0
-       T = 1.d0
+       T = 0d0
        Ts = 0.d0
        P = 0.d0
        BL = H/(2.d0) 
