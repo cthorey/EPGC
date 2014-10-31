@@ -113,25 +113,25 @@ CONTAINS
           Mum = hmubar*ray(i)**2
           Phim = Phibar*ray(i)**2
        ELSEIF (i == N) THEN
-          Tm = Tm + hthetabar*(dist(M)**2-ray(M-1)**2)
-          Vm = Vm +H(i,3)*(dist(M)**2-ray(M-1)**2)
-          Mum = Mum + hmubar*(dist(M)**2-ray(M-1)**2)
-          Phim = Phim+Phibar*(dist(M)**2-ray(M-1)**2)
+          Tm = Tm + hthetabar*(dist(N)**2-ray(N-1)**2)
+          Vm = Vm +H(i,3)*(dist(N)**2-ray(N-1)**2)
+          Mum = Mum + hmubar*(dist(N)**2-ray(N-1)**2)
+          Phim = Phim+Phibar*(dist(N)**2-ray(N-1)**2)
           IF (i>I01) THEN
-             VM01 = Vm01 +H(i,3)*(dist(M)**2-ray(M-1)**2)
-             Mum01 = Mum01 + hmubar*(dist(M)**2-ray(M-1)**2)
+             Vm01 = Vm01 +H(i,3)*(dist(N)**2-ray(N-1)**2)
+             Mum01 = Mum01 + hmubar*(dist(N)**2-ray(N-1)**2)
           ENDIF
           IF (i>I02) THEN
-             VM02 = Vm02 +H(i,3)*(dist(M)**2-ray(M-1)**2)
-             Mum02 = Mum02 + hmubar*(dist(M)**2-ray(M-1)**2)
+             Vm02 = Vm02 +H(i,3)*(dist(N)**2-ray(N-1)**2)
+             Mum02 = Mum02 + hmubar*(dist(N)**2-ray(N-1)**2)
           ENDIF
           IF (i>I05) THEN
-             VM05 = Vm05 +H(i,3)*(dist(M)**2-ray(M-1)**2)
-             Mum05 = Mum05 + hmubar*(dist(M)**2-ray(M-1)**2)
+             Vm05 = Vm05 +H(i,3)*(dist(N)**2-ray(N-1)**2)
+             Mum05 = Mum05 + hmubar*(dist(N)**2-ray(N-1)**2)
           ENDIF
           IF (i>I005) THEN
-             VM005 = Vm005 +H(i,3)*(dist(M)**2-ray(M-1)**2)
-             Mum005 = Mum005 + hmubar*(dist(M)**2-ray(M-1)**2)
+             Vm005 = Vm005 +H(i,3)*(dist(N)**2-ray(N-1)**2)
+             Mum005 = Mum005 + hmubar*(dist(N)**2-ray(N-1)**2)
           ENDIF
        ELSE 
           Tm = Tm + hthetabar*(ray(i)**2-ray(i-1)**2)
@@ -139,20 +139,20 @@ CONTAINS
           Mum = Mum + hmubar*(ray(i)**2-ray(i-1)**2)
           Phim = Phim+Phibar*(ray(i)**2-ray(i-1)**2)
           IF (i>I01) THEN
-             VM01 = Vm01 +H(i,3)*(dist(M)**2-ray(M-1)**2)
-             Mum01 = Mum01 + hmubar*(dist(M)**2-ray(M-1)**2)
+             Vm01 = Vm01 +H(i,3)*(dist(N)**2-ray(N-1)**2)
+             Mum01 = Mum01 + hmubar*(dist(N)**2-ray(N-1)**2)
           ENDIF
           IF (i>I02) THEN
-             VM02 = Vm02 +H(i,3)*(dist(M)**2-ray(M-1)**2)
-             Mum02 = Mum02 + hmubar*(dist(M)**2-ray(M-1)**2)
+             Vm02 = Vm02 +H(i,3)*(dist(N)**2-ray(N-1)**2)
+             Mum02 = Mum02 + hmubar*(dist(N)**2-ray(N-1)**2)
           ENDIF
           IF (i>I05) THEN
-             VM05 = Vm05 +H(i,3)*(dist(M)**2-ray(M-1)**2)
-             Mum05 = Mum05 + hmubar*(dist(M)**2-ray(M-1)**2)
+             Vm05 = Vm05 +H(i,3)*(dist(N)**2-ray(N-1)**2)
+             Mum05 = Mum05 + hmubar*(dist(N)**2-ray(N-1)**2)
           ENDIF
           IF (i>I005) THEN
-             VM005 = Vm005 +H(i,3)*(dist(M)**2-ray(M-1)**2)
-             Mum005 = Mum005 + hmubar*(dist(M)**2-ray(M-1)**2)
+             Vm005 = Vm005 +H(i,3)*(dist(N)**2-ray(N-1)**2)
+             Mum005 = Mum005 + hmubar*(dist(N)**2-ray(N-1)**2)
           ENDIF
        ENDIF
     ENDDO
