@@ -231,11 +231,11 @@ CONTAINS
     Mu_e = 0.38*delta0**(-1D0/11D0)*(H(1,3)/(tmps**(8D0/22D0)))**(11D0/2D0)
     
     ! Premier cas definit le front avec delta0
-    Mum =1
-    Tm =1
-    Vm =1
-    mbar = Mum/Vm
-    tbar = Tm/Vm
+    Mum =0
+    Tm =0
+    Vm =0
+    ! mbar = Mum/Vm
+    ! tbar = Tm/Vm
     Fr_d_R = dist(N)
     Fr_d_T = 0
     Fr_d_Mu = 1D0/nu
@@ -270,32 +270,29 @@ CONTAINS
     ! Deuxieme cas, on definit le front avec 0.001
     
     IF (N001>1) THEN
-       Mum = hmubar(N001)*(ray(N001)**2-ray(N001-1)**2)
-       Vm = H(N001,3)*(ray(N001)**2-ray(N001-1)**2)
-       Tm = hthetabar(N001)*(ray(N001)**2-ray(N001-1)**2)
-       mbar = Mum/Vm
-       tbar = Tm/Vm
+
        Fr_001_R = dist(N001)
        Fr_001_T = 0
        Fr_001_Mu = 1D0/nu
        DO i=N001,1,-1
+          IF (i/=1) THEN
+             Tm = Tm + hthetabar(i)*(ray(i)**2-ray(i-1)**2)
+             Vm = Vm +H(i,3)*(ray(i)**2-ray(i-1)**2)
+             Mum = Mum + hmubar(i)*(ray(i)**2-ray(i-1)**2)
+             mbar = Mum/Vm
+             tbar = Tm/Vm
+          ELSE
+             Tm = Tm+hthetabar(i)*ray(i)**2
+             Vm = Vm+H(i,3)*ray(i)**2
+             Mum = Mum+hmubar(i)*ray(i)**2
+             mbar = Mum/Vm
+             tbar = Tm/Vm
+          ENDIF
           IF (mbar<Mu_e) THEN
              Fr_001_R = dist(i)
              Fr_001_T = tbar
              Fr_001_Mu = mbar
              EXIT
-          ELSE
-             IF (i/=1) THEN
-                Tm = Tm + hthetabar(i)*(ray(i)**2-ray(i-1)**2)
-                Vm = Vm +H(i,3)*(ray(i)**2-ray(i-1)**2)
-                Mum = Mum + hmubar(i)*(ray(i)**2-ray(i-1)**2)
-                mbar = Mum/Vm
-                tbar = Tm/Vm
-             ELSE
-                Tm = Tm+hthetabar(i)*ray(i)**2
-                Vm = Vm+H(i,3)*ray(i)**2
-                Mum = Mum+hmubar(i)*ray(i)**2
-             ENDIF
           ENDIF
        ENDDO
        IF (mbar>Mu_e) THEN
