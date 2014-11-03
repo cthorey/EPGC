@@ -309,7 +309,7 @@ CONTAINS
      Fr_Mu_R = dist(N)
      Fr_Mu_T = 0
      Fr_Mu_Mu = 1D0/nu
-     DO i=N,1,-1
+     DO i=N+19,1,-1
        IF (mbar<Mu_e) THEN
           Fr_Mu_R = dist(i)
           Fr_Mu_H = H(i,3)
