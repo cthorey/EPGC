@@ -248,9 +248,16 @@ CONTAINS
              Tm = Tm+hthetabar(i)*ray(i)**2
              Vm = Vm+H(i,3)*ray(i)**2
              Mum = Mum+hmubar(i)*ray(i)**2
+             mbar = Mum/Vm
+             tbar = Tm/Vm
           ENDIF
        ENDIF
     ENDDO
+    IF (mbar>Mu_e) THEN
+        Fr_d_R = 0.d0
+        Fr_d_T = tbar
+        Fr_d_Mu = mbar
+     ENDIF
 
     ! Deuxieme cas, on definit le front avec 0.001
 ! Premier cas definit le front avec delta0
@@ -284,6 +291,11 @@ CONTAINS
              ENDIF
           ENDIF
        ENDDO
+       IF (mbar>Mu_e) THEN
+          Fr_001_R = 0.d0
+          Fr_001_T = tbar
+          Fr_001_Mu = mbar
+       ENDIF
     ELSE
         Fr_001_R = Fr_d_R
         Fr_001_T = Fr_d_T 
