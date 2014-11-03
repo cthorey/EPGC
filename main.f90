@@ -161,7 +161,7 @@ PROGRAM MAIN
 
      ! On incremente les compteurs et le temps
      k = k+1
-     PRINT*,'ite',k,Tm/Vm,Mum05/Vm05,Mum02/Vm02
+     ! PRINT*,'ite',k,Tm/Vm,Mum05/Vm05,Mum02/Vm02
      tmps = tmps+Dt
 
   END DO TEMPS
