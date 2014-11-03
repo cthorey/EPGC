@@ -49,6 +49,10 @@ PROGRAM MAIN
   DOUBLE PRECISION :: F1,F1t,F2,F2t
   INTEGER :: Ite_Glob
 
+  ! Trackjing front routine
+  DOUBLE PRECISION :: Fr_d_R,Fr_d_T,Fr_d_Mu,Fr_001_R,Fr_001_T,Fr_001_Mu
+  DOUBLE PRECISION :: Mu_e
+
   !Necessaire au bon fonctionnement
   INTEGER :: cas,size
 
@@ -102,7 +106,8 @@ PROGRAM MAIN
           &,Phim,Vm,Tm,Mum,Srr,Stt,&
           &Vm01,Mum01,Vm02,Mum02,Vm05,Mum05,Vm005,Mum005,&
           &BV_a,BV_b,V_t1,V_t2,BE_a,BE_b,En_t1,En_t2,Phi_s,Phi_l,&
-          &Tm01,Tm02,Tm05,Tm005)
+          &Tm01,Tm02,Tm05,Tm005,&
+          &Fr_d_R,Fr_d_T,Fr_d_Mu,Fr_001_R,Fr_001_T,Fr_001_Mu,Mu_e)
 
 
      H(:,1) = H(:,3); H(:,4) = H(:,1)
@@ -148,20 +153,21 @@ PROGRAM MAIN
      CALL STRESS_ELASTIC_FIELD(Srr,Stt,H,dist,Dr,M)
      CALL AVERAGE_QUANTITY(Xi,H,T,Ts,BL,dist,ray,Dt,Dr,el,grav,N1,Pe,Psi,nu,Tm,Vm,Mum,Phim,M,tmps,delta0,&
        &Vm01,Mum01,Vm02,Mum02,Vm05,Mum05,Vm005,Mum005,Tm01,Tm02,Tm05,Tm005)
+     CALL TRACKING_FRONT(Xi,H,T,Ts,BL,dist,ray,Dt,Dr,el,grav,N1,Pe,Psi,nu,tmps,delta0,&
+       &Fr_d_R,Fr_d_T,Fr_d_Mu,Fr_001_R,Fr_001_T,Fr_001_Mu,Mu_e)
      
-     ! print*,k,Mum/Vm,Tm/Vm,Vm,tmps
-     ! Ecriture des donne dans un fichier
      Cas = 1
      CALL OUTPUT(Format_O,Dt,M,H,T,Xi,BL,Ts,P,dist,ray,k,k1,k2,z,compteur,tmps,&
           &Output_Racine,delta0,Cas,sample,Format_RV,Format_Backup&
           &,Phim,Vm,Tm,Mum,Srr,Stt,&
           &Vm01,Mum01,Vm02,Mum02,Vm05,Mum05,Vm005,Mum005,&
           &BV_a,BV_b,V_t1,V_t2,BE_a,BE_b,En_t1,En_t2,Phi_s,Phi_l,&
-          &Tm01,Tm02,Tm05,Tm005)
+          &Tm01,Tm02,Tm05,Tm005,&
+          &Fr_d_R,Fr_d_T,Fr_d_Mu,Fr_001_R,Fr_001_T,Fr_001_Mu,Mu_e)
 
      ! On incremente les compteurs et le temps
      k = k+1
-     PRINT*,'ite',k,Tm/Vm,Mum05/Vm05,Mum02/Vm02
+     ! print*,'ite',k,Fr_001_Mu,Fr_d_Mu
      tmps = tmps+Dt
 
   END DO TEMPS
