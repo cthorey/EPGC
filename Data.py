@@ -5,8 +5,8 @@ import subprocess
 import sys
 import os
 
-Folder_malbec = 'Run_New_2/'
-Folder_laptop = 'Run_New_2/'
+Folder_malbec = 'Run_New_3/'
+Folder_laptop = 'Run_New_3/'
 Root_malbec = '/gpfs/users/thorey/ELAS/'+Folder_malbec
 Root_laptop = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/SCAPAD/ELAS/'+Folder_laptop
 Routine_python = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/Routine/ELAS/E_Load.py'

@@ -28,7 +28,7 @@ import datetime
 if _platform == "linux" or _platform == "linux2":
     Root = '//gpfs/users/thorey/'
     Racine = '/home/thorey/Code_ELAS/'
-    Root_Run = 'ELAS/Run_New_2/'
+    Root_Run = 'ELAS/Run_New_3/'
     Bactrack_Run = 'Bactrack_ELAS.txt'
     Compilateur = 'ifort'
 elif _platform == "darwin":
@@ -54,7 +54,7 @@ Dict_Param = {'Sigma': ['2D-2'],
               'Delta0': ['5D-3'],
               'Grav': ['0D0'],
               'El': ['1D0'],
-              'Nu': ['1D-2','1D-3'],
+              'Nu': ['1D-1','1D-2','1D-3'],
               'Pe': ['1D0','1D-1','1D-2'],
               'Psi': ['0.D0'],
               'N1' : ['1D5','1D0'],
