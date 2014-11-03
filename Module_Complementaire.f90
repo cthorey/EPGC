@@ -205,7 +205,7 @@ CONTAINS
     ENDDO
 
 
-    DO i=1,N+20,1
+    DO i=1,N+30,1
        hthetabar = -2*(T(i,3)-Ts(i,3))/3.d0*BL(i,3)+T(i,3)*H(i,3)
        beta = (1.d0-nu)
        Thetas = Ts(i,3);Thetab = T(i,3);delta = BL(i,3);nu_v = nu;ho=H(i,3)
@@ -309,7 +309,8 @@ CONTAINS
      Fr_Mu_R = dist(N)
      Fr_Mu_T = 0
      Fr_Mu_Mu = 1D0/nu
-     DO i=N,1,-1
+
+     DO i=N+29,1,-1
        IF (mbar<Mu_e) THEN
           Fr_Mu_R = dist(i)
           Fr_Mu_H = H(i,3)
