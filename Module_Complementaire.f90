@@ -164,20 +164,22 @@ CONTAINS
   END SUBROUTINE AVERAGE_QUANTITY
 
   SUBROUTINE TRACKING_FRONT(Xi,H,T,Ts,BL,dist,ray,Dt,Dr,el,grav,N1,Pe,Psi,nu,tmps,delta0,&
-       &Fr_d_R,Fr_d_T,Fr_d_Mu,Fr_001_R,Fr_001_T,Fr_001_Mu,Mu_e)
+       &Fr_d_R,Fr_d_T,Fr_d_Mu,Fr_001_R,Fr_001_T,Fr_001_Mu,Mu_e,&
+       &Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H,hmubar,hthetabar)
 
     IMPLICIT NONE
 
     DOUBLE PRECISION ,DIMENSION(:,:), INTENT(IN) :: XI,H,T,Ts,BL
     DOUBLE PRECISION ,DIMENSION(:), INTENT(IN) :: dist,ray
+    DOUBLE PRECISION , DIMENSION(:),INTENT(INOUT)  :: hmubar,hthetabar
     DOUBLE PRECISION ,INTENT(IN) :: Dt,Dr,el,grav,N1,Pe,Psi,nu,tmps,delta0
     DOUBLE PRECISION ,INTENT(INOUT) :: Fr_d_R,Fr_d_T,Fr_d_Mu,Mu_e
     DOUBLE PRECISION ,INTENT(INOUT) :: Fr_001_R,Fr_001_T,Fr_001_Mu
+    DOUBLE PRECISION ,INTENT(INOUT) :: Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H
 
     DOUBLE PRECISION, EXTERNAL:: viscosity_1,viscosity_2,viscosity_3
     DOUBLE PRECISION :: a,beta,muPart1,muPart2,muPart3
     DOUBLE PRECISION :: Vm,Tm,Mum,tbar,mbar
-    DOUBLE PRECISION , DIMENSION(:),ALLOCATABLE  :: hmubar,hthetabar
     DOUBLE PRECISION :: abserr
     INTEGER :: i,N,ier,last,err1,N001
 
@@ -201,14 +203,9 @@ CONTAINS
           N001 = i
        END IF
     ENDDO
-    
-    ALLOCATE(hmubar(N),hthetabar(N), stat=err1)
-    IF (err1>1) THEN
-       PRINT*,'ERREUR endallocation tabelaux dans le main'
-       STOP
-    ENDIF
 
-    DO i=1,N,1
+
+    DO i=1,N+30,1
        hthetabar = -2*(T(i,3)-Ts(i,3))/3.d0*BL(i,3)+T(i,3)*H(i,3)
        beta = (1.d0-nu)
        Thetas = Ts(i,3);Thetab = T(i,3);delta = BL(i,3);nu_v = nu;ho=H(i,3)
@@ -218,6 +215,8 @@ CONTAINS
        hmubar(i) = muPart1+muPart2+muPart3
        hthetabar(i) = -2*(T(i,3)-Ts(i,3))/3.d0*BL(i,3)+T(i,3)*H(i,3)
     ENDDO
+    hthetabar(N+20:) =0.d0
+    hmubar(N+20:) = 1/nu
 
     Mu_e = 0.38*delta0**(-1D0/11D0)*(H(1,3)/(tmps**(8D0/22D0)))**(11D0/2D0)
     
@@ -301,10 +300,34 @@ CONTAINS
         Fr_001_T = Fr_d_T 
         Fr_001_Mu = Fr_d_Mu
      ENDIF
+
+     ! Troisieme cas: On definit le front la ou la viscosite moyenne sur l'epaisseur 
+     ! a ceux qu'on veut.
     
-  
-DEALLOCATE(hmubar,hthetabar)
-       
+     Mbar = hmubar(N)/H(N,3)
+     Tbar = hthetabar(N)/H(N,3)
+     Fr_Mu_R = dist(N)
+     Fr_Mu_T = 0
+     Fr_Mu_Mu = 1D0/nu
+     DO i=N+30,1,-1
+       IF (mbar<Mu_e) THEN
+          Fr_Mu_R = dist(i)
+          Fr_Mu_H = H(i,3)
+          Fr_Mu_T = tbar
+          Fr_Mu_Mu = mbar
+          EXIT
+       ELSE
+          Mbar = hmubar(i)/H(i,3)
+          Tbar = hthetabar(i)/H(i,3)
+       ENDIF
+    ENDDO
+    IF (mbar>Mu_e) THEN
+        Fr_Mu_R = 0.d0
+        Fr_Mu_T = tbar
+        Fr_Mu_Mu = mbar
+        Fr_Mu_H = H(1,3)
+     ENDIF
+
   ENDSUBROUTINE TRACKING_FRONT
 
 
