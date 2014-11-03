@@ -231,9 +231,9 @@ CONTAINS
     Mu_e = 0.38*delta0**(-1D0/11D0)*(H(1,3)/(tmps**(8D0/22D0)))**(11D0/2D0)
     
     ! Premier cas definit le front avec delta0
-    Mum = hmubar(N)*(dist(N)**2-ray(N-1)**2)
-    Vm = H(N,3)*(dist(N)**2-ray(N-1)**2)
-    Tm = hthetabar(N)*(dist(N)**2-ray(N-1)**2)
+    Mum =1
+    Tm =1
+    Vm =1
     mbar = Mum/Vm
     tbar = Tm/Vm
     Fr_d_R = dist(N)
@@ -241,13 +241,7 @@ CONTAINS
     Fr_d_Mu = 1D0/nu
 
     DO i=N,1,-1
-       IF (mbar<Mu_e) THEN
-          Fr_d_R = dist(i)
-          Fr_d_T = tbar
-          Fr_d_Mu = mbar
-          EXIT
-       ELSE
-          IF (i/=1) THEN
+       IF (i/=1) THEN
              Tm = Tm + hthetabar(i)*(ray(i)**2-ray(i-1)**2)
              Vm = Vm +H(i,3)*(ray(i)**2-ray(i-1)**2)
              Mum = Mum + hmubar(i)*(ray(i)**2-ray(i-1)**2)
@@ -260,7 +254,12 @@ CONTAINS
              mbar = Mum/Vm
              tbar = Tm/Vm
           ENDIF
-       ENDIF
+          IF (mbar<Mu_e) THEN
+             Fr_d_R = dist(i)
+             Fr_d_T = tbar
+             Fr_d_Mu = mbar
+             EXIT
+          ENDIF
     ENDDO
     IF (mbar>Mu_e) THEN
         Fr_d_R = 0.d0
