@@ -99,19 +99,19 @@ CONTAINS
                &'Vm01','Mum01','Vm02','Mum02','Vm05','Mum05',&
                &'Vm005','Mum005',&
                &'BV_a','BV_b','V_t1','V_t2','BE_a','BE_b','En_t1',&
-               &'En_t2','Phi_s','Phi_l','Tm01','Tm02','Tm05','Tm005'&
+               &'En_t2','Phi_s','Phi_l','Tm01','Tm02','Tm05','Tm005',&
                &'Fr_d_R','Fr_d_T','Fr_d_Mu','Fr_001_R','Fr_001_T','Fr_001_Mu','Mu_e'
 
 
           DO i=1,M,1
              IF (H(i,3) == delta0) EXIT
-             WRITE(2,Format_Data)tmps,dist(i),H(i,3)&
-                  &,T(i,3),BL(i,3),Xi(i,3),Ts(i,3),P(i,3),Srr(i),Stt(i)&
-                  &,R,Phim,Vm,Tm,Mum,&
+             WRITE(2,Format_Data)tmps, dist(i), H(i,3)&
+                  &,T(i,3), BL(i,3), Xi(i,3), Ts(i,3), P(i,3), Srr(i), Stt(i)&
+                  &,R, Phim, Vm, Tm, Mum,&
                   &Vm01,Mum01,Vm02,Mum02,Vm05,Mum05,Vm005,Mum005,&
                   &BV_a,BV_b,V_t1,V_t2,BE_a,BE_b,En_t1,En_t2,Phi_s,Phi_l,&
-                  &Tm01,Tm02,Tm05,Tm005,&
-                  &Fr_d_R,Fr_d_T,Fr_d_Mu,Fr_001_R,Fr_001_T,Fr_001_Mu,Mu_e
+                  &Tm01, Tm02, Tm05, Tm005,&
+                  & Fr_d_R, Fr_d_T, Fr_d_Mu, Fr_001_R, Fr_001_T, Fr_001_Mu, Mu_e
           END DO
           CLOSE(2)
          
