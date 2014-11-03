@@ -53,6 +53,7 @@ PROGRAM MAIN
   ! Trackjing front routine
   DOUBLE PRECISION :: Fr_d_R,Fr_d_T,Fr_d_Mu,Fr_001_R,Fr_001_T,Fr_001_Mu
   DOUBLE PRECISION :: Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H
+  DOUBLE PRECISION :: Fr_005_R,Fr_005_T,Fr_005_Mu
   DOUBLE PRECISION :: Mu_e
 
   !Necessaire au bon fonctionnement
@@ -111,7 +112,8 @@ PROGRAM MAIN
           &BV_a,BV_b,V_t1,V_t2,BE_a,BE_b,En_t1,En_t2,Phi_s,Phi_l,&
           &Tm01,Tm02,Tm05,Tm005,&
           &Fr_d_R,Fr_d_T,Fr_d_Mu,Fr_001_R,Fr_001_T,Fr_001_Mu,Mu_e,&
-          &Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H,hmubar,hthetabar)
+          &Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H,hmubar,hthetabar,&
+          &Fr_005_R,Fr_005_T,Fr_005_Mu)
 
      H(:,1) = H(:,3); H(:,4) = H(:,1)
      Xi(:,1) = Xi(:,3); Xi(:,4) = Xi(:,1)
@@ -157,8 +159,10 @@ PROGRAM MAIN
      CALL AVERAGE_QUANTITY(Xi,H,T,Ts,BL,dist,ray,Dt,Dr,el,grav,N1,Pe,Psi,nu,Tm,Vm,Mum,Phim,M,tmps,delta0,&
        &Vm01,Mum01,Vm02,Mum02,Vm05,Mum05,Vm005,Mum005,Tm01,Tm02,Tm05,Tm005)
      CALL TRACKING_FRONT(Xi,H,T,Ts,BL,dist,ray,Dt,Dr,el,grav,N1,Pe,Psi,nu,tmps,delta0,&
-          &Fr_d_R,Fr_d_T,Fr_d_Mu,Fr_001_R,Fr_001_T,Fr_001_Mu,Mu_e,&
-          &Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H,hmubar,hthetabar)
+       &Fr_d_R,Fr_d_T,Fr_d_Mu,Fr_001_R,Fr_001_T,Fr_001_Mu,Mu_e,&
+       &Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H,hmubar,hthetabar,&
+       &Fr_005_R,Fr_005_T,Fr_005_Mu)
+
      
      Cas = 1
      CALL OUTPUT(Format_O,Dt,M,H,T,Xi,BL,Ts,P,dist,ray,k,k1,k2,z,compteur,tmps,&
@@ -168,7 +172,8 @@ PROGRAM MAIN
           &BV_a,BV_b,V_t1,V_t2,BE_a,BE_b,En_t1,En_t2,Phi_s,Phi_l,&
           &Tm01,Tm02,Tm05,Tm005,&
           &Fr_d_R,Fr_d_T,Fr_d_Mu,Fr_001_R,Fr_001_T,Fr_001_Mu,Mu_e,&
-          &Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H,hmubar,hthetabar)
+          &Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H,hmubar,hthetabar,&
+          &Fr_005_R,Fr_005_T,Fr_005_Mu)
 
      ! On incremente les compteurs et le temps
      k = k+1

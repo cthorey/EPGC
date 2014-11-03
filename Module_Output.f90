@@ -9,7 +9,8 @@ CONTAINS
           &BV_a,BV_b,V_t1,V_t2,BE_a,BE_b,En_t1,En_t2,Phi_s,Phi_l,&
           &Tm01,Tm02,Tm05,Tm005,&
           &Fr_d_R,Fr_d_T,Fr_d_Mu,Fr_001_R,Fr_001_T,Fr_001_Mu,Mu_e,&
-          &Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H,hmubar,hthetabar)
+          &Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H,hmubar,hthetabar,&
+          &Fr_005_R,Fr_005_T,Fr_005_Mu)
 
     IMPLICIT NONE
 
@@ -24,6 +25,7 @@ CONTAINS
     DOUBLE PRECISION , INTENT(INOUT) :: Tm01,Tm02,Tm05,Tm005
     DOUBLE PRECISION , INTENT(INOUT) :: Fr_d_R,Fr_d_T,Fr_d_Mu,Fr_001_R,Fr_001_T,Fr_001_Mu,Mu_e
     DOUBLE PRECISION , INTENT(INOUT) :: Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H
+    DOUBLE PRECISION , INTENT(INOUT) :: Fr_005_R,Fr_005_T,Fr_005_Mu
     DOUBLE PRECISION ,INTENT(INOUT) :: BE_a,BE_b
     DOUBLE PRECISION ,INTENT(INOUT) :: En_t1,En_t2,Phi_s,Phi_l
     DOUBLE PRECISION ,INTENT(INOUT) :: BV_a,BV_b
@@ -83,7 +85,7 @@ CONTAINS
           ! Data pour chaque point de la grille
           WRITE(Data_File,Format_RV)Output_Racine,'RV_',compteur,'.dat'
           OPEN(unit=2,file=Data_File,status='replace')
-          Format_Data='(50(D30.24,2X))'
+          Format_Data='(53(D30.24,2X))'
           
           R = 0.d0
           DO i=1,M,1
@@ -95,7 +97,7 @@ CONTAINS
           ENDDO
 
           ! Header
-          WRITE(2,'(50(A,2X))')'tm', 'dist', 'H',&
+          WRITE(2,'(53(A,2X))')'tm', 'dist', 'H',&
                &'Te','BL','Xi','Ts','P','Srr','Stt',&
                &'hmubar','hthetabar',&
                &'R','Phi','Vm','Tm','Mum',&
@@ -104,7 +106,8 @@ CONTAINS
                &'BV_a','BV_b','V_t1','V_t2','BE_a','BE_b','En_t1',&
                &'En_t2','Phi_s','Phi_l','Tm01','Tm02','Tm05','Tm005',&
                &'Fr_d_R','Fr_d_T','Fr_d_Mu','Fr_001_R','Fr_001_T','Fr_001_Mu','Mu_e',&
-               &'Fr_Mu_R','Fr_Mu_T','Fr_Mu_Mu','Fr_Mu_H'
+               &'Fr_Mu_R','Fr_Mu_T','Fr_Mu_Mu','Fr_Mu_H',&
+               &'Fr_005_R','Fr_005_T','Fr_005_Mu'
 
 
           DO i=1,M,1
@@ -117,7 +120,8 @@ CONTAINS
                   &BV_a,BV_b,V_t1,V_t2,BE_a,BE_b,En_t1,En_t2,Phi_s,Phi_l,&
                   &Tm01, Tm02, Tm05, Tm005,&
                   &Fr_d_R, Fr_d_T, Fr_d_Mu, Fr_001_R, Fr_001_T, Fr_001_Mu, Mu_e,&
-                  &Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H
+                  &Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H,&
+                  &Fr_005_R,Fr_005_T,Fr_005_Mu
           END DO
           CLOSE(2)
          

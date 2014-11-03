@@ -165,7 +165,8 @@ CONTAINS
 
   SUBROUTINE TRACKING_FRONT(Xi,H,T,Ts,BL,dist,ray,Dt,Dr,el,grav,N1,Pe,Psi,nu,tmps,delta0,&
        &Fr_d_R,Fr_d_T,Fr_d_Mu,Fr_001_R,Fr_001_T,Fr_001_Mu,Mu_e,&
-       &Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H,hmubar,hthetabar)
+       &Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H,hmubar,hthetabar,&
+       &Fr_005_R,Fr_005_T,Fr_005_Mu)
 
     IMPLICIT NONE
 
@@ -175,13 +176,14 @@ CONTAINS
     DOUBLE PRECISION ,INTENT(IN) :: Dt,Dr,el,grav,N1,Pe,Psi,nu,tmps,delta0
     DOUBLE PRECISION ,INTENT(INOUT) :: Fr_d_R,Fr_d_T,Fr_d_Mu,Mu_e
     DOUBLE PRECISION ,INTENT(INOUT) :: Fr_001_R,Fr_001_T,Fr_001_Mu
+    DOUBLE PRECISION ,INTENT(INOUT) :: Fr_005_R,Fr_005_T,Fr_005_Mu
     DOUBLE PRECISION ,INTENT(INOUT) :: Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H
 
     DOUBLE PRECISION, EXTERNAL:: viscosity_1,viscosity_2,viscosity_3
     DOUBLE PRECISION :: a,beta,muPart1,muPart2,muPart3
     DOUBLE PRECISION :: Vm,Tm,Mum,tbar,mbar
     DOUBLE PRECISION :: abserr
-    INTEGER :: i,N,ier,last,err1,N001
+    INTEGER :: i,N,ier,last,err1,N001,N005
 
     DOUBLE PRECISION :: delta,Thetas,Thetab,nu_v,ho
     common /arg/ delta,Thetas,Thetab,nu_v,ho
@@ -197,13 +199,21 @@ CONTAINS
     
     N001 = 0
     DO i=1,COUNT(H(:,3)>0),1
-       IF (H(i,3)-0.05>0.d0 .OR. N001 /= 0) THEN
+       IF (H(i,3)-0.01>0.d0 .OR. N001 /= 0) THEN
           CYCLE
        ELSE
           N001 = i
        END IF
     ENDDO
 
+    N005 = 0
+    DO i=1,COUNT(H(:,3)>0),1
+       IF (H(i,3)-0.05>0.d0 .OR. N005 /= 0) THEN
+          CYCLE
+       ELSE
+          N005 = i
+       END IF
+    ENDDO
 
     DO i=1,N+30,1
        hthetabar = -2*(T(i,3)-Ts(i,3))/3.d0*BL(i,3)+T(i,3)*H(i,3)
@@ -259,7 +269,6 @@ CONTAINS
      ENDIF
 
     ! Deuxieme cas, on definit le front avec 0.001
-! Premier cas definit le front avec delta0
     
     IF (N001>1) THEN
        Mum = hmubar(N001)*(ray(N001)**2-ray(N001-1)**2)
@@ -301,6 +310,49 @@ CONTAINS
         Fr_001_Mu = Fr_d_Mu
      ENDIF
 
+     ! Troisizem cas
+    ! Deuxieme cas, on definit le front avec 0.001
+    
+    IF (N005>1) THEN
+       Mum = hmubar(N005)*(ray(N005)**2-ray(N005-1)**2)
+       Vm = H(N005,3)*(ray(N005)**2-ray(N005-1)**2)
+       Tm = hthetabar(N005)*(ray(N005)**2-ray(N005-1)**2)
+       mbar = Mum/Vm
+       tbar = Tm/Vm
+       Fr_005_R = dist(N005)
+       Fr_005_T = 0
+       Fr_005_Mu = 1D0/nu
+       DO i=N005,1,-1
+          IF (mbar<Mu_e) THEN
+             Fr_005_R = dist(i)
+             Fr_005_T = tbar
+             Fr_005_Mu = mbar
+             EXIT
+          ELSE
+             IF (i/=1) THEN
+                Tm = Tm + hthetabar(i)*(ray(i)**2-ray(i-1)**2)
+                Vm = Vm +H(i,3)*(ray(i)**2-ray(i-1)**2)
+                Mum = Mum + hmubar(i)*(ray(i)**2-ray(i-1)**2)
+                mbar = Mum/Vm
+                tbar = Tm/Vm
+             ELSE
+                Tm = Tm+hthetabar(i)*ray(i)**2
+                Vm = Vm+H(i,3)*ray(i)**2
+                Mum = Mum+hmubar(i)*ray(i)**2
+             ENDIF
+          ENDIF
+       ENDDO
+       IF (mbar>Mu_e) THEN
+          Fr_005_R = 0.d0
+          Fr_005_T = tbar
+          Fr_005_Mu = mbar
+       ENDIF
+    ELSE
+        Fr_005_R = Fr_d_R
+        Fr_005_T = Fr_d_T 
+        Fr_005_Mu = Fr_d_Mu
+     ENDIF
+
      ! Troisieme cas: On definit le front la ou la viscosite moyenne sur l'epaisseur 
      ! a ceux qu'on veut.
     
@@ -309,6 +361,7 @@ CONTAINS
      Fr_Mu_R = dist(1)
      Fr_Mu_T = tbar
      Fr_Mu_Mu = mbar
+     Fr_Lu_H = H(1,3)
 
      DO i=1,N+30,1
        IF (mbar>Mu_e) THEN
@@ -318,12 +371,12 @@ CONTAINS
           Fr_Mu_Mu = mbar
           EXIT
        ELSE
-          Mbar = hmubar(i)/H(i,3)
+          mbar = hmubar(i)/H(i,3)
           Tbar = hthetabar(i)/H(i,3)
        ENDIF
     ENDDO
     IF (mbar<Mu_e) THEN
-        Fr_Mu_R = 0.d0
+        Fr_Mu_R = dist(N+30)
         Fr_Mu_T = tbar
         Fr_Mu_Mu = mbar
         Fr_Mu_H = H(N+30,3)
