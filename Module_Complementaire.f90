@@ -197,7 +197,7 @@ CONTAINS
     
     N001 = 0
     DO i=1,COUNT(H(:,3)>0),1
-       IF (H(i,3)-0.1>0.d0 .OR. N001 /= 0) THEN
+       IF (H(i,3)-0.05>0.d0 .OR. N001 /= 0) THEN
           CYCLE
        ELSE
           N001 = i
