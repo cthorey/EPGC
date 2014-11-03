@@ -304,14 +304,14 @@ CONTAINS
      ! Troisieme cas: On definit le front la ou la viscosite moyenne sur l'epaisseur 
      ! a ceux qu'on veut.
     
-     Mbar = hmubar(N)/H(N,3)
-     Tbar = hthetabar(N)/H(N,3)
-     Fr_Mu_R = dist(N)
-     Fr_Mu_T = 0
-     Fr_Mu_Mu = 1D0/nu
+     mbar = hmubar(1)/H(1,3)
+     tbar = hthetabar(1)/H(1,3)
+     Fr_Mu_R = dist(1)
+     Fr_Mu_T = tbar
+     Fr_Mu_Mu = mbar
 
-     DO i=N+29,1,-1
-       IF (mbar<Mu_e) THEN
+     DO i=1,N+30,1
+       IF (mbar>Mu_e) THEN
           Fr_Mu_R = dist(i)
           Fr_Mu_H = H(i,3)
           Fr_Mu_T = tbar
@@ -322,11 +322,11 @@ CONTAINS
           Tbar = hthetabar(i)/H(i,3)
        ENDIF
     ENDDO
-    IF (mbar>Mu_e) THEN
+    IF (mbar<Mu_e) THEN
         Fr_Mu_R = 0.d0
         Fr_Mu_T = tbar
         Fr_Mu_Mu = mbar
-        Fr_Mu_H = H(1,3)
+        Fr_Mu_H = H(N+30,3)
      ENDIF
 
   ENDSUBROUTINE TRACKING_FRONT
