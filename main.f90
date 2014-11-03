@@ -18,6 +18,7 @@ PROGRAM MAIN
   ! Tableau pour stocker les donne
   DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: H,T,Xi,BL,Ts,P
   DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: Srr,Stt
+  DOUBLE PRECISION , DIMENSION(:),ALLOCATABLE  :: hmubar,hthetabar
 
   ! Tableux pour definir la grille
   DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: dist,ray
@@ -51,6 +52,7 @@ PROGRAM MAIN
 
   ! Trackjing front routine
   DOUBLE PRECISION :: Fr_d_R,Fr_d_T,Fr_d_Mu,Fr_001_R,Fr_001_T,Fr_001_Mu
+  DOUBLE PRECISION :: Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H
   DOUBLE PRECISION :: Mu_e
 
   !Necessaire au bon fonctionnement
@@ -83,6 +85,7 @@ PROGRAM MAIN
   ALLOCATE(H(1:M,4),Xi(1:M,4),Ts(1:M,4),BL(1:M,4),T(1:M,4),&
        &P(1:M,4),ray(1:M),dist(1:M), stat=err1)
   ALLOCATE(Srr(1:M),Stt(1:M), stat = err1)
+  ALLOCATE(hmubar(1:M),hthetabar(1:M), stat = err1)
   IF (err1>1) THEN
      PRINT*,'ERREUR endallocation tabelaux dans le main'
      STOP
@@ -107,8 +110,8 @@ PROGRAM MAIN
           &Vm01,Mum01,Vm02,Mum02,Vm05,Mum05,Vm005,Mum005,&
           &BV_a,BV_b,V_t1,V_t2,BE_a,BE_b,En_t1,En_t2,Phi_s,Phi_l,&
           &Tm01,Tm02,Tm05,Tm005,&
-          &Fr_d_R,Fr_d_T,Fr_d_Mu,Fr_001_R,Fr_001_T,Fr_001_Mu,Mu_e)
-
+          &Fr_d_R,Fr_d_T,Fr_d_Mu,Fr_001_R,Fr_001_T,Fr_001_Mu,Mu_e,&
+          &Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H,hmubar,hthetabar)
 
      H(:,1) = H(:,3); H(:,4) = H(:,1)
      Xi(:,1) = Xi(:,3); Xi(:,4) = Xi(:,1)
@@ -154,7 +157,8 @@ PROGRAM MAIN
      CALL AVERAGE_QUANTITY(Xi,H,T,Ts,BL,dist,ray,Dt,Dr,el,grav,N1,Pe,Psi,nu,Tm,Vm,Mum,Phim,M,tmps,delta0,&
        &Vm01,Mum01,Vm02,Mum02,Vm05,Mum05,Vm005,Mum005,Tm01,Tm02,Tm05,Tm005)
      CALL TRACKING_FRONT(Xi,H,T,Ts,BL,dist,ray,Dt,Dr,el,grav,N1,Pe,Psi,nu,tmps,delta0,&
-       &Fr_d_R,Fr_d_T,Fr_d_Mu,Fr_001_R,Fr_001_T,Fr_001_Mu,Mu_e)
+          &Fr_d_R,Fr_d_T,Fr_d_Mu,Fr_001_R,Fr_001_T,Fr_001_Mu,Mu_e,&
+          &Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H,hmubar,hthetabar)
      
      Cas = 1
      CALL OUTPUT(Format_O,Dt,M,H,T,Xi,BL,Ts,P,dist,ray,k,k1,k2,z,compteur,tmps,&
@@ -163,7 +167,8 @@ PROGRAM MAIN
           &Vm01,Mum01,Vm02,Mum02,Vm05,Mum05,Vm005,Mum005,&
           &BV_a,BV_b,V_t1,V_t2,BE_a,BE_b,En_t1,En_t2,Phi_s,Phi_l,&
           &Tm01,Tm02,Tm05,Tm005,&
-          &Fr_d_R,Fr_d_T,Fr_d_Mu,Fr_001_R,Fr_001_T,Fr_001_Mu,Mu_e)
+          &Fr_d_R,Fr_d_T,Fr_d_Mu,Fr_001_R,Fr_001_T,Fr_001_Mu,Mu_e,&
+          &Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H,hmubar,hthetabar)
 
      ! On incremente les compteurs et le temps
      k = k+1
