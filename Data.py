@@ -12,9 +12,7 @@ Root_malbec = '/gpfs/users/thorey/ELAS/'+Folder_malbec
 Root_laptop = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/SCAPAD/ELAS/'+Folder_laptop
 Workspace_laptop = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/SCAPAD/ELAS/'+Workspace_laptop
 Routine_python = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/Routine/ELAS/E_Load.py'
-print 'rm -R '+Root_laptop +'*'
-print 'rm '+Workspace_laptop+'*'
-sys.exit()
+
 try :
     subprocess.call('rm -R '+Root_laptop +'*',shell = True)
     subprocess.call('rm '+Workspace_laptop+'*',shell =True)
