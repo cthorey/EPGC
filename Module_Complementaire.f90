@@ -361,7 +361,7 @@ CONTAINS
      Fr_Mu_R = dist(1)
      Fr_Mu_T = tbar
      Fr_Mu_Mu = mbar
-     Fr_Lu_H = H(1,3)
+     Fr_Mu_H = H(1,3)
 
      DO i=1,N+30,1
        IF (mbar>Mu_e) THEN
