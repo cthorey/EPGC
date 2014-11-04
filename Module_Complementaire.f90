@@ -197,7 +197,6 @@ CONTAINS
     CALL SIZE_D(H,dsize,N005)
     
     DO i=1,N+30,1
-       hthetabar = -2*(T(i,3)-Ts(i,3))/3.d0*BL(i,3)+T(i,3)*H(i,3)
        beta = (1.d0-nu)
        Thetas = Ts(i,3);Thetab = T(i,3);delta = BL(i,3);nu_v = nu;ho=H(i,3)
        CALL qxgs(Viscosity_1,0.d0,delta,1D-6,1D-3,muPart1,abserr,ier,10,last)
