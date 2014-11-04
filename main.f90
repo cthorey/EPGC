@@ -163,7 +163,6 @@ PROGRAM MAIN
        &Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H,hmubar,hthetabar,&
        &Fr_005_R,Fr_005_T,Fr_005_Mu)
 
-     
      Cas = 1
      CALL OUTPUT(Format_O,Dt,M,H,T,Xi,BL,Ts,P,dist,ray,k,k1,k2,z,compteur,tmps,&
           &Output_Racine,delta0,Cas,sample,Format_RV,Format_Backup&
