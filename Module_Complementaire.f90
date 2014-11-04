@@ -199,6 +199,7 @@ CONTAINS
        hmubar(i) = muPart1+muPart2+muPart3
        hthetabar(i) = -2*(T(i,3)-Ts(i,3))/3.d0*BL(i,3)+T(i,3)*H(i,3)
     ENDDO
+
     hthetabar(N+20:) =0.d0
     hmubar(N+20:) = 1/nu
 
