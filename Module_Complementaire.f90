@@ -189,7 +189,7 @@ CONTAINS
     DOUBLE PRECISION :: delta,Thetas,Thetab,nu_v,ho
     common /arg/ delta,Thetas,Thetab,nu_v,ho
 
-    N=0;dsize = delta0
+    N=0; dsize = delta0
     CALL SIZE_D(H,dsize,N)
     N001=0; dsize = 0.01
     CALL SIZE_D(H,dsize,N001)
@@ -211,125 +211,13 @@ CONTAINS
 
     Mu_e = 0.38*delta0**(-1D0/11D0)*(H(1,3)/(tmps**(8D0/22D0)))**(11D0/2D0)
     
-    ! Premier cas definit le front avec delta0
-    Mum =0
-    Tm =0
-    Vm =0
-    ! mbar = Mum/Vm
-    ! tbar = Tm/Vm
-    Fr_d_R = dist(N)
-    Fr_d_T = 0
-    Fr_d_Mu = 1D0/nu
-
-    DO i=N,1,-1
-       IF (i/=1) THEN
-             Tm = Tm + hthetabar(i)*(ray(i)**2-ray(i-1)**2)
-             Vm = Vm +H(i,3)*(ray(i)**2-ray(i-1)**2)
-             Mum = Mum + hmubar(i)*(ray(i)**2-ray(i-1)**2)
-             mbar = Mum/Vm
-             tbar = Tm/Vm
-          ELSE
-             Tm = Tm+hthetabar(i)*ray(i)**2
-             Vm = Vm+H(i,3)*ray(i)**2
-             Mum = Mum+hmubar(i)*ray(i)**2
-             mbar = Mum/Vm
-             tbar = Tm/Vm
-          ENDIF
-          IF (mbar<Mu_e) THEN
-             Fr_d_R = dist(i)
-             Fr_d_T = tbar
-             Fr_d_Mu = mbar
-             EXIT
-          ENDIF
-    ENDDO
-    IF (mbar>Mu_e) THEN
-        Fr_d_R = 0.d0
-        Fr_d_T = tbar
-        Fr_d_Mu = mbar
-     ENDIF
-
-    ! Deuxieme cas, on definit le front avec 0.001
-    
-    IF (N001>1) THEN
-
-       Fr_001_R = dist(N001)
-       Fr_001_T = 0
-       Fr_001_Mu = 1D0/nu
-       DO i=N001,1,-1
-          IF (i/=1) THEN
-             Tm = Tm + hthetabar(i)*(ray(i)**2-ray(i-1)**2)
-             Vm = Vm +H(i,3)*(ray(i)**2-ray(i-1)**2)
-             Mum = Mum + hmubar(i)*(ray(i)**2-ray(i-1)**2)
-             mbar = Mum/Vm
-             tbar = Tm/Vm
-          ELSE
-             Tm = Tm+hthetabar(i)*ray(i)**2
-             Vm = Vm+H(i,3)*ray(i)**2
-             Mum = Mum+hmubar(i)*ray(i)**2
-             mbar = Mum/Vm
-             tbar = Tm/Vm
-          ENDIF
-          IF (mbar<Mu_e) THEN
-             Fr_001_R = dist(i)
-             Fr_001_T = tbar
-             Fr_001_Mu = mbar
-             EXIT
-          ENDIF
-       ENDDO
-       IF (mbar>Mu_e) THEN
-          Fr_001_R = 0.d0
-          Fr_001_T = tbar
-          Fr_001_Mu = mbar
-       ENDIF
-    ELSE
-        Fr_001_R = Fr_d_R
-        Fr_001_T = Fr_d_T 
-        Fr_001_Mu = Fr_d_Mu
-     ENDIF
-
-     ! Troisizem cas
-    ! Deuxieme cas, on definit le front avec 0.001
-    
-    IF (N005>1) THEN
-       Mum = hmubar(N005)*(ray(N005)**2-ray(N005-1)**2)
-       Vm = H(N005,3)*(ray(N005)**2-ray(N005-1)**2)
-       Tm = hthetabar(N005)*(ray(N005)**2-ray(N005-1)**2)
-       mbar = Mum/Vm
-       tbar = Tm/Vm
-       Fr_005_R = dist(N005)
-       Fr_005_T = 0
-       Fr_005_Mu = 1D0/nu
-       DO i=N005,1,-1
-          IF (mbar<Mu_e) THEN
-             Fr_005_R = dist(i)
-             Fr_005_T = tbar
-             Fr_005_Mu = mbar
-             EXIT
-          ELSE
-             IF (i/=1) THEN
-                Tm = Tm + hthetabar(i)*(ray(i)**2-ray(i-1)**2)
-                Vm = Vm +H(i,3)*(ray(i)**2-ray(i-1)**2)
-                Mum = Mum + hmubar(i)*(ray(i)**2-ray(i-1)**2)
-                mbar = Mum/Vm
-                tbar = Tm/Vm
-             ELSE
-                Tm = Tm+hthetabar(i)*ray(i)**2
-                Vm = Vm+H(i,3)*ray(i)**2
-                Mum = Mum+hmubar(i)*ray(i)**2
-             ENDIF
-          ENDIF
-       ENDDO
-       IF (mbar>Mu_e) THEN
-          Fr_005_R = 0.d0
-          Fr_005_T = tbar
-          Fr_005_Mu = mbar
-       ENDIF
-    ELSE
-        Fr_005_R = Fr_d_R
-        Fr_005_T = Fr_d_T 
-        Fr_005_Mu = Fr_d_Mu
-     ENDIF
-
+    ! Premier cas definit avec d =delta0
+    CALL FRONT_PROPERTY(H,N,dist,ray,hmubar,hthetabar,Dr,Mu_e,nu,Fr_d_R,Fr_d_T,Fr_d_Mu)
+    ! Deuxieme cas, on definit le front avec 0.01
+    CALL FRONT_PROPERTY(H,N001,dist,ray,hmubar,hthetabar,Dr,Mu_e,nu,Fr_001_R,Fr_001_T,Fr_001_Mu)
+    ! Troisizeme cas
+    CALL FRONT_PROPERTY(H,N005,dist,ray,hmubar,hthetabar,Dr,Mu_e,nu,Fr_005_R,Fr_005_T,Fr_005_Mu)
+ 
      ! Troisieme cas: On definit le front la ou la viscosite moyenne sur l'epaisseur 
      ! a ceux qu'on veut.
     
@@ -383,6 +271,50 @@ CONTAINS
 
   END SUBROUTINE SIZE_D
  
+  SUBROUTINE  FRONT_PROPERTY(H,N,dist,ray,hmubar,hthetabar,Dr,Mu_e,nu,Fr_d_R,Fr_d_T,Fr_d_Mu)
+
+    IMPLICIT NONE
+    DOUBLE PRECISION ,DIMENSION(:,:), INTENT(IN) :: H
+    DOUBLE PRECISION ,DIMENSION(:), INTENT(IN) :: dist,ray,hmubar,hthetabar
+    DOUBLE PRECISION ,INTENT(IN) :: Mu_e,nu,Dr
+    INTEGER, INTENT(IN) :: N
+    DOUBLE PRECISION, INTENT(INOUT) :: Fr_d_R,Fr_d_T,Fr_d_Mu
+
+    DOUBLE PRECISION :: Mum,Tm,Vm,mbar,tbar
+    INTEGER :: i
+    Mum =0
+    Tm =0
+    Vm =0
+    Fr_d_R = dist(N)
+    Fr_d_T = 0
+    Fr_d_Mu = 1D0/nu
+    IF (N /= 0) THEN
+       DO i=N,1,-1
+          Tm = Tm+hthetabar(i)*((dist(i)+Dr/2D0)**2-(dist(i)-Dr/2D0)**2)
+          Vm = Vm+H(i,3)*((dist(i)+Dr/2D0)**2-(dist(i)-Dr/2D0)**2)
+          Mum = Mum+hmubar(i)*((dist(i)+Dr/2D0)**2-(dist(i)-Dr/2D0)**2)
+          mbar = Mum/Vm
+          tbar = Tm/Vm
+          IF (mbar<Mu_e) THEN
+             Fr_d_R = dist(i)
+             Fr_d_T = tbar
+             Fr_d_Mu = mbar
+             EXIT
+          ENDIF
+       ENDDO
+       IF (mbar>Mu_e) THEN
+          Fr_d_R = 0.d0
+          Fr_d_T = tbar
+          Fr_d_Mu = mbar
+       ENDIF
+    ELSE
+       Fr_d_R = dist(N)
+       Fr_d_T = 0
+       Fr_d_Mu = 1D0/nu
+    ENDIF
+       
+   ENDSUBROUTINE FRONT_PROPERTY
+
 
   END MODULE MODULE_COMPLEMENTAIRE   
 
