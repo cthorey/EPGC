@@ -63,15 +63,9 @@ CONTAINS
 
     DOUBLE PRECISION :: delta,Thetas,Thetab,nu_v,ho
     common /arg/ delta,Thetas,Thetab,nu_v,ho
-
-    N = 0
-    DO i=1,M,1
-       IF (H(i,3)-delta0>0.d0 .OR. N /= 0) THEN
-          CYCLE
-       ELSE
-          N = i
-       END IF
-    ENDDO
+    
+    N=0
+    CALL SIZE_D(H,delta0,N)
     
     i01 = 0; I02 = 0; I05 = 0; I005 = 0
     DO i=1,N,1
