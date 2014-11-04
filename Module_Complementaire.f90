@@ -170,7 +170,7 @@ CONTAINS
 
     IMPLICIT NONE
 
-    DOUBLE PRECISION ,DIMENSION(:,:), INTENT(IN) :: XI,H,T,Ts,BL
+    DOUBLE PRECISION ,DIMENSION(:,:), INTENT(INOUT) :: XI,H,T,Ts,BL
     DOUBLE PRECISION ,DIMENSION(:), INTENT(IN) :: dist,ray
     DOUBLE PRECISION , DIMENSION(:),INTENT(INOUT)  :: hmubar,hthetabar
     DOUBLE PRECISION ,INTENT(IN) :: Dt,Dr,el,grav,N1,Pe,Psi,nu,tmps,delta0
@@ -179,6 +179,7 @@ CONTAINS
     DOUBLE PRECISION ,INTENT(INOUT) :: Fr_005_R,Fr_005_T,Fr_005_Mu
     DOUBLE PRECISION ,INTENT(INOUT) :: Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H
 
+    DOUBLE PRECISION :: dsize
     DOUBLE PRECISION, EXTERNAL:: viscosity_1,viscosity_2,viscosity_3
     DOUBLE PRECISION :: a,beta,muPart1,muPart2,muPart3
     DOUBLE PRECISION :: Vm,Tm,Mum,tbar,mbar
@@ -188,33 +189,13 @@ CONTAINS
     DOUBLE PRECISION :: delta,Thetas,Thetab,nu_v,ho
     common /arg/ delta,Thetas,Thetab,nu_v,ho
 
-    N = 0
-    DO i=1,COUNT(H(:,3)>0),1
-       IF (H(i,3)-delta0>0.d0 .OR. N /= 0) THEN
-          CYCLE
-       ELSE
-          N = i
-       END IF
-    ENDDO
+    N=0;dsize = delta0
+    CALL SIZE_D(H,dsize,N)
+    N001=0; dsize = 0.01
+    CALL SIZE_D(H,dsize,N001)
+    N005 =0; dsize = 0.05
+    CALL SIZE_D(H,dsize,N005)
     
-    N001 = 0
-    DO i=1,COUNT(H(:,3)>0),1
-       IF (H(i,3)-0.01>0.d0 .OR. N001 /= 0) THEN
-          CYCLE
-       ELSE
-          N001 = i
-       END IF
-    ENDDO
-
-    N005 = 0
-    DO i=1,COUNT(H(:,3)>0),1
-       IF (H(i,3)-0.05>0.d0 .OR. N005 /= 0) THEN
-          CYCLE
-       ELSE
-          N005 = i
-       END IF
-    ENDDO
-
     DO i=1,N+30,1
        hthetabar = -2*(T(i,3)-Ts(i,3))/3.d0*BL(i,3)+T(i,3)*H(i,3)
        beta = (1.d0-nu)
@@ -380,8 +361,30 @@ CONTAINS
 
   ENDSUBROUTINE TRACKING_FRONT
 
+ SUBROUTINE SIZE_D(H,d,N)
+    IMPLICIT NONE
+    DOUBLE PRECISION ,DIMENSION(:,:), INTENT(IN) :: H
+    DOUBLE PRECISION , INTENT(IN) :: d
+    INTEGER , INTENT(INOUT) :: N
+    INTEGER  :: i
 
-  END MODULE MODULE_COMPLEMENTAIRE
+    N = 0
+    DO i=1,COUNT(H(:,3)>0)
+       IF (H(1,3)-d<0.D0) THEN
+          N = 0
+          EXIT
+       ELSEIF (H(i,3)-d>0.d0 .OR. N /= 0) THEN
+          CYCLE
+       ELSE
+          N = i-1
+          EXIT
+       END IF
+    ENDDO
+
+  END SUBROUTINE SIZE_D
+ 
+
+  END MODULE MODULE_COMPLEMENTAIRE   
 
   DOUBLE PRECISION FUNCTION Viscosity_1(x)
     IMPLICIT NONE  
