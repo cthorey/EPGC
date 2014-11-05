@@ -190,7 +190,7 @@ CONTAINS
     N005 =0; dsize = 0.05
     CALL SIZE_D(H,dsize,N005)
     
-    DO i=1,N+30,1
+    DO i=1,COUNT(H(:,3)>0),1
        beta = (1.d0-nu)
        Thetas = Ts(i,3);Thetab = T(i,3);delta = BL(i,3);nu_v = nu;ho=H(i,3)
        CALL qxgs(Viscosity_1,0.d0,delta,1D-6,1D-3,muPart1,abserr,ier,10,last)
