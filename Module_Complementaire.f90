@@ -200,9 +200,6 @@ CONTAINS
        hthetabar(i) = -2*(T(i,3)-Ts(i,3))/3.d0*BL(i,3)+T(i,3)*H(i,3)
     ENDDO
 
-    hthetabar(N+20:) =0.d0
-    hmubar(N+20:) = 1/nu
-
     Mu_e = 0.38*delta0**(-1D0/11D0)*(H(1,3)/(tmps**(8D0/22D0)))**(11D0/2D0)
     
     ! Premier cas definit avec d =delta0
