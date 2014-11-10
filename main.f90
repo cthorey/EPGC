@@ -65,6 +65,7 @@ PROGRAM MAIN
   CHARACTER(LEN=300) :: Format_NSD_Init_0,Format_NSD_Init_1
   CHARACTER(LEN=300) :: Format_Input_Data,Format_RV,Format_Backup
   CHARACTER(LEN=300) :: Format_M
+  CHARACTER(LEN=300) :: Format_NF,NF !File name output
 
   ! Associaion de varialbe
   DOUBLE PRECISION :: delta,Thetas,Thetab,nu_v
@@ -80,7 +81,8 @@ PROGRAM MAIN
   ! Call subroutine const dans le module CONSTANTE
   CALL   CONSTANTE(M,tmps_m,Dt,Dr,sample,el,grav,delta0,sigma,nu,Pe,Psi,N1,&
        &eps_1,Format_O,Format_NSD,Init,Input_Racine,Output_Racine,Input_Data_Name&
-       &,Format_NSD_Init_0,Format_NSD_Init_1,Format_Input_Data,Format_RV,Format_Backup)
+       &,Format_NSD_Init_0,Format_NSD_Init_1,Format_Input_Data,Format_RV,Format_Backup,&
+       &NF,Format_NF)
 
   ! Allocation des tableaux
   ALLOCATE(H(1:M,4),Xi(1:M,4),Ts(1:M,4),BL(1:M,4),T(1:M,4),&
@@ -94,8 +96,8 @@ PROGRAM MAIN
 
   ! Calll initialisation dans le cmodule Module_Initialisation
   CALL INITIALISATION(Format_O,Format_NSD,M,H,T,Ts,Xi,BL,P,dist,ray,k,k1,k2,z,tmps,&
-       &Dt,Dr,eps_1,el,grav,delta0,sigma,nu,Pe,psi,N1,sample,Init,compteur,tmps_m,&
-       &Input_Data_Name,Input_racine,Output_Racine&
+       &Dt,Dr,eps_1,el,grav,delta0,sigma,nu,Pe,Psi,N1,sample,Init,compteur,tmps_m,&
+       &Input_Data_Name,Input_racine,Output_Racine,NF,Format_NF&
        &,Format_NSD_Init_0,Format_NSD_Init_1,Format_Input_Data,Format_RV,Format_Backup)
 
   ! Debut de la boucle sur le temps
@@ -106,14 +108,16 @@ PROGRAM MAIN
 
      Cas=0
      CALL OUTPUT(Format_O,Dt,M,H,T,Xi,BL,Ts,P,dist,ray,k,k1,k2,z,compteur,tmps,&
-          &Output_Racine,delta0,Cas,sample,Format_RV,Format_Backup&
-          &,Phim,Vm,Tm,Mum,Srr,Stt,&
+          &Output_Racine,delta0,Cas,sample,Format_RV,Format_Backup,&
+          &NF,Format_NF,&
+          &Phim,Vm,Tm,Mum,Srr,Stt,&
           &Vm01,Mum01,Vm02,Mum02,Vm05,Mum05,Vm005,Mum005,&
           &BV_a,BV_b,V_t1,V_t2,BE_a,BE_b,En_t1,En_t2,Phi_s,Phi_l,&
           &Tm01,Tm02,Tm05,Tm005,&
           &Fr_d_R,Fr_d_T,Fr_d_Mu,Fr_001_R,Fr_001_T,Fr_001_Mu,Mu_e,&
           &Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H,hmubar,hthetabar,&
           &Fr_005_R,Fr_005_T,Fr_005_Mu)
+
 
      H(:,1) = H(:,3); H(:,4) = H(:,1)
      Xi(:,1) = Xi(:,3); Xi(:,4) = Xi(:,1)
@@ -165,8 +169,9 @@ PROGRAM MAIN
 
      Cas = 1
      CALL OUTPUT(Format_O,Dt,M,H,T,Xi,BL,Ts,P,dist,ray,k,k1,k2,z,compteur,tmps,&
-          &Output_Racine,delta0,Cas,sample,Format_RV,Format_Backup&
-          &,Phim,Vm,Tm,Mum,Srr,Stt,&
+          &Output_Racine,delta0,Cas,sample,Format_RV,Format_Backup,&
+          &NF,Format_NF,&
+          &Phim,Vm,Tm,Mum,Srr,Stt,&
           &Vm01,Mum01,Vm02,Mum02,Vm05,Mum05,Vm005,Mum005,&
           &BV_a,BV_b,V_t1,V_t2,BE_a,BE_b,En_t1,En_t2,Phi_s,Phi_l,&
           &Tm01,Tm02,Tm05,Tm005,&

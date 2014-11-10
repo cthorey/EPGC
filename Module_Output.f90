@@ -3,8 +3,9 @@ MODULE MODULE_OUTPUT
 CONTAINS
 
   SUBROUTINE OUTPUT(Format,Dt,M,H,T,Xi,BL,Ts,P,dist,ray,k,k1,k2,z,compteur,tmps,&
-          &Output_Racine,delta0,Cas,sample,Format_RV,Format_Backup&
-          &,Phim,Vm,Tm,Mum,Srr,Stt,&
+          &Output_Racine,delta0,Cas,sample,Format_RV,Format_Backup,&
+          &NF,Format_NF,&
+          &Phim,Vm,Tm,Mum,Srr,Stt,&
           &Vm01,Mum01,Vm02,Mum02,Vm05,Mum05,Vm005,Mum005,&
           &BV_a,BV_b,V_t1,V_t2,BE_a,BE_b,En_t1,En_t2,Phi_s,Phi_l,&
           &Tm01,Tm02,Tm05,Tm005,&
@@ -36,12 +37,13 @@ CONTAINS
     ! Format files
     CHARACTER(LEN=300) , INTENT(IN) :: Format,Output_Racine
     CHARACTER(LEN=300) , INTENT(INOUT) :: Format_RV,Format_Backup
+    CHARACTER(LEN=300) , INTENT(INOUT) :: Format_NF,NF
     LOGICAL :: FILE_EXISTS
     INTEGER , INTENT(IN) :: Cas,sample
 
     !Variable specitfique au sous programmes
     INTEGER :: i,comp_n,comp_o,samp
-    CHARACTER(LEN=300) :: Output_Name_F
+    CHARACTER(LEN=300) :: Output_Name_F,NF_Name
     CHARACTER(LEN=300) :: Data_file,Format_Data
     DOUBLE PRECISION :: R,hmax,power
 
@@ -69,8 +71,9 @@ CONTAINS
           compteur = compteur +1
        ENDIF
 
-       OPEN(unit =2,file='Output_Time.txt', action ="write",status ="replace")
-       WRITE(2,*)'compteur',k,'k1',k1,'k2',k2,'tmps',tmps,'comp_o',comp_o,'comp_n',comp_n,'samp',samp,'power',power
+       WRITE(NF_Name,Format_NF),Output_Racine,NF,'.txt'
+       OPEN(unit =2,file=NF_Name, action ="write",status ="replace")
+       WRITE(2,*)'tmps',tmps,'compteur',k,'k1',k1,'k2',k2,'comp_o',comp_o,'comp_n',comp_n,'samp',samp,'power',power
        CLOSE(2)
 
 !!! Backup
