@@ -56,15 +56,22 @@ CONTAINS
           samp = 1
        ELSE
           power = FLOOR(LOG10(tmps))
+          IF (power >= 1D0) THEN
+             power = 1D0
+          ENDIF
           samp = 10**power/Dt
        ENDIF
-
+       
        comp_o = k/samp
        comp_n = (k+1)/samp
 
        IF (comp_o /= comp_n ) THEN
           compteur = compteur +1
        ENDIF
+
+       OPEN(unit =2,file='Output_Time.txt', action ="write",status ="replace")
+       WRITE(2,*)'compteur',k,'k1',k1,'k2',k2,'tmps',tmps,'comp_o',comp_o,'comp_n',comp_n,'samp',samp,'power',power
+       CLOSE(2)
 
 !!! Backup
        IF (compteur == k1) THEN

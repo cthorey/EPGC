@@ -52,7 +52,7 @@ CONTAINS
     ! Variable pour l'outxsput
     sample = (Dt)/(Dt)
     Init = 1
-    Input_Data_Name =  'Backup_0000064.dat'
+    Input_Data_Name =  'Backup_0000069.dat'
     Root = '/Users/thorey/Documents/These/Projet/Refroidissement&
          &/Skin_Model/'
     Input_Racine = Root//'Code/Code_ELAS/Test/Run/'
@@ -178,7 +178,6 @@ CONTAINS
        ENDIF
 
        WRITE(Input_Data,Format_Input_Data)Input_Racine,Input_Data_Name
-       print*,Input_Data
        INQUIRE(FILE = Input_Data, EXIST = FILE_EXISTS)  
        IF (FILE_EXISTS) THEN
           OPEN(1,file = Input_Data)
@@ -187,6 +186,7 @@ CONTAINS
                   &,H(i,1),H(i,2),H(i,3),Xi(i,1),Xi(i,2),Xi(i,3),T(i,1),T(i,2),T(i,3)&
                   &,BL(i,1),BL(i,2),BL(i,3),Ts(i,1),Ts(i,2),Ts(i,3),P(i,1),P(i,2),P(i,3)
           END DO
+          print*,tmps
           CLOSE(1)
           
           k1  =  k1+1
