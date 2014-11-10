@@ -32,20 +32,20 @@ if _platform == "linux" or _platform == "linux2":
     Bactrack_Run = 'Bactrack_ELAS.txt'
     Compilateur = 'ifort'
 elif _platform == "darwin":
-    Root = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/'
-    Racine = Root+'Code/'
+    Root = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/Code/'
+    Racine = Root+'Code_ELAS/'
     Root_Run = 'Code_ELAS/Test/Run/'
     Bactrack_Run = 'Bactrack_ELAS.txt'
     Compilateur = 'gfortran'
-    
+
 # Dict_Param = {'Sigma': ['2D-2'],
 #               'Delta0': ['5D-3'],
 #               'Grav': ['0D0'],
 #               'El': ['1D0'],
-#               'Nu': ['1D0','1D-2','1D-3'],
-#               'Pe': ['1D0','1D-2','1D-3'],
-#               'Psi': ['0.D0','3D-1'],
-#               'N1' : ['1D5','1D0'],
+#               'Nu': ['1D-1','1D-2','1D-3'],
+#               'Pe': ['1D0','1D-1','1D-2'],
+#               'Psi': ['0.D0'],
+#               'N1' : ['1D5'],
 #               'Dr' : ['1D-2'],
 #               'Ep': ['1D-4'],
 #               'Dt' : ['1D-6']}
@@ -54,15 +54,14 @@ Dict_Param = {'Sigma': ['2D-2'],
               'Delta0': ['5D-3'],
               'Grav': ['0D0'],
               'El': ['1D0'],
-              'Nu': ['1D-1','1D-2','1D-3'],
-              'Pe': ['1D0','1D-1','1D-2'],
+              'Nu': ['1D-1'],
+              'Pe': ['1D0'],
               'Psi': ['0.D0'],
               'N1' : ['1D5'],
               'Dr' : ['1D-2'],
               'Ep': ['1D-4'],
               'Dt' : ['1D-6']}
-
-
+    
 Init = 0 # 1 If you want to begin for the last backup
 space = '\n --------------------- \n'
 
@@ -110,6 +109,7 @@ for run in Dict_Run:
     if Init == 0:
         print ' Start from no backup \n'
         Backup = [ '0' , 'Backup_000000.dat']
+        print Root+Root_Run
         if os.path.isdir(Root+Root_Run+name):
             Bool =distutils.util.strtobool(input(" Directory already exist, Do you want to remove it ? yes or no ?: "))
             if Bool:
@@ -144,6 +144,10 @@ for run in Dict_Run:
                 for l in script:
                     if l == '    CHARACTER(LEN=Size) :: Root\n':
                         to_write = l.replace('Size',str(len(Root)))
+                    elif l == '    CHARACTER(LEN=Size_Name) :: Name_File\n':
+                        to_write = l.replace('Size_Name',str(len(name)))
+                    elif l == '    CHARACTER(LEN=Size) :: Root_Code\n':
+                        to_write = l.replace('Size',str(len(Racine)))
                     elif l == '    Sigma = Null\n':
                         to_write = l.replace('Null',run['Sigma'])
                     elif l == '    Delta0 = Null\n':
@@ -166,11 +170,15 @@ for run in Dict_Run:
                         to_write = l.replace('Null',run['Ep'])
                     elif l == '    Dt = Null\n':
                         to_write = l.replace('Null',run['Dt'])
+                    elif l == '    NF = Null\n':
+                        to_write = l.replace('Null',"'"+name+"'")
                     elif l == '    Init = Null\n':
                         to_write = l.replace('Null',Backup[0])
 
                     elif l == '    Root = Null\n':
                         to_write = l.replace('Null', "'" + Root + "'")
+                    elif l == '    Root_Code = Null\n':
+                        to_write = l.replace('Null', "'" + Racine + "'")
                         
                     elif l == '    Input_Data_Name = Null\n':
                         to_write = l.replace('Null', "'" + Backup[1] + "'")
@@ -180,11 +188,10 @@ for run in Dict_Run:
                         
                     elif l == '    Output_Racine = Root//Null\n':
                         to_write = l.replace('Null', "'" + Root_Run + name + "/'")
-                        
                     else:
                         to_write = l
                     script_tmp.write(to_write)
-                    
+
     # Make executble with name: name
     with open(str(Racine)+'run.sh' , 'r') as script:
             with open(str(Racine)+'run_tmp.sh', 'wr+') as script_tmp:

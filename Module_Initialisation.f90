@@ -4,7 +4,8 @@ CONTAINS
 
   SUBROUTINE  CONSTANTE(M,tmps_m,Dt,Dr,sample,el,grav,delta0,sigma,nu,Pe,psi,N1,&
        &eps_1,Format_O,Format_NSD,Init,Input_Racine,Output_Racine,Input_Data_Name&
-       &,Format_NSD_Init_0,Format_NSD_Init_1,Format_Input_Data,Format_RV,Format_Backup)
+       &,Format_NSD_Init_0,Format_NSD_Init_1,Format_Input_Data,Format_RV,Format_Backup,&
+       &NF,Format_NF)
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!  DECLARATION DES VARIABLES 
@@ -26,10 +27,12 @@ CONTAINS
     CHARACTER(LEN=300) , INTENT(INOUT) :: Input_Racine,Input_Data_Name
     CHARACTER(LEN=300) , INTENT(INOUT) :: Format_NSD_Init_0,Format_NSD_Init_1
     CHARACTER(LEN=300) , INTENT(INOUT) :: Format_Input_Data,Format_RV,Format_Backup
+    CHARACTER(LEN=300) , INTENT(INOUT) :: Format_NF,NF
     CHARACTER(LEN=300) :: Output_Name_NSD,Format_Racine
-    CHARACTER(LEN=3) :: I_Racine,O_Racine
-    CHARACTER(LEN=2) :: I_D_R,NSD
+    CHARACTER(LEN=3) :: I_Racine,O_Racine,C_Racine
+    CHARACTER(LEN=2) :: I_D_R,NSD,NF_Size
 
+    CHARACTER(LEN=79) :: Root_Code
     CHARACTER(LEN=64) :: Root
 
     ! Parametre du model
@@ -51,24 +54,29 @@ CONTAINS
 
     ! Variable pour l'outxsput
     sample = (Dt)/(Dt)
-    Init = 1
+    Init = 0
     Input_Data_Name =  'Backup_0000069.dat'
     Root = '/Users/thorey/Documents/These/Projet/Refroidissement&
          &/Skin_Model/'
+    Root_Code = Root//'Code/Code_ELAS/'
     Input_Racine = Root//'Code/Code_ELAS/Test/Run/'
     Output_Racine = Root//'Code/Code_ELAS/Test/Run/'
+    NF = 'Output_Time'
 
     ! Ecriture du nom des fichiers
     write(I_Racine,'(I3)'),len(trim(Input_Racine))
     write(O_Racine,'(I3)'),len(trim(Output_Racine))
+    write(C_Racine,'(I3)'),len(trim(Root_Code))
     write(I_D_R,'(I2)'),len(trim(Input_Data_Name))
     write(NSD,'(I2)'),len(trim('NbSsDim.txt'))
+    write(NF_Size,'(I2)'),len(trim(NF))
 
     Format_NSD_Init_1='(a'//I_Racine//',a'//NSD//')'
     Format_Input_Data='(a'//I_Racine//',a'//I_D_R//')'
     Format_NSD_Init_0='(a'//I_Racine//',a'//NSD//')'
     Format_RV='(a'//O_Racine//',a3,i7.7,a4)'
     Format_Backup='(a'//O_Racine//',a7,i7.7,a4)'
+    Format_NF = '(a'//C_Racine//',a'//NF_Size//',a4)'
 
 
     ! Format d'ecritur du fichier de sorti
@@ -95,11 +103,10 @@ CONTAINS
 
   END SUBROUTINE CONSTANTE
 
-  SUBROUTINE INITIALISATION(Format_O,Format_NSD,M,H,T,Ts,Xi,BL,P,dist&
-       &,ray,k,k1,k2,z,tmps, Dt,Dr,eps_1,el,grav,delta0,sigma,nu,Pe&
-       &,Psi,N1,sample,Init,compteur,tmps_m, Input_Data_Name&
-       &,Input_racine,Output_Racine ,Format_NSD_Init_0&
-       &,Format_NSD_Init_1,Format_Input_Data,Format_RV,Format_Backup)
+  SUBROUTINE INITIALISATION(Format_O,Format_NSD,M,H,T,Ts,Xi,BL,P,dist,ray,k,k1,k2,z,tmps,&
+       &Dt,Dr,eps_1,el,grav,delta0,sigma,nu,Pe,Psi,N1,sample,Init,compteur,tmps_m,&
+       &Input_Data_Name,Input_racine,Output_Racine,NF,Format_NF&
+       &,Format_NSD_Init_0,Format_NSD_Init_1,Format_Input_Data,Format_RV,Format_Backup)
 
     IMPLICIT NONE
 
@@ -111,6 +118,7 @@ CONTAINS
     INTEGER , INTENT(INOUT) :: k,k1,k2,z,compteur,Init
     INTEGER , INTENT(INOUT) :: sample
     DOUBLE PRECISION, INTENT(INOUT) :: tmps
+    CHARACTER(LEN=300) , INTENT(INOUT) :: Format_NF,NF
 
     ! Nombre sans dimension
     DOUBLE PRECISION , INTENT(INOUT) :: el,grav,delta0,sigma,nu,Pe&
@@ -141,7 +149,7 @@ CONTAINS
             &,Pe,Psi,N1, eps_1,Format_O,Format_NSD,Init,Input_Racine&
             &,Output_Racine,Input_Data_Name ,Format_NSD_Init_0&
             &,Format_NSD_Init_1,Format_Input_Data,Format_RV&
-            &,Format_Backup)
+            &,Format_Backup,NF,Format_NF)
 
        compteur = 0 
        dist = 0;ray = 0
