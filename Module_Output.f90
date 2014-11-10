@@ -4,7 +4,7 @@ CONTAINS
 
   SUBROUTINE OUTPUT(Format,Dt,M,H,T,Xi,BL,Ts,P,dist,ray,k,k1,k2,z,compteur,tmps,&
           &Output_Racine,delta0,Cas,sample,Format_RV,Format_Backup,&
-          &NF,Format_NF,&
+          &NF,Format_NF,Root_Code,&
           &Phim,Vm,Tm,Mum,Srr,Stt,&
           &Vm01,Mum01,Vm02,Mum02,Vm05,Mum05,Vm005,Mum005,&
           &BV_a,BV_b,V_t1,V_t2,BE_a,BE_b,En_t1,En_t2,Phi_s,Phi_l,&
@@ -37,7 +37,7 @@ CONTAINS
     ! Format files
     CHARACTER(LEN=300) , INTENT(IN) :: Format,Output_Racine
     CHARACTER(LEN=300) , INTENT(INOUT) :: Format_RV,Format_Backup
-    CHARACTER(LEN=300) , INTENT(INOUT) :: Format_NF,NF
+    CHARACTER(LEN=300) , INTENT(INOUT) :: Format_NF,NF,Root_Code
     LOGICAL :: FILE_EXISTS
     INTEGER , INTENT(IN) :: Cas,sample
 
@@ -71,7 +71,7 @@ CONTAINS
           compteur = compteur +1
        ENDIF
 
-       WRITE(NF_Name,Format_NF),Output_Racine,NF,'.txt'
+       WRITE(NF_Name,Format_NF),Root_Code,NF,'.txt'
        OPEN(unit =2,file=NF_Name, action ="write",status ="replace")
        WRITE(2,*)'tmps',tmps,'compteur',k,'k1',k1,'k2',k2,'comp_o',comp_o,'comp_n',comp_n,'samp',samp,'power',power
        CLOSE(2)

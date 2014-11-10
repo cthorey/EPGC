@@ -5,7 +5,7 @@ CONTAINS
   SUBROUTINE  CONSTANTE(M,tmps_m,Dt,Dr,sample,el,grav,delta0,sigma,nu,Pe,psi,N1,&
        &eps_1,Format_O,Format_NSD,Init,Input_Racine,Output_Racine,Input_Data_Name&
        &,Format_NSD_Init_0,Format_NSD_Init_1,Format_Input_Data,Format_RV,Format_Backup,&
-       &NF,Format_NF)
+       &NF,Format_NF,Root_Code)
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!  DECLARATION DES VARIABLES 
@@ -28,11 +28,10 @@ CONTAINS
     CHARACTER(LEN=300) , INTENT(INOUT) :: Format_NSD_Init_0,Format_NSD_Init_1
     CHARACTER(LEN=300) , INTENT(INOUT) :: Format_Input_Data,Format_RV,Format_Backup
     CHARACTER(LEN=300) , INTENT(INOUT) :: Format_NF,NF
-    CHARACTER(LEN=300) :: Output_Name_NSD,Format_Racine
+    CHARACTER(LEN=300) :: Output_Name_NSD,Format_Racine,Root_Code
     CHARACTER(LEN=3) :: I_Racine,O_Racine,C_Racine
     CHARACTER(LEN=2) :: I_D_R,NSD,NF_Size
 
-    CHARACTER(LEN=79) :: Root_Code
     CHARACTER(LEN=64) :: Root
 
     ! Parametre du model
@@ -105,7 +104,7 @@ CONTAINS
 
   SUBROUTINE INITIALISATION(Format_O,Format_NSD,M,H,T,Ts,Xi,BL,P,dist,ray,k,k1,k2,z,tmps,&
        &Dt,Dr,eps_1,el,grav,delta0,sigma,nu,Pe,Psi,N1,sample,Init,compteur,tmps_m,&
-       &Input_Data_Name,Input_racine,Output_Racine,NF,Format_NF&
+       &Input_Data_Name,Input_racine,Output_Racine,NF,Format_NF,Root_Code&
        &,Format_NSD_Init_0,Format_NSD_Init_1,Format_Input_Data,Format_RV,Format_Backup)
 
     IMPLICIT NONE
@@ -118,7 +117,7 @@ CONTAINS
     INTEGER , INTENT(INOUT) :: k,k1,k2,z,compteur,Init
     INTEGER , INTENT(INOUT) :: sample
     DOUBLE PRECISION, INTENT(INOUT) :: tmps
-    CHARACTER(LEN=300) , INTENT(INOUT) :: Format_NF,NF
+    CHARACTER(LEN=300) , INTENT(INOUT) :: Format_NF,NF,Root_Code
 
     ! Nombre sans dimension
     DOUBLE PRECISION , INTENT(INOUT) :: el,grav,delta0,sigma,nu,Pe&
@@ -145,11 +144,10 @@ CONTAINS
     SELECT CASE (Init)
 
     CASE(0)
-       CALL CONSTANTE(M,tmps_m,Dt,Dr,sample,el,grav,delta0,sigma,nu&
-            &,Pe,Psi,N1, eps_1,Format_O,Format_NSD,Init,Input_Racine&
-            &,Output_Racine,Input_Data_Name ,Format_NSD_Init_0&
-            &,Format_NSD_Init_1,Format_Input_Data,Format_RV&
-            &,Format_Backup,NF,Format_NF)
+       CALL CONSTANTE(M,tmps_m,Dt,Dr,sample,el,grav,delta0,sigma,nu,Pe,psi,N1,&
+       &eps_1,Format_O,Format_NSD,Init,Input_Racine,Output_Racine,Input_Data_Name&
+       &,Format_NSD_Init_0,Format_NSD_Init_1,Format_Input_Data,Format_RV,Format_Backup,&
+       &NF,Format_NF,Root_Code)
 
        compteur = 0 
        dist = 0;ray = 0
