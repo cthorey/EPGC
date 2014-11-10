@@ -42,17 +42,17 @@ CONTAINS
     ! Nombre sans dimensions
     el = 1D0
     grav = 0D0
-    delta0 = 5D-3
+    delta0 = 1D-2
     sigma = 2D-2
     nu = 1D-3
-    Pe = 1D0
+    Pe = 1D-2
     psi = 0D0
     N1 = 1D5
 
     ! Variable pour l'outxsput
     sample = (Dt)/(Dt)
-    Init = 0
-    Input_Data_Name =  'Backup_0000041.dat'
+    Init = 1
+    Input_Data_Name =  'Backup_0000064.dat'
     Root = '/Users/thorey/Documents/These/Projet/Refroidissement&
          &/Skin_Model/'
     Input_Racine = Root//'Code/Code_ELAS/Test/Run/'
@@ -171,8 +171,6 @@ CONTAINS
           OPEN(1,file = Input_Name_NSD)
           READ(1,*) ! Read the header but don't do nothing with it
           READ(1,Format_NSD),el,grav,delta0,sigma,nu,Pe,Psi,N1,M,Dt,Dr,eps_1
-          print*,el,grav,delta0
-          STOP
           CLOSE(1)
        ELSEIF( .NOT. FILE_EXISTS) THEN
           PRINT*,'ERREUR: PAS DE FICHIER AVEC LES NOMBRES SANS DIMENSIONS. RECOMMENCER LA SIMU DEPUIS LE DEPART'

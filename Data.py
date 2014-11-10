@@ -5,10 +5,10 @@ import subprocess
 import sys
 import os
 
-reset = 1
-Folder_malbec = 'Run_New_4/'
-Folder_laptop = 'Run_New_4/'
-Workspace_laptop = 'Workspace_New_4/'
+reset = 0
+Folder_malbec = 'Run_New_5/'
+Folder_laptop = 'Run_New_5/'
+Workspace_laptop = 'Workspace_New_5/'
 Root_malbec = '/gpfs/users/thorey/ELAS/'+Folder_malbec
 Root_laptop = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/SCAPAD/ELAS/'+Folder_laptop
 Workspace_laptop = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/SCAPAD/ELAS/'+Workspace_laptop
