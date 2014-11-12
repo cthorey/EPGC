@@ -116,10 +116,10 @@ CONTAINS
        tbar_t1 = -(2*(T(i,1)-Ts(i,1))*BL(i,1))/(3.d0*H(i,1))+T(i,1)
        tbar_t2 = -(2*(T(i,3)-Ts(i,3))*BL(i,3))/(3.d0*H(i,3))+T(i,3)
 
-       A_1_t1 = tbar_t1*H(1,1)
-       A_1_t2 = tbar_t2*H(1,3)
-       A_2 = (tbar_t2*H(1,3)-tbar_t1*H(1,1))/Dt-Ts(i,1)*(H(i,3)-H(i,1))/Dt
-       A_3 = ((T(1,1)-Ts(1,1))/BL(1,1))
+       A_1_t1 = tbar_t1*H(i,1)
+       A_1_t2 = tbar_t2*H(i,3)
+       A_2 = (tbar_t2*H(i,3)-tbar_t1*H(i,1))/Dt-Ts(i,1)*(H(i,3)-H(i,1))/Dt
+       A_3 = ((T(i,1)-Ts(i,1))/BL(i,1))
 
        Int_1_t1 = Int_1_t1 + A_1_t1*(ray(i)**2-ray(i-1)**2)
        Int_1_t2 = Int_1_t2 + A_1_t2*(ray(i)**2-ray(i-1)**2)
