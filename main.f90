@@ -185,6 +185,7 @@ PROGRAM MAIN
         Dt = 1D-5
      ENDIF
      tmps = tmps+Dt
+     ! print*,T(1,3),Ts(1,3)
 
   END DO TEMPS
 

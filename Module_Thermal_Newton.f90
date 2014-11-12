@@ -96,7 +96,8 @@ CONTAINS
     END DO
 
     ! Separation variables
-    CALL XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
+    ! CALL XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
+    CALL XI_SPLIT(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
     ! Calcule de l'erreur
     IF (DOT_PRODUCT(Xi(:,2),Xi(:,2)) == 0D0) THEN
        F_err = ABS(MAXVAL(Xi_m(:)))
