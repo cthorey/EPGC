@@ -5,7 +5,7 @@ import subprocess
 import sys
 import os
 
-reset = 0
+reset = 1
 Folder_malbec = 'Run_New_6/'
 Folder_laptop = 'Run_New_6/'
 Workspace_laptop = 'Workspace_New_6/'

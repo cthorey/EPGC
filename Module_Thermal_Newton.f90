@@ -412,15 +412,10 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
           Ts_b = 0.5d0*(Ts(i,col)+Ts(i-1,col))
           Ds_b = T_b-Ts_b
 
-          omega_b = (eta_b*delta_b)/10.d0*(1D0*(-20.d0*delta_b+30.d0*h_b))
-          sigma_b = (-1.d0/210.d0)*T_b*delta_b2*eta_b*(1D0*(-98.d0*delta_b+105.d0*h_b))
-               ! &(1-nu)*(22.d0*Ds_b*delta_b-35.d0*Ds_b*h_b-98.d0*T_b*delta_b+105.d0*T_b*h_b))
-
-
-          ! omega_b = (eta_b*delta_b)/10.d0*(nu*(-20.d0*delta_b+30.d0*h_b)+&
-          !      &(1.d0-nu)*(6.d0*Ds_b*delta_b-15.d0*Ds_b*h_b-20.d0*T_b*delta_b+30.d0*T_b*h_b))
-          ! sigma_b = (-1.d0/210.d0)*Ds_b*delta_b2*eta_b*(nu*(-98.d0*delta_b+105.d0*h_b)+&
-          !      &(1-nu)*(22.d0*Ds_b*delta_b-35.d0*Ds_b*h_b-98.d0*T_b*delta_b+105.d0*T_b*h_b))
+          omega_b = (eta_b*delta_b)/10.d0*(nu*(-20.d0*delta_b+30.d0*h_b)+&
+               &(1.d0-nu)*(6.d0*Ds_b*delta_b-15.d0*Ds_b*h_b-20.d0*T_b*delta_b+30.d0*T_b*h_b))
+          sigma_b = (-1.d0/210.d0)*Ds_b*delta_b2*eta_b*(nu*(-98.d0*delta_b+105.d0*h_b)+&
+               &(1-nu)*(22.d0*Ds_b*delta_b-35.d0*Ds_b*h_b-98.d0*T_b*delta_b+105.d0*T_b*h_b))
        ENDIF IF1
 
        IF2: IF (i .NE. N) THEN
@@ -433,20 +428,16 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
           Ts_a = 0.5d0*(Ts(i,col)+Ts(i+1,col))
           Ds_a = T_a-Ts_a
 
-          omega_a = (eta_a*delta_a)/10.d0*(1D0*(-20.d0*delta_a+30.d0*h_a))
-          sigma_a = (-1.d0/210.d0)*T_a*delta_a2*eta_a*(1D0*(-98.d0*delta_a+105.d0*h_a))
-
-          ! omega_a = (eta_a*delta_a)/10.d0*(nu*(-20.d0*delta_a+30.d0*h_a)+&
-          !      &(1.d0-nu)*(6.d0*Ds_a*delta_a-15.d0*Ds_a*h_a-20.d0*T_a*delta_a+30.d0*T_a*h_a))
-          ! sigma_a = (-1.d0/210.d0)*Ds_a*delta_a2*eta_a*(nu*(-98.d0*delta_a+105.d0*h_a)+&
-          !      &(1-nu)*(22.d0*Ds_a*delta_a-35.d0*Ds_a*h_a-98.d0*T_a*delta_a+105.d0*T_a*h_a))
+          omega_a = (eta_a*delta_a)/10.d0*(nu*(-20.d0*delta_a+30.d0*h_a)+&
+               &(1.d0-nu)*(6.d0*Ds_a*delta_a-15.d0*Ds_a*h_a-20.d0*T_a*delta_a+30.d0*T_a*h_a))
+          sigma_a = (-1.d0/210.d0)*Ds_a*delta_a2*eta_a*(nu*(-98.d0*delta_a+105.d0*h_a)+&
+               &(1-nu)*(22.d0*Ds_a*delta_a-35.d0*Ds_a*h_a-98.d0*T_a*delta_a+105.d0*T_a*h_a))
        END IF IF2
 
        Crys = 0.5D0*psi*(T(i,col)-1)*(H(i,3)-H(i,1))/Dt
        beta = N1*Pe**(-0.5d0)/(sqrt(pi*tmps))
-       ! loss = Pe*beta*Ts(i,col)
-       Crys =0
-       loss = 2D0*Pe*T(i,col)/BL(i,col)
+       loss = Pe*beta*Ts(i,col)
+       ! loss = 2D0*Pe*T(i,col)/BL(i,col)
 
        IF4: IF (i==1) THEN
           f(i)=loss+Ai*Omega_a*Xi(i,col)+Ai*Sigma_a-Crys
@@ -514,9 +505,8 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
           Ts_b = 0.5d0*(Ts(i,col)+Ts(i-1,col))
           Ds_b = T_b-Ts_b
              
-          omega_b = (eta_b*delta_b)/10.d0*(1D0*(-20.d0*delta_b+30.d0*h_b))
-          ! omega_b = (eta_b*delta_b)/10.d0*(nu*(-20.d0*delta_b+30.d0*h_b)+&
-          !      &(1.d0-nu)*(6.d0*Ds_b*delta_b-15.d0*Ds_b*h_b-20.d0*T_b*delta_b+30.d0*T_b*h_b))
+          omega_b = (eta_b*delta_b)/10.d0*(nu*(-20.d0*delta_b+30.d0*h_b)+&
+               &(1.d0-nu)*(6.d0*Ds_b*delta_b-15.d0*Ds_b*h_b-20.d0*T_b*delta_b+30.d0*T_b*h_b))
        ENDIF IF1
        IF2: IF (i .NE. N) THEN
           eta_a=(grav*(H(i+1,3)-H(i,3))+el*(P(i+1,3)-P(i,3)))/Dr
@@ -528,9 +518,8 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
           Ts_a = 0.5d0*(Ts(i,col)+Ts(i+1,col))
           Ds_a = T_a-Ts_a
 
-          omega_a = (eta_a*delta_a)/10.d0*(1D0*(-20.d0*delta_a+30.d0*h_a))
-          ! omega_a = (eta_a*delta_a)/10.d0*(nu*(-20.d0*delta_a+30.d0*h_a)+&
-          !      &(1.d0-nu)*(6.d0*Ds_a*delta_a-15.d0*Ds_a*h_a-20.d0*T_a*delta_a+30.d0*T_a*h_a))
+          omega_a = (eta_a*delta_a)/10.d0*(nu*(-20.d0*delta_a+30.d0*h_a)+&
+               &(1.d0-nu)*(6.d0*Ds_a*delta_a-15.d0*Ds_a*h_a-20.d0*T_a*delta_a+30.d0*T_a*h_a))
        END IF IF2
 
 
