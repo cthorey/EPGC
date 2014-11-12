@@ -436,7 +436,8 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
 
        Crys = 0.5D0*psi*(T(i,col)-1)*(H(i,3)-H(i,1))/Dt
        beta = N1*Pe**(-0.5d0)/(sqrt(pi*tmps))
-       loss = Pe*beta*Ts(i,col)
+       ! loss = Pe*beta*Ts(i,col)
+       loss = 2D0*Pe*(T(i,col)-Ts(i,col))/BL(i,col)
 
        IF4: IF (i==1) THEN
           f(i)=loss+Ai*Omega_a*Xi(i,col)+Ai*Sigma_a-Crys
