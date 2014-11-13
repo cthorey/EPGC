@@ -60,7 +60,7 @@ CONTAINS
 
   END SUBROUTINE MASS_CONSERVATION
 
-  SUBROUTINE ENERGY_CONSERVATION(H,BL,T,Ts,Pe,Dt,dist,ray,k,psi,BE_a,BE_b,En_t1,En_t2,Phi_s,Phi_l,delta0)
+  SUBROUTINE ENERGY_CONSERVATION(H,BL,T,Ts,Pe,Dt,dist,ray,k,psi,BE_a,BE_b,En_t1,En_t2,Phi_s,Phi_l,delta0,sigma)
 
     !*****************************************************************
     ! Control the energy conservation at each time step pour le code balmforth
@@ -78,11 +78,11 @@ CONTAINS
     INTEGER ,INTENT(IN) :: k
 
     ! Nombre sans dimension
-    DOUBLE PRECISION ,INTENT(IN) :: Pe,Dt,psi,delta0
+    DOUBLE PRECISION ,INTENT(IN) :: Pe,Dt,psi,delta0,sigma
 
     !Parametre du sous programme
-    DOUBLE PRECISION :: tbar_t1,tbar_t2,A_1_t1,A_1_t2,A_2,A_3
-    DOUBLE PRECISION :: Int_1_t1,Int_1_t2,Int_2,Int_3
+    DOUBLE PRECISION :: tbar_t1,tbar_t2,A_1_t1,A_1_t2,A_2,A_3,A_4
+    DOUBLE PRECISION :: Int_1_t1,Int_1_t2,Int_2,Int_3,Int_4
     DOUBLE PRECISION :: E_ta,E_tb,Dr
     INTEGER :: i,N
     
@@ -106,11 +106,13 @@ CONTAINS
     A_1_t2 = tbar_t2*H(1,3)
     A_2 = (tbar_t2*H(1,3)-tbar_t1*H(1,1))/Dt-Ts(1,1)*(H(1,3)-H(1,1))/Dt
     A_3 = ((T(1,1)-Ts(1,1))/BL(1,1))
+    A_4 = 2D0/(sigma**4)*(sigma**2-dist(1)**2)
 
     Int_1_t1 = A_1_t1*Dr**2
     Int_1_t2 = A_1_t2*Dr**2
     Int_2 = A_2*Dr**2
     Int_3 = A_3*Dr**2
+    Int_4 = A_4*Dr**2
     
     DO i=2,N-1
        tbar_t1 = -(2*(T(i,1)-Ts(i,1))*BL(i,1))/(3.d0*H(i,1))+T(i,1)
@@ -120,11 +122,16 @@ CONTAINS
        A_1_t2 = tbar_t2*H(i,3)
        A_2 = (tbar_t2*H(i,3)-tbar_t1*H(i,1))/Dt-Ts(i,1)*(H(i,3)-H(i,1))/Dt
        A_3 = ((T(i,1)-Ts(i,1))/BL(i,1))
-
+       IF (dist(i)<sigma) THEN
+          A_4 = 2D0/(sigma**4)*(sigma**2-dist(i)**2)
+       ELSE
+          A_4 =0D0
+       ENDIF
        Int_1_t1 = Int_1_t1 + A_1_t1*(ray(i)**2-ray(i-1)**2)
        Int_1_t2 = Int_1_t2 + A_1_t2*(ray(i)**2-ray(i-1)**2)
        Int_2 = Int_2 + A_2*(ray(i)**2-ray(i-1)**2)
        Int_3 = Int_3 + A_3*(ray(i)**2-ray(i-1)**2)
+       Int_4 = Int_4 + A_4*(ray(i)**2-ray(i-1)**2)
     ENDDO
     
     tbar_t1 = -(2*(T(N,1)-Ts(N,1))*BL(N,1))/(3.d0*H(N,1))+T(N,1)
@@ -133,24 +140,30 @@ CONTAINS
     A_1_t2 = tbar_t2*H(N,3)
     A_2 = (tbar_t2*H(N,3)-tbar_t1*H(N,1))/Dt-Ts(N,1)*(H(N,3)-H(N,1))/Dt
     A_3 = ((T(N,1)-Ts(N,1))/BL(N,1))
+    IF (dist(N)<sigma) THEN
+       A_4 = 2D0/(sigma**4)*(sigma**2-dist(N)**2)
+    ELSE
+       A_4 =0D0
+    ENDIF
 
     Int_1_t1 = Int_1_t1 + A_1_t1*(dist(N)**2-ray(N-1)**2)
     Int_1_t2 = Int_1_t2 + A_1_t2*(dist(N)**2-ray(N-1)**2)
     Int_2 = Int_2 + A_2*(dist(N)**2-ray(N-1)**2)
     Int_3 = Int_3 + A_3*(dist(N)**2-ray(N-1)**2)
+    Int_4 = Int_4 + A_4*(dist(N)**2-ray(N-1)**2)
 
     ! Bilan d'energie
     
     !E_t2a: Energie Billan calculer a partir de l'intrusin au temps t+dt
     BE_a = Int_1_t2
     !E_t2b: Energie Bilan calculer a partir de l'intrusion aut temps t + gane perdu
-    BE_b = Int_1_t1+(1D0-psi*Int_2-4D0*Pe*Int_3)*Dt
+    BE_b = Int_1_t1+(Int_4-psi*Int_2-4D0*Pe*Int_3)*Dt
     ! Energie dans l'intrusion au temps t
     En_t1 = Int_1_t1
     ! Energie dans l'intrusion au temps t+dt
     En_t2 = Int_1_t2
     ! Energie sources en J s
-    Phi_s = 1D0-psi*Int_2
+    Phi_s = Int_4-psi*Int_2
     ! Energie lost en J s
     Phi_l = 4D0*Pe*Int_3
     
