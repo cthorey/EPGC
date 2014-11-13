@@ -96,8 +96,8 @@ CONTAINS
     END DO
 
     ! Separation variables
-    ! CALL XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
-    CALL XI_SPLIT(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
+    CALL XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
+    ! CALL XI_SPLIT(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
     ! Calcule de l'erreur
     IF (DOT_PRODUCT(Xi(:,2),Xi(:,2)) == 0D0) THEN
        F_err = ABS(MAXVAL(Xi_m(:)))
@@ -649,13 +649,10 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
         
        END IF IF2
 
-       ! beta = N1*Pe**(-0.5d0)/(sqrt(pi*tmps))
-       ! loss = Pe*beta*Ts(i,col)
-       loss = 2*Pe*T(i,col)/BL(i,col)
+       beta = N1*Pe**(-0.5d0)/(sqrt(pi*tmps))
+       loss = Pe*beta*Ts(i,col)
+       ! loss = 2*Pe*T(i,col)/BL(i,col)
 
-       ! loss =0.d0
-       Ai =0.d0
-       Bi =0.d0
        IF4: IF (i==1) THEN
           f(i)=loss+Ai*Omega_a*Xi(i,col)+Ai*Sigma_a
        ELSEIF (i==N) THEN
