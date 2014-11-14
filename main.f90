@@ -18,7 +18,7 @@ PROGRAM MAIN
   ! Tableau pour stocker les donne
   DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: H,T,Xi,BL,Ts,P
   DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: Srr,Stt
-  DOUBLE PRECISION , DIMENSION(:),ALLOCATABLE  :: hmubar,hthetabar
+  DOUBLE PRECISION , DIMENSION(:),ALLOCATABLE  :: hmubar,hthetabar,ubar
 
   ! Tableux pour definir la grille
   DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: dist,ray
@@ -88,7 +88,7 @@ PROGRAM MAIN
   ALLOCATE(H(1:M,4),Xi(1:M,4),Ts(1:M,4),BL(1:M,4),T(1:M,4),&
        &P(1:M,4),ray(1:M),dist(1:M), stat=err1)
   ALLOCATE(Srr(1:M),Stt(1:M), stat = err1)
-  ALLOCATE(hmubar(1:M),hthetabar(1:M), stat = err1)
+  ALLOCATE(hmubar(1:M),hthetabar(1:M),ubar(1:M), stat = err1)
   IF (err1>1) THEN
      PRINT*,'ERREUR endallocation tabelaux dans le main'
      STOP
@@ -115,7 +115,7 @@ PROGRAM MAIN
           &BV_a,BV_b,V_t1,V_t2,BE_a,BE_b,En_t1,En_t2,Phi_s,Phi_l,&
           &Tm01,Tm02,Tm05,Tm005,&
           &Fr_d_R,Fr_d_T,Fr_d_Mu,Fr_001_R,Fr_001_T,Fr_001_Mu,Mu_e,&
-          &Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H,hmubar,hthetabar,&
+          &Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H,hmubar,hthetabar,ubar,&
           &Fr_005_R,Fr_005_T,Fr_005_Mu)
 
 
@@ -162,9 +162,9 @@ PROGRAM MAIN
      CALL STRESS_ELASTIC_FIELD(Srr,Stt,H,dist,Dr,M)
      CALL AVERAGE_QUANTITY(Xi,H,T,Ts,BL,dist,ray,Dt,Dr,el,grav,N1,Pe,Psi,nu,Tm,Vm,Mum,Phim,M,tmps,delta0,&
        &Vm01,Mum01,Vm02,Mum02,Vm05,Mum05,Vm005,Mum005,Tm01,Tm02,Tm05,Tm005)
-     CALL TRACKING_FRONT(Xi,H,T,Ts,BL,dist,ray,Dt,Dr,el,grav,N1,Pe,Psi,nu,tmps,delta0,&
+     CALL TRACKING_FRONT(Xi,H,T,Ts,BL,dist,ray,P,Dt,Dr,el,grav,N1,Pe,Psi,nu,tmps,delta0,&
        &Fr_d_R,Fr_d_T,Fr_d_Mu,Fr_001_R,Fr_001_T,Fr_001_Mu,Mu_e,&
-       &Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H,hmubar,hthetabar,&
+       &Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H,hmubar,hthetabar,ubar,&
        &Fr_005_R,Fr_005_T,Fr_005_Mu)
 
      Cas = 1
@@ -176,7 +176,7 @@ PROGRAM MAIN
           &BV_a,BV_b,V_t1,V_t2,BE_a,BE_b,En_t1,En_t2,Phi_s,Phi_l,&
           &Tm01,Tm02,Tm05,Tm005,&
           &Fr_d_R,Fr_d_T,Fr_d_Mu,Fr_001_R,Fr_001_T,Fr_001_Mu,Mu_e,&
-          &Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H,hmubar,hthetabar,&
+          &Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H,hmubar,hthetabar,ubar,&
           &Fr_005_R,Fr_005_T,Fr_005_Mu)
 
      ! On incremente les compteurs et le temps
@@ -185,7 +185,6 @@ PROGRAM MAIN
         Dt = 1D-5
      ENDIF
      tmps = tmps+Dt
-     ! print*,T(1,3),Ts(1,3)
 
   END DO TEMPS
 

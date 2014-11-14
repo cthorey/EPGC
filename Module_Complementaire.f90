@@ -157,16 +157,16 @@ CONTAINS
 
   END SUBROUTINE AVERAGE_QUANTITY
 
-  SUBROUTINE TRACKING_FRONT(Xi,H,T,Ts,BL,dist,ray,Dt,Dr,el,grav,N1,Pe,Psi,nu,tmps,delta0,&
+  SUBROUTINE TRACKING_FRONT(Xi,H,T,Ts,BL,dist,ray,P,Dt,Dr,el,grav,N1,Pe,Psi,nu,tmps,delta0,&
        &Fr_d_R,Fr_d_T,Fr_d_Mu,Fr_001_R,Fr_001_T,Fr_001_Mu,Mu_e,&
-       &Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H,hmubar,hthetabar,&
+       &Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H,hmubar,hthetabar,ubar,&
        &Fr_005_R,Fr_005_T,Fr_005_Mu)
 
     IMPLICIT NONE
 
-    DOUBLE PRECISION ,DIMENSION(:,:), INTENT(INOUT) :: XI,H,T,Ts,BL
+    DOUBLE PRECISION ,DIMENSION(:,:), INTENT(INOUT) :: XI,H,T,Ts,BL,P
     DOUBLE PRECISION ,DIMENSION(:), INTENT(IN) :: dist,ray
-    DOUBLE PRECISION , DIMENSION(:),INTENT(INOUT)  :: hmubar,hthetabar
+    DOUBLE PRECISION ,DIMENSION(:),INTENT(INOUT)  :: hmubar,hthetabar,ubar
     DOUBLE PRECISION ,INTENT(IN) :: Dt,Dr,el,grav,N1,Pe,Psi,nu,tmps,delta0
     DOUBLE PRECISION ,INTENT(INOUT) :: Fr_d_R,Fr_d_T,Fr_d_Mu,Mu_e
     DOUBLE PRECISION ,INTENT(INOUT) :: Fr_001_R,Fr_001_T,Fr_001_Mu
@@ -177,7 +177,7 @@ CONTAINS
     DOUBLE PRECISION, EXTERNAL:: viscosity_1,viscosity_2,viscosity_3
     DOUBLE PRECISION :: a,beta,muPart1,muPart2,muPart3
     DOUBLE PRECISION :: Vm,Tm,Mum,tbar,mbar
-    DOUBLE PRECISION :: abserr
+    DOUBLE PRECISION :: abserr,eta
     INTEGER :: i,N,ier,last,err1,N001,N005
 
     DOUBLE PRECISION :: delta,Thetas,Thetab,nu_v,ho
@@ -198,6 +198,13 @@ CONTAINS
        CALL qxgs(Viscosity_3,ho-delta,ho,1D-6,1D-3,muPart3,abserr,ier,10,last)
        hmubar(i) = muPart1+muPart2+muPart3
        hthetabar(i) = -2*(T(i,3)-Ts(i,3))/3.d0*BL(i,3)+T(i,3)*H(i,3)
+       IF (i ==COUNT(H(:,3)>0)) THEN
+          eta = (P(i,3)+H(i,3))/Dr
+       ELSE
+          eta = (P(i+1,3)-P(i,3))/Dr+(H(i+1,3)-H(i,3))/Dr
+       ENDIF
+       ubar(i) = eta*((1D0-nu)*(4*(T(i,3)-Ts(i,3))*BL(i,3)**3 - 10*(T(i,3)-Ts(i,3))*BL(i,3)**2*H(i,3) &
+            &+ 10*(T(i,3)-Ts(i,3))*BL(i,3)*H(i,3)**2 - 5*T(i,3)*H(i,3)**3) - 5*nu*H(i,3)**3)/(5D0*H(i,3))
     ENDDO
 
     Mu_e = 0.38*delta0**(-1D0/11D0)*(H(1,3)/(tmps**(8D0/22D0)))**(11D0/2D0)
