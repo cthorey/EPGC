@@ -1,7 +1,6 @@
 MODULE MODULE_COMPLEMENTAIRE
 
   USE MODULE_INTEGRATION
-
   
 CONTAINS
 
@@ -209,41 +208,41 @@ CONTAINS
 
     Mu_e = 0.38*delta0**(-1D0/11D0)*(H(1,3)/(tmps**(8D0/22D0)))**(11D0/2D0)
     
-    ! Premier cas definit avec d =delta0
-    CALL FRONT_PROPERTY(H,N,dist,ray,hmubar,hthetabar,Dr,Mu_e,nu,Fr_d_R,Fr_d_T,Fr_d_Mu)
-    ! Deuxieme cas, on definit le front avec 0.01
-    CALL FRONT_PROPERTY(H,N001,dist,ray,hmubar,hthetabar,Dr,Mu_e,nu,Fr_001_R,Fr_001_T,Fr_001_Mu)
-    ! Troisizeme cas
-    CALL FRONT_PROPERTY(H,N005,dist,ray,hmubar,hthetabar,Dr,Mu_e,nu,Fr_005_R,Fr_005_T,Fr_005_Mu)
+    ! ! Premier cas definit avec d =delta0
+    ! CALL FRONT_PROPERTY(H,N,dist,ray,hmubar,hthetabar,Dr,Mu_e,nu,Fr_d_R,Fr_d_T,Fr_d_Mu)
+    ! ! Deuxieme cas, on definit le front avec 0.01
+    ! CALL FRONT_PROPERTY(H,N001,dist,ray,hmubar,hthetabar,Dr,Mu_e,nu,Fr_001_R,Fr_001_T,Fr_001_Mu)
+    ! ! Troisizeme cas
+    ! CALL FRONT_PROPERTY(H,N005,dist,ray,hmubar,hthetabar,Dr,Mu_e,nu,Fr_005_R,Fr_005_T,Fr_005_Mu)
  
-     ! Troisieme cas: On definit le front la ou la viscosite moyenne sur l'epaisseur 
-     ! a ceux qu'on veut.
+    !  ! Troisieme cas: On definit le front la ou la viscosite moyenne sur l'epaisseur 
+    !  ! a ceux qu'on veut.
     
-     mbar = hmubar(1)/H(1,3)
-     tbar = hthetabar(1)/H(1,3)
-     Fr_Mu_R = dist(1)
-     Fr_Mu_T = tbar
-     Fr_Mu_Mu = mbar
-     Fr_Mu_H = H(1,3)
+    !  mbar = hmubar(1)/H(1,3)
+    !  tbar = hthetabar(1)/H(1,3)
+    !  Fr_Mu_R = dist(1)
+    !  Fr_Mu_T = tbar
+    !  Fr_Mu_Mu = mbar
+    !  Fr_Mu_H = H(1,3)
 
-     DO i=1,N+30,1
-       IF (mbar>Mu_e) THEN
-          Fr_Mu_R = dist(i)
-          Fr_Mu_H = H(i,3)
-          Fr_Mu_T = tbar
-          Fr_Mu_Mu = mbar
-          EXIT
-       ELSE
-          mbar = hmubar(i)/H(i,3)
-          Tbar = hthetabar(i)/H(i,3)
-       ENDIF
-    ENDDO
-    IF (mbar<Mu_e) THEN
-        Fr_Mu_R = dist(N+30)
-        Fr_Mu_T = tbar
-        Fr_Mu_Mu = mbar
-        Fr_Mu_H = H(N+30,3)
-     ENDIF
+    !  DO i=1,N+30,1
+    !    IF (mbar>Mu_e) THEN
+    !       Fr_Mu_R = dist(i)
+    !       Fr_Mu_H = H(i,3)
+    !       Fr_Mu_T = tbar
+    !       Fr_Mu_Mu = mbar
+    !       EXIT
+    !    ELSE
+    !       mbar = hmubar(i)/H(i,3)
+    !       Tbar = hthetabar(i)/H(i,3)
+    !    ENDIF
+    ! ENDDO
+    ! IF (mbar<Mu_e) THEN
+    !     Fr_Mu_R = dist(N+30)
+    !     Fr_Mu_T = tbar
+    !     Fr_Mu_Mu = mbar
+    !     Fr_Mu_H = H(N+30,3)
+    !  ENDIF
 
   ENDSUBROUTINE TRACKING_FRONT
 

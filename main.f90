@@ -184,6 +184,8 @@ PROGRAM MAIN
      IF (tmps>1D0) THEN
         Dt = 1D-5
      ENDIF
+
+     IF (k>1000) STOP
      tmps = tmps+Dt
 
   END DO TEMPS

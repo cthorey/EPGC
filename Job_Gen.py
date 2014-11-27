@@ -62,7 +62,7 @@ Dict_Param = {'Sigma': ['2D-2'],
               'Ep': ['1D-4'],
               'Dt' : ['1D-6']}
 
-Init = 1 # 1 If you want to begin for the last backup
+Init = 0 # 1 If you want to begin for the last backup
 
 space = '\n --------------------- \n'
 
@@ -207,26 +207,37 @@ for run in Dict_Run:
     subprocess.call(str(Racine)+'run_tmp.sh', shell=True)
 
 
-    # Make the fihcier to run on malbec
-    if _platform == "linux" or _platform == "linux2":
-        with open( str(Racine) + 'run.job' , 'r') as script:
-            with open(str(Racine)+name+'.job', 'wr+') as script_tmp:
-                for l in script:
-                    if l == '#SBATCH -J Run\n':
-                        to_write = l.replace('Run',name)
-                    elif l == './Run\n':
-                        to_write = l.replace('Run',name)
-                    elif l == 'cd dir\n':
-                        to_write = l.replace('dir',Racine)
-                    else:
-                        to_write = l
-                    script_tmp.write(to_write)
-                        
-        script = str('sbatch '+ Racine+ name+'.job')
-        subprocess.call(script ,shell=True)
+# Make the fihcier to run on malbec
+if _platform == "linux" or _platform == "linux2":
+    with open( str(Racine) + 'run.job' , 'r') as script:
+        with open(str(Racine)+'_Test'+'.job', 'wr+') as script_tmp:
+            for l in script:
+                if l == '#SBATCH -J Run\n':
+                    to_write = l.replace('Run','Cooling')
+                elif l == 'cd dir\n':
+                    to_write = l.replace('dir',Racine)
+                else:
+                    to_write = l
+                script_tmp.write(to_write)
+                
+    for run in Dict_Run:
+        name = str('E' + run['El']
+                   + '_G' + run['Grav']
+                   + '_N' + run['Nu']
+                   + '_P' + run['Pe']
+                   + '_D' + run['Delta0']
+                   + '_C' + run['Psi']
+                   + '_R' + run['N1']
+                   + '_S' + run['Sigma']
+                   + '_Dr' + run['Dr']
+                   + '_Ep' + run['Ep']
+                   + '_Dt' + run['Dt'])
 
-    if write:
+        if write:
         with open(Racine + Bactrack_Run, 'a') as f:
             f.write(name +'\n')
-        
-    print '\n  SUCESSFULL'
+            
+    script = str('sbatch '+ Racine+ '_Test.job')
+    subprocess.call(script ,shell=True)
+
+print 'Successfull'
