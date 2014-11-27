@@ -575,7 +575,6 @@ res3la(3) = result
 RETURN
 END SUBROUTINE qelg
 
-
 SUBROUTINE qxgs (f, a, b, epsabs, epsrel, result, abserr, ier, limit, last)
 
 !     THE ROUTINE CALCULATES AN APPROXIMATION RESULT TO A GIVEN

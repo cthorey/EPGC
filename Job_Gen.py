@@ -28,7 +28,7 @@ import datetime
 if _platform == "linux" or _platform == "linux2":
     Root = '//gpfs/users/thorey/'
     Racine = '/home/thorey/Code_ELAS/'
-    Root_Run = 'ELAS_GRAV/Run/'
+    Root_Run = 'TEST/'
     Bactrack_Run = 'Bactrack_ELAS_GRAV.txt'
     Compilateur = 'ifort'
 elif _platform == "darwin":
@@ -40,17 +40,17 @@ elif _platform == "darwin":
 
 Dict_Param = {'Sigma': ['5D-2'],
               'Delta0': ['5D-3'],
-              'Grav': ['1D0'],
+              'Grav': ['0D0'],
               'El': ['1D0'],
-              'Nu': ['1D-2','1D-3'],
-              'Pe': ['1D0','1D-1','1D-2','1D-3'],
+              'Nu': ['1D0','1D-3'],
+              'Pe': ['1D0','1D-1','1D-2'],
               'Psi': ['0.D0','3D-1'],
               'N1' : ['1D5','1D0'],
               'Dr' : ['1D-2'],
               'Ep': ['1D-4'],
               'Dt' : ['1D-6']}
 
-Init = 1# 1 If you want to begin for the last backup
+Init = 0 # 1 If you want to begin for the last backup
 
 space = '\n --------------------- \n'
 
@@ -195,26 +195,44 @@ for run in Dict_Run:
     subprocess.call(str(Racine)+'run_tmp.sh', shell=True)
 
 
-    # Make the fihcier to run on malbec
-    if _platform == "linux" or _platform == "linux2":
-        with open( str(Racine) + 'run.job' , 'r') as script:
-            with open(str(Racine)+name+'.job', 'wr+') as script_tmp:
-                for l in script:
-                    if l == '#SBATCH -J Run\n':
-                        to_write = l.replace('Run',name)
-                    elif l == './Run\n':
-                        to_write = l.replace('Run',name)
-                    elif l == 'cd dir\n':
-                        to_write = l.replace('dir',Racine)
-                    else:
-                        to_write = l
-                    script_tmp.write(to_write)
-                        
-        script = str('sbatch '+ Racine+ name+'.job')
-        subprocess.call(script ,shell=True)
+# Make the fihcier to run on malbec
+# if _platform == "linux" or _platform == "linux2":
+with open( str(Racine) + 'run.job' , 'r') as script:
+    with open(str(Racine)+'Job_Test'+'.job', 'wr+') as script_tmp:
+        for l in script:
+            if l == '#SBATCH -J Run\n':
+                to_write = l.replace('Run','Cooling')
+            elif l == 'cd dir\n':
+                to_write = l.replace('dir',Racine)
+            elif l == '#SBATCH --nodes Null\n':
+                to_write = l.replace('Null',str(len(Dict_Run)//16+1))
+            else:
+                to_write = l
+            script_tmp.write(to_write)
 
-    if write:
-        with open(Racine + Bactrack_Run, 'a') as f:
-            f.write(name +'\n')
-        
-    print '\n  SUCESSFULL'
+with open(str(Racine)+'Job_Test'+'.job', 'a') as fc:
+    for i,run in enumerate(Dict_Run):
+        name = str('E' + run['El']
+                   + '_G' + run['Grav']
+                   + '_N' + run['Nu']
+                   + '_P' + run['Pe']
+                   + '_D' + run['Delta0']
+                   + '_C' + run['Psi']
+                   + '_R' + run['N1']
+                   + '_S' + run['Sigma']
+                   + '_Dr' + run['Dr']
+                   + '_Ep' + run['Ep']
+                   + '_Dt' + run['Dt'])
+        if i == len(Dict_Run)-1:
+            fc.write('./'+name+'')
+        else:
+            fc.write('./'+name+'&\n')
+        if write:
+            with open(Racine + Bactrack_Run, 'a') as f:
+                f.write(name +'\n')
+
+print 'sbatch '+ Racine+ 'Job_Test.job'
+script = str('sbatch '+ Racine+ 'Job_Test.job')
+subprocess.call(script ,shell=True)
+
+print 'Successfull'
