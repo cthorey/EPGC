@@ -1,0 +1,11 @@
+#!/bin/sh
+#SBATCH -J Cooling
+#SBATCH --nodes = 1
+#SBATCH --partition cpunormal
+echo "Running on: $SLURM_NODELIST"
+cd /Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/Code/Code_ELAS/
+module purge
+module load intel/compiler slurm
+
+./E1D0_G0D0_N1D0_P5D-1_D5D-3_C0.D0_R1D5_S2D-2_Dr1D-2_Ep1D-4_Dt1D-6&
+./E1D0_G0D0_N1D0_P5D-1_D5D-3_C0.D0_R1D0_S2D-2_Dr1D-2_Ep1D-4_Dt1D-6&

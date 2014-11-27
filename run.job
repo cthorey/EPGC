@@ -1,7 +1,6 @@
 #!/bin/sh
 #SBATCH -J Run
-#SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
+#SBATCH --nodes = Null
 #SBATCH --partition cpunormal
 echo "Running on: $SLURM_NODELIST"
 cd dir

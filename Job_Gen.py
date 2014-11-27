@@ -54,8 +54,8 @@ Dict_Param = {'Sigma': ['2D-2'],
               'Delta0': ['5D-3'],
               'Grav': ['0D0'],
               'El': ['1D0'],
-              'Nu': ['1D0','1D-2','1D-3'],
-              'Pe': ['5D-1','5D-2'],
+              'Nu': ['1D0'],
+              'Pe': ['5D-1'],
               'Psi': ['0.D0'],
               'N1' : ['1D5','1D0'],
               'Dr' : ['1D-2'],
@@ -208,18 +208,21 @@ for run in Dict_Run:
 
 
 # Make the fihcier to run on malbec
-if _platform == "linux" or _platform == "linux2":
-    with open( str(Racine) + 'run.job' , 'r') as script:
-        with open(str(Racine)+'_Test'+'.job', 'wr+') as script_tmp:
-            for l in script:
-                if l == '#SBATCH -J Run\n':
-                    to_write = l.replace('Run','Cooling')
-                elif l == 'cd dir\n':
-                    to_write = l.replace('dir',Racine)
-                else:
-                    to_write = l
-                script_tmp.write(to_write)
-                
+# if _platform == "linux" or _platform == "linux2":
+with open( str(Racine) + 'run.job' , 'r') as script:
+    with open(str(Racine)+'Job_Test'+'.job', 'wr+') as script_tmp:
+        for l in script:
+            if l == '#SBATCH -J Run\n':
+                to_write = l.replace('Run','Cooling')
+            elif l == 'cd dir\n':
+                to_write = l.replace('dir',Racine)
+            elif l == '#SBATCH --nodes = Null\n':
+                to_write = l.replace('Null',str(len(Dict_Run)//16+1))
+            else:
+                to_write = l
+            script_tmp.write(to_write)
+
+with open(str(Racine)+'Job_Test'+'.job', 'a') as fc:
     for run in Dict_Run:
         name = str('E' + run['El']
                    + '_G' + run['Grav']
@@ -232,12 +235,12 @@ if _platform == "linux" or _platform == "linux2":
                    + '_Dr' + run['Dr']
                    + '_Ep' + run['Ep']
                    + '_Dt' + run['Dt'])
-
+        fc.write('./'+name+'&\n')
         if write:
-        with open(Racine + Bactrack_Run, 'a') as f:
-            f.write(name +'\n')
-            
-    script = str('sbatch '+ Racine+ '_Test.job')
-    subprocess.call(script ,shell=True)
+            with open(Racine + Bactrack_Run, 'a') as f:
+                f.write(name +'\n')
+                
+# script = str('sbatch '+ Racine+ '_Test.job')
+# subprocess.call(script ,shell=True)
 
 print 'Successfull'
