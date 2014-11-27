@@ -181,7 +181,7 @@ PROGRAM MAIN
 
      ! On incremente les compteurs et le temps
      k = k+1
-     IF (tmps>1D0) THEN
+     IF (tmps>5D0) THEN
         Dt = 1D-5
      ENDIF
      tmps = tmps+Dt
