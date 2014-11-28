@@ -74,6 +74,7 @@ if write:
 
 product = [x for x in apply(itertools.product, Dict_Param.values())]
 Dict_Run = [dict(zip(Dict_Param.keys(), p)) for p in product]
+print 'On s"apprete a lancer '+str(len(Dict_Run))+' jobs'
 
 ################################
 # 3) Boucle sur les runs
