@@ -28,7 +28,7 @@ import datetime
 if _platform == "linux" or _platform == "linux2":
     Root = '//gpfs/users/thorey/'
     Racine = '/home/thorey/Code_ELAS/'
-    Root_Run = 'ELAS/Run_Final/'
+    Root_Run = 'ELAS/Run_Final_1/'
     Bactrack_Run = 'Bactrack_ELAS.txt'
     Compilateur = 'ifort'
 elif _platform == "darwin":

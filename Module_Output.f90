@@ -45,7 +45,7 @@ CONTAINS
     INTEGER :: i,comp_n,comp_o,samp
     CHARACTER(LEN=300) :: Output_Name_F,NF_Name
     CHARACTER(LEN=300) :: Data_file,Format_Data
-    DOUBLE PRECISION :: R,hmax,power
+    DOUBLE PRECISION :: R,hmax,power,tmps_Avant
 
 
     SELECT CASE (Cas)
@@ -54,8 +54,10 @@ CONTAINS
     CASE(0)
 
 !!!Compteur
+
        IF (tmps == 0D0) THEN
           samp = 1
+          tmps_Avant = 0
        ELSE
           power = FLOOR(LOG10(tmps))
           IF (power >= 1D0) THEN
@@ -73,8 +75,14 @@ CONTAINS
 
        WRITE(NF_Name,Format_NF),Root_Code,NF,'.txt'
        OPEN(unit =2,file=NF_Name, action ="write",status ="replace")
-       WRITE(2,*)'tmps',tmps,'compteur',k,'k1',k1,'k2',k2,'comp_o',comp_o,'comp_n',comp_n,'samp',samp,'power',power
+       WRITE(2,*)'tmps',tmps,'compteur',k,'k1',k1,'k2',k2,'comp_o',comp_o,'\n'
+       WRITE(2,*)'comp_n',comp_n,'samp',samp,'power',power,'Dt',Dt
        CLOSE(2)
+
+       WRITE(NF_Name,Format_NF),Root_Code,NF,'_GRANDEUR.txt'
+       OPEN(unit =3,file=NF_Name, action ="write",status ="replace")
+       WRITE(3,*)'tmps',tmps,'H',H(1,3),'T',T(1,3),'Dt',tmps-tmps_n
+       CLOSE(3)
 
 !!! Backup
        IF (compteur == k1) THEN
