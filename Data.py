@@ -1,3 +1,4 @@
+
 # Recupere les donne sur malbec,
 # Load les donnes
 
@@ -6,13 +7,13 @@ import sys
 import os
 
 reset = 0
-Folder_malbec = 'Run/'
-Folder_laptop = 'Run/'
-Workspace_laptop = 'Workspace/'
-Root_malbec = '/gpfs/users/thorey/ELAS_GRAV/'+Folder_malbec
-Root_laptop = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/SCAPAD/ELAS_GRAV/'+Folder_laptop
+Folder_malbec = 'Run_Final/'
+Folder_laptop = 'Run_Final/'
+Workspace_laptop = 'Workspace_Final/'
+Root_malbec = '/gpfs/users/thorey/ELAS/'+Folder_malbec
+Root_laptop = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/SCAPAD/ELAS/'+Folder_laptop
 Workspace_laptop = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/SCAPAD/ELAS/'+Workspace_laptop
-Routine_python = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/Routine/ELAS_GRAV/EG_Load.py'
+Routine_python = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/Routine/ELAS/E_Load.py'
 
 if reset == 1:
     try :
