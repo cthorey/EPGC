@@ -11,7 +11,7 @@ CONTAINS
           &Tm01,Tm02,Tm05,Tm005,&
           &Fr_d_R,Fr_d_T,Fr_d_Mu,Fr_001_R,Fr_001_T,Fr_001_Mu,Mu_e,&
           &Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H,hmubar,hthetabar,ubar,&
-          &Fr_005_R,Fr_005_T,Fr_005_Mu)
+          &Fr_005_R,Fr_005_T,Fr_005_Mu,tmps_n)
 
     IMPLICIT NONE
 
@@ -20,7 +20,7 @@ CONTAINS
     DOUBLE PRECISION ,DIMENSION(:) , INTENT(INOUT) :: dist,ray,Srr,Stt,hmubar,hthetabar,ubar
 
     ! Parametre du model
-    DOUBLE PRECISION , INTENT(INOUT) :: tmps,delta0,Dt
+    DOUBLE PRECISION , INTENT(INOUT) :: tmps,delta0,Dt,tmps_n
     DOUBLE PRECISION , INTENT(INOUT) :: Phim,Vm,Tm,Mum
     DOUBLE PRECISION , INTENT(INOUT) :: Vm01,Mum01,Vm02,Mum02,Vm05,Mum05,Vm005,Mum005
     DOUBLE PRECISION , INTENT(INOUT) :: Tm01,Tm02,Tm05,Tm005

@@ -25,7 +25,7 @@ PROGRAM MAIN
 
   ! Parametre du model
   INTEGER :: M
-  DOUBLE PRECISION :: tmps_m,Dt,Dr,tmps
+  DOUBLE PRECISION :: tmps_m,Dt,Dr,tmps,tmps_n
   INTEGER :: sample,Init
   INTEGER :: k,k1,k2,z,compteur,i
 
@@ -101,6 +101,7 @@ PROGRAM MAIN
        &,Format_NSD_Init_0,Format_NSD_Init_1,Format_Input_Data,Format_RV,Format_Backup)
 
   ! Debut de la boucle sur le temps
+  tmps_n = 0D0
 
   TEMPS: DO WHILE (tmps<tmps_m)
 
@@ -116,7 +117,7 @@ PROGRAM MAIN
           &Tm01,Tm02,Tm05,Tm005,&
           &Fr_d_R,Fr_d_T,Fr_d_Mu,Fr_001_R,Fr_001_T,Fr_001_Mu,Mu_e,&
           &Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H,hmubar,hthetabar,ubar,&
-          &Fr_005_R,Fr_005_T,Fr_005_Mu)
+          &Fr_005_R,Fr_005_T,Fr_005_Mu,tmps_n)
 
 
      H(:,1) = H(:,3); H(:,4) = H(:,1)
@@ -177,10 +178,12 @@ PROGRAM MAIN
           &Tm01,Tm02,Tm05,Tm005,&
           &Fr_d_R,Fr_d_T,Fr_d_Mu,Fr_001_R,Fr_001_T,Fr_001_Mu,Mu_e,&
           &Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H,hmubar,hthetabar,ubar,&
-          &Fr_005_R,Fr_005_T,Fr_005_Mu)
+          &Fr_005_R,Fr_005_T,Fr_005_Mu,tmps_n)
 
      ! On incremente les compteurs et le temps
      k = k+1
+
+     tmps_n = tmps
      IF (tmps>5D0) THEN
         Dt = 1D-5
      ENDIF
