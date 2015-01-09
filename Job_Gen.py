@@ -26,7 +26,7 @@ import datetime
 # 1) Parametre a creer :
 
 if _platform == "linux" or _platform == "linux2":
-    Root_Run = '//gpfs/users/thorey/ELAS/'
+    Root_Run = '/gpfs/users/thorey/ELAS/'
     Root_Code = '/home/thorey/Code_ELAS/'
     Name_Folder_Run = '' # Remplir si on veut faire un test dans un dossier specific
     Bactrace_Run = 'Bactrack.txt'
@@ -37,7 +37,7 @@ elif _platform == "darwin":
     Name_Folder_Run = '' # Remplir si on veut faire un test dans un dossier specific
     Bactrace_Run = 'Bactrack.txt'
     Compilateur = 'gfortran'
-    
+
 Dict_Param = {'Sigma': ['5D-2'],
               'Delta0': ['5D-3'],
               'Grav': ['0D0'],
@@ -235,11 +235,11 @@ with open( str(Root_Code) + 'run.job' , 'r') as script:
     with open(str(Root_Code)+'List_Job'+'.job', 'wr+') as script_tmp:
         for l in script:
             if l == '#SBATCH -J Run\n':
-                to_write = l.replace('Run','Cooling')
+                to_write = l.replace('Run','EL_'+Name_Folder_Run)
             elif l == 'cd dir\n':
-                to_write = l.replace('dir',Root_Code[1:])
+                to_write = l.replace('dir',Root_Code)
             elif l == '#SBATCH --nodes Null\n':
-                to_write = l.replace('Null',str(len(Dict_Run)//16+1))
+                to_write = l.replace('Null',str((len(Dict_Run)-1)//16+1))
             else:
                 to_write = l
             script_tmp.write(to_write)
