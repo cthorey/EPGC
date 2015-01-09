@@ -33,32 +33,19 @@ if _platform == "linux" or _platform == "linux2":
     Compilateur = 'ifort'
 elif _platform == "darwin":
     Root_Run = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/Code/'
-    Root_Code = Root+'Code_ELAS/'
-    Name_Folder_Run = ''
-    Root_Run = 'Code_ELAS/Test/Run/'
-    Bactrace_Run = 'Bactrack_ELAS.txt'
+    Root_Code = '/home/thorey/Code_ELAS/'
+    Name_Folder_Run = '' # Remplir si on veut faire un test dans un dossier specific
+    Bactrace_Run = 'Bactrack.txt'
     Compilateur = 'gfortran'
-
-# Dict_Param = {'Sigma': ['5D-2'],
-#               'Delta0': ['5D-3'],
-#               'Grav': ['0D0'],
-#               'El': ['1D0'],
-#               'Nu': ['1D0','1D-1','1D-2','1D-3'],
-#               'Pe': ['1D0','1D-1','1D-2','1D-3'],
-#               'Psi': ['0.D0','3D-1'],
-#               'N1' : ['1D5','1D0'],
-#               'Dr' : ['1D-2'],
-#               'Ep': ['1D-4'],
-#               'Dt' : ['1D-6']}
-
+    
 Dict_Param = {'Sigma': ['5D-2'],
               'Delta0': ['5D-3'],
               'Grav': ['0D0'],
               'El': ['1D0'],
-              'Nu': ['1D0'],
-              'Pe': ['1D0'],
-              'Psi': ['0.D0'],
-              'N1' : ['1D5'],
+              'Nu': ['1D0','1D-1','1D-2','1D-3'],
+              'Pe': ['1D0','1D-1','1D-2','1D-3'],
+              'Psi': ['0.D0','3D-1'],
+              'N1' : ['1D5','1D0'],
               'Dr' : ['1D-2'],
               'Ep': ['1D-4'],
               'Dt' : ['1D-6']}
@@ -112,14 +99,12 @@ print 'Root_Code : ' + Root_Code
 now = datetime.datetime.now()
 write = distutils.util.strtobool(input("Do you want to write in backtrace ? yes or no ?: "))
 if write:
-    with open(Root_Run+Bactrace_Run, 'a') as f:
+    with open(Root_Code+Bactrace_Run, 'a') as f:
         f.write('\n\n'+'-----------------------------'+'\n\n')
         f.write(str(now))
         f.write('\n\n'+'-----------------------------'+'\n\n')
-        f.write('What are you running ?\n')
+        f.write('What and Why are you running ?\n')
         f.write(str(raw_input('What are you running ?\n\n')) + '\n\n')
-        f.write('Why do you want to test ?\n')
-        f.write(str(raw_input('What do you want to test ? \n\n')) +'\n\n')
         f.write('Runs lancer sur '+_platform +'\n\n')
         
 ################################
@@ -252,7 +237,7 @@ with open( str(Root_Code) + 'run.job' , 'r') as script:
             if l == '#SBATCH -J Run\n':
                 to_write = l.replace('Run','Cooling')
             elif l == 'cd dir\n':
-                to_write = l.replace('dir',Root_Code)
+                to_write = l.replace('dir',Root_Code[1:])
             elif l == '#SBATCH --nodes Null\n':
                 to_write = l.replace('Null',str(len(Dict_Run)//16+1))
             else:
@@ -277,7 +262,7 @@ with open(str(Root_Code)+'List_Job.job', 'a') as fc:
         else:
             fc.write('./'+name+'&\n')
         if write:
-            with open(Root_Code + Bactrack_Run, 'a') as f:
+            with open(Root_Code + Bactrace_Run, 'a') as f:
                 f.write(name +'\n')
 
 print 'sbatch '+ Root_Code+ 'List_Job.job'

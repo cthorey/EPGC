@@ -1,5 +1,5 @@
 #!/bin/bash
-
+cd "$(dirname "$0")"
 Compilateur -O3 -fp-model fast=2 -o Module_Numerical_Integration.o -c Module_Numerical_Integration.f90
 Compilateur -O3 -fp-model fast=2 -o Module_Complementaire.o -c Module_Complementaire.f90
 Compilateur -O3 -fp-model fast=2 -o Module_Conservation.o -c Module_Conservation.f90

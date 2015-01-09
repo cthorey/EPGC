@@ -89,7 +89,7 @@ CONTAINS
 
     IF (Init==0) THEN
        WRITE(Output_Name_NSD,Format_NSD_Init_0),Output_Racine,'NbSsDim.txt'
-       OPEN(unit=1,file=Output_Name_NSD,status='replace')
+       OPEN(unit=1,file=Output_Name_NSD)
        WRITE(1,'(24(A,2X))')'el', 'grav', 'delta0', 'sigma', 'nu', 'Pe','Psi',&
             &'N1','M','Dt','Dr','eps'
        WRITE(1,Format_NSD),el,grav,delta0,sigma,nu,Pe,Psi,N1,M,Dt,Dr,eps_1
