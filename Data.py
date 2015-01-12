@@ -10,6 +10,7 @@ reset = 0
 Folder_malbec = 'Run_Final/'
 Folder_laptop = 'Run_Final/'
 Workspace_laptop = 'Workspace_Final/'
+Routine_python = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/Routine/ELAS/E_Load.py'
 Root_malbec = '/gpfs/users/thorey/ELAS/'+Folder_malbec
 Root_laptop = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/SCAPAD/ELAS/'+Folder_laptop
 Workspace_laptop = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/SCAPAD/ELAS/'+Workspace_laptop
@@ -28,6 +29,10 @@ try:
 except:
     print 'error'
     sys.exit()
+
+with open(Routine_python, 'wr+') as file:
+    for line in file:
+        if (line ==
 
 try:
     subprocess.call('python '+Routine_python, shell = True)
