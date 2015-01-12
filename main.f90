@@ -105,6 +105,10 @@ PROGRAM MAIN
 
   TEMPS: DO WHILE (tmps<tmps_m)
 
+     IF (tmps>5D0) THEN
+        Dt = 1D-5
+     ENDIF
+
      OPEN(unit=3,file='Output.txt')
 
      Cas=0
@@ -184,9 +188,6 @@ PROGRAM MAIN
      k = k+1
 
      tmps_n = tmps
-     IF (tmps>5D0) THEN
-        Dt = 1D-5
-     ENDIF
 
      ! IF (k>1000) STOP
      tmps = tmps+Dt
