@@ -26,26 +26,41 @@ import datetime
 # 1) Parametre a creer :
 
 if _platform == "linux" or _platform == "linux2":
+    Root_ELAS = '/gpfs/users/thorey/ELAS/'
     Root_Run = '/gpfs/users/thorey/ELAS/'
     Root_Code = '/home/thorey/Code_ELAS/'
     Name_Folder_Run = '' # Remplir si on veut faire un test dans un dossier specific
     Bactrace_Run = 'Bactrack.txt'
+    Journal_ELAS = 'Journal_ELAS.txt'
     Compilateur = 'ifort'
 elif _platform == "darwin":
     Root_Run = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/Code/'
     Root_Code = '/home/thorey/Code_ELAS/'
     Name_Folder_Run = '' # Remplir si on veut faire un test dans un dossier specific
     Bactrace_Run = 'Bactrack.txt'
+    Journal_ELAS = 'Journal_ELAS.txt'
     Compilateur = 'gfortran'
+
+# Dict_Param = {'Sigma': ['5D-2'],
+#               'Delta0': ['5D-3'],
+#               'Grav': ['0D0'],
+#               'El': ['1D0'],
+#               'Nu': ['1D0','1D-1','1D-2','1D-3'],
+#               'Pe': ['1D0','1D-1','1D-2','1D-3'],
+#               'Psi': ['0.D0','3D-1'],
+#               'N1' : ['1D5','1D0'],
+#               'Dr' : ['1D-2'],
+#               'Ep': ['1D-4'],
+#               'Dt' : ['1D-6']}
 
 Dict_Param = {'Sigma': ['5D-2'],
               'Delta0': ['5D-3'],
               'Grav': ['0D0'],
               'El': ['1D0'],
-              'Nu': ['1D0','1D-1','1D-2','1D-3'],
-              'Pe': ['1D0','1D-1','1D-2','1D-3'],
-              'Psi': ['0.D0','3D-1'],
-              'N1' : ['1D5','1D0'],
+              'Nu': ['1D0'],
+              'Pe': ['1D0'],
+              'Psi': ['0.D0'],
+              'N1' : ['1D5'],
               'Dr' : ['1D-2'],
               'Ep': ['1D-4'],
               'Dt' : ['1D-6']}
@@ -93,6 +108,25 @@ if not os.path.isdir(Root_Run) or not os.path.isdir(Root_Code):
 print 'Root_Run : ' + Root_Run
 print 'Root_Code : ' + Root_Code
 
+################################
+# Journal de ELAS- Record all the version runed
+if Init == 0 :
+    now = datetime.datetime.now()
+    write = distutils.util.strtobool(input("Do you want to write in the journal ?: "))
+    if write:
+        with open(Root_ELAS+Journal_ELAS, 'a') as f:
+            f.write('\n'+'####################'+'\n')
+            f.write('-----------------------------'+'\n')
+            f.write(str(now)+' ------- '+Name_Folder_Run)
+            f.write('\n'+'-----------------------------'+'\n')
+            f.write('Short Description of the runs you are aiming to run ?\n')
+            f.write(str(raw_input('Short descriptin of '+Name_Folder_Run+' ?\n'+'\n')))
+            f.write('\n'+'-----------------------------'+'\n')
+            f.write('Liste des parametres, i.e. Nombre de Runs'+'\n')
+            for key,item in Dict_Param.iteritems():
+                f.write(key+': '+str(item)+'\n')
+            f.write('\n'+'####################'+'\n')
+        
 ################################
 # Date + fichier a ecrire + indications
     
