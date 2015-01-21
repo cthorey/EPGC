@@ -105,7 +105,7 @@ PROGRAM MAIN
 
   TEMPS: DO WHILE (tmps<tmps_m)
 
-     IF (tmps>5D0) THEN
+     IF (tmps>2.5D0) THEN
         Dt = 1D-5
      ENDIF
 

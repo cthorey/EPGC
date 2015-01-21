@@ -41,26 +41,14 @@ elif _platform == "darwin":
     Journal_ELAS = 'Journal_ELAS.txt'
     Compilateur = 'gfortran'
 
-# Dict_Param = {'Sigma': ['5D-2'],
-#               'Delta0': ['5D-3'],
-#               'Grav': ['0D0'],
-#               'El': ['1D0'],
-#               'Nu': ['1D0','1D-1','1D-2','1D-3'],
-#               'Pe': ['1D0','1D-1','1D-2','1D-3'],
-#               'Psi': ['0.D0','3D-1'],
-#               'N1' : ['1D5','1D0'],
-#               'Dr' : ['1D-2'],
-#               'Ep': ['1D-4'],
-#               'Dt' : ['1D-6']}
-
 Dict_Param = {'Sigma': ['5D-2'],
               'Delta0': ['5D-3'],
-              'Grav': ['0D0'],
+              'Grav': ['1D0'],
               'El': ['1D0'],
-              'Nu': ['1D0'],
-              'Pe': ['1D0'],
-              'Psi': ['0.D0'],
-              'N1' : ['1D5'],
+              'Nu': ['1D0','1D-1','1D-2','1D-3'],
+              'Pe': ['1D0','1D-1','1D-2','1D-3'],
+              'Psi': ['0.D0','3D-1'],
+              'N1' : ['1D5','1D0'],
               'Dr' : ['1D-2'],
               'Ep': ['1D-4'],
               'Dt' : ['1D-6']}
@@ -262,45 +250,51 @@ for run in Dict_Run:
 
     subprocess.call(str(Root_Code)+'run_tmp.sh', shell=True)
 
-
-# Make the fihcier to run on malbec
-# if _platform == "linux" or _platform == "linux2":
 with open( str(Root_Code) + 'run.job' , 'r') as script:
-    with open(str(Root_Code)+'List_Job'+'.job', 'wr+') as script_tmp:
+    with open(str(Root_Code)+'run_tmp'+'.job', 'wr+') as script_tmp:
         for l in script:
             if l == '#SBATCH -J Run\n':
                 to_write = l.replace('Run','EL_'+Name_Folder_Run)
             elif l == 'cd dir\n':
                 to_write = l.replace('dir',Root_Code)
             elif l == '#SBATCH --nodes Null\n':
-                to_write = l.replace('Null',str((len(Dict_Run)-1)//16+1))
+                to_write = l.replace('Null',str(1))
             else:
                 to_write = l
             script_tmp.write(to_write)
 
-with open(str(Root_Code)+'List_Job.job', 'a') as fc:
-    for i,run in enumerate(Dict_Run):
-        name = str('E' + run['El']
-                   + '_G' + run['Grav']
-                   + '_N' + run['Nu']
-                   + '_P' + run['Pe']
-                   + '_D' + run['Delta0']
-                   + '_C' + run['Psi']
-                   + '_R' + run['N1']
-                   + '_S' + run['Sigma']
-                   + '_Dr' + run['Dr']
-                   + '_Ep' + run['Ep']
-                   + '_Dt' + run['Dt'])
-        if i == len(Dict_Run)-1:
-            fc.write('./'+name+'')
+#On clean les potentiel fichier deja present first
+map(os.remove,[str(Root_Code)+f for f in os.listdir(str(Root_Code))
+               if f.split('_')[0] == 'run' and f.split('_')[1]=='tmp' and f.split('.')[-1]=='job'])
+Tmp_File = []
+for i,run in enumerate(Dict_Run):
+    name = str('E' + run['El']
+               + '_G' + run['Grav']
+               + '_N' + run['Nu']
+               + '_P' + run['Pe']
+               + '_D' + run['Delta0']
+               + '_C' + run['Psi']
+               + '_R' + run['N1']
+               + '_S' + run['Sigma']
+               + '_Dr' + run['Dr']
+               + '_Ep' + run['Ep']
+               + '_Dt' + run['Dt'])
+    Job_File = str(Root_Code)+'run_tmp_'+str(i//16)+'.job'
+    print i,Job_File
+    compteur = (i+1)%16
+    if not os.path.exists(Job_File):
+        shutil.copy(str(Root_Code)+'run_tmp.job',Job_File)
+        Tmp_File.append(Job_File)
+    with open(Job_File, 'a') as fc:
+        if compteur == 0:
+            fc.write('srun '+name+'')
         else:
-            fc.write('./'+name+'&\n')
+            fc.write('srun '+name+'&\n')
         if write:
             with open(Root_Code + Bactrace_Run, 'a') as f:
                 f.write(name +'\n')
 
-print 'sbatch '+ Root_Code+ 'List_Job.job'
-script = str('sbatch '+ Root_Code+ 'List_Job.job')
-subprocess.call(script ,shell=True)
-
-print 'Successfull'
+for file in Tmp_File:
+    print 'On lance '+file
+    script = str('sbatch '+ file)
+    subprocess.call(script ,shell=True)

@@ -10,7 +10,7 @@ Output_Time*
 E1D0*
 log*
 *_tmp.f90
-
+*_tmp*
 
 # Compiled Object files
 *.slo
