@@ -27,7 +27,7 @@ import datetime
 
 if _platform == "linux" or _platform == "linux2":
     Root_ELAS = '/gpfs/users/thorey/ELAS/'
-    Root_Run = '/gpfs/users/thorey/ELAS/'
+    Root_Run = '/gpfs/users/thorey/ELAS/' # Modifier la pour le dossier ou l'on va travailler
     Root_Code = '/home/thorey/Code_ELAS/'
     Name_Folder_Run = '' # Remplir si on veut faire un test dans un dossier specific
     Bactrace_Run = 'Bactrack.txt'
@@ -45,8 +45,8 @@ Dict_Param = {'Sigma': ['5D-2'],
               'Delta0': ['5D-3'],
               'Grav': ['1D0'],
               'El': ['1D0'],
-              'Nu': ['1D0','1D-1','1D-2','1D-3'],
-              'Pe': ['1D0','1D-1','1D-2','1D-3'],
+              'Nu': ['1D0','1D-3','1D-6'],
+              'Pe': ['1D0','1D-3'],
               'Psi': ['0.D0','3D-1'],
               'N1' : ['1D5','1D0'],
               'Dr' : ['1D-2'],
@@ -54,7 +54,6 @@ Dict_Param = {'Sigma': ['5D-2'],
               'Dt' : ['1D-6']}
 
 Init = 0 # 1 If you want to begin for the last backup
-
 space = '\n --------------------- \n'
 
 ################################
@@ -73,8 +72,10 @@ if Init == 0:
         os.mkdir(Root_Run+Name_Folder_Run)
         shutil.copytree(Root_Code,Root_Run+Name_Folder_Run+'/Run_Code')
     else :
-        os.mkdir(Root_Run+Name_Folder_Run)
-        shutil.copytree(Root_Code,Root_Run+Name_Folder_Run+'/Run_Code')
+        if not os.path.isdir(Root_Run+Name_Folder_Run):
+            os.mkdir(Root_Run+Name_Folder_Run)
+            shutil.copytree(Root_Code,Root_Run+Name_Folder_Run+'/Run_Code')
+        print Root_Run+Name_Folder_Run
 elif Init == 1:
     print Root_Run+Name_Folder_Run
     if Name_Folder_Run == '':
@@ -96,25 +97,6 @@ if not os.path.isdir(Root_Run) or not os.path.isdir(Root_Code):
 print 'Root_Run : ' + Root_Run
 print 'Root_Code : ' + Root_Code
 
-################################
-# Journal de ELAS- Record all the version runed
-if Init == 0 :
-    now = datetime.datetime.now()
-    write = distutils.util.strtobool(input("Do you want to write in the journal ?: "))
-    if write:
-        with open(Root_ELAS+Journal_ELAS, 'a') as f:
-            f.write('\n'+'####################'+'\n')
-            f.write('-----------------------------'+'\n')
-            f.write(str(now)+' ------- '+Name_Folder_Run)
-            f.write('\n'+'-----------------------------'+'\n')
-            f.write('Short Description of the runs you are aiming to run ?\n')
-            f.write(str(raw_input('Short descriptin of '+Name_Folder_Run+' ?\n'+'\n')))
-            f.write('\n'+'-----------------------------'+'\n')
-            f.write('Liste des parametres, i.e. Nombre de Runs'+'\n')
-            for key,item in Dict_Param.iteritems():
-                f.write(key+': '+str(item)+'\n')
-            f.write('\n'+'####################'+'\n')
-        
 ################################
 # Date + fichier a ecrire + indications
     
@@ -138,7 +120,6 @@ print 'On s"apprete a lancer '+str(len(Dict_Run))+' jobs'
 
 ################################
 # 3) Boucle sur les runs
-
 for run in Dict_Run:
 
     name = str('E' + run['El']
@@ -159,12 +140,23 @@ for run in Dict_Run:
         print ' Start from no backup \n'
         Backup = [ '0' , 'Backup_000000.dat']
         if os.path.isdir(Root_Run+name):
-            Bool =distutils.util.strtobool(input(" Directory already exist, Do you want to remove it ? yes or no ?: "))
+            print 'Le repertoire existe deja: Voici la liste des fichiers:'
+            print [elt for elt in os.listdir(Root_Run+name) if elt.split('_')[0] == 'Backup']
+            if len([elt for elt in os.listdir(Root_Run+name) if elt.split('_')[0] == 'Backup']) == 0:
+                Bool = True
+            else:
+                Bool =distutils.util.strtobool(input(" Directory already exist, Do you want to remove it ? yes or no ?: ")) 
             if Bool:
                 shutil.rmtree(Root_Run+name)
                 os.mkdir(Root_Run+name)
             else:
-                sys.exit()
+                if len([elt for elt in os.listdir(Root_Run+name) if elt.split('_')[0] == 'Backup'])<2:
+                    print 'Pas de fichier backup dans le dossier '+name+' considerer. \n Consider to say do to the question before'
+                    raise SystemExit
+                else :
+                    back = [elt for elt in os.listdir(Root_Run+name) if elt.split('_')[0] == 'Backup'][-1]
+                    Backup = [ '1' , back]
+                    print 'On repart du fichier ' + back 
         else:
             os.mkdir(Root_Run+name)
     elif Init == 1:
@@ -250,6 +242,9 @@ for run in Dict_Run:
 
     subprocess.call(str(Root_Code)+'run_tmp.sh', shell=True)
 
+# Make the fihcier to run on malbec
+# if _platform == "linux" or _platform == "linux2":
+
 with open( str(Root_Code) + 'run.job' , 'r') as script:
     with open(str(Root_Code)+'run_tmp'+'.job', 'wr+') as script_tmp:
         for l in script:
@@ -286,10 +281,10 @@ for i,run in enumerate(Dict_Run):
         shutil.copy(str(Root_Code)+'run_tmp.job',Job_File)
         Tmp_File.append(Job_File)
     with open(Job_File, 'a') as fc:
-        if compteur == 0:
-            fc.write('srun '+name+'')
+        if compteur == 0 or i == len(Dict_Run)-1:
+            fc.write('./'+name+'')
         else:
-            fc.write('srun '+name+'&\n')
+            fc.write('./'+name+'&\n')
         if write:
             with open(Root_Code + Bactrace_Run, 'a') as f:
                 f.write(name +'\n')
