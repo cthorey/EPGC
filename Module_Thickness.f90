@@ -10,7 +10,7 @@ USE MODULE_THICKNESS_GFD
 
 CONTAINS
 
-  SUBROUTINE  THICKNESS_SOLVER(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,eps_1)
+  SUBROUTINE  THICKNESS_SOLVER(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,eps_1,ERROR_CODE)
 
     IMPLICIT NONE
     ! Tableaux
@@ -21,6 +21,7 @@ CONTAINS
     ! Parametre du model
     DOUBLE PRECISION ,INTENT(IN) :: Dt,Dr,eps_1
     INTEGER ,INTENT(IN) :: M
+    INTEGER, INTENT(INOUT) :: ERROR_CODE
 
     ! Nombre sans dimension
     DOUBLE PRECISION ,INTENT(IN) :: el,grav,sigma,nu,delta0
@@ -36,11 +37,13 @@ CONTAINS
     THICKNESS_ITERATION: DO 
        CALL  THICKNESS_NEWTON_SOLVER(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,z,F_err,theta)
        z=z+1
-
-       IF ( F_err>F_errt .OR. z>5000) THEN
+       IF ( F_err>F_errt) THEN
           PRINT*,'Erreur_Ite_Epais',F_err,F_errt
-          ! STOP
        END IF
+       IF (z>50000 .OR. F_Err>1D26) THEN
+          ERROR_CODE = 1
+          EXIT
+       ENDIF
        IF (F_err<eps_1) EXIT
        H(:,2) = H(:,3); H(:,3) = delta0
        F_errt = F_err

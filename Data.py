@@ -16,6 +16,7 @@ Root_malbec = '/gpfs/users/thorey/ELAS/'+Folder_malbec
 Root_laptop = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/SCAPAD/ELAS/'+Folder_laptop
 Workspace_laptop = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/SCAPAD/ELAS/'+Workspace_laptop
 
+
 # On fait un peu de menage
 if reset == 1: # On enleve le dossier et tous ls workspace pr recommecner de zero
     try :
@@ -31,6 +32,10 @@ try:
 except:
     print 'error'
     sys.exit()
+
+#Tester si le dossier workspace existe
+if not os.path.exists(Workspace_laptop):
+    os.mkdir(Workspace_laptop)
 
 # On modifie le file E_Load.py pour le nom du dossier
 with open( str(Routine_python)+'.py', 'r') as script:

@@ -58,6 +58,7 @@ PROGRAM MAIN
 
   !Necessaire au bon fonctionnement
   INTEGER :: cas,size
+  INTEGER :: ERROR_CODE
 
   ! String variable pour les nom fichiers
   CHARACTER(LEN=300) :: Output_racine,Input_Racine,Input_Data_Name
@@ -66,7 +67,7 @@ PROGRAM MAIN
   CHARACTER(LEN=300) :: Format_Input_Data,Format_RV,Format_Backup
   CHARACTER(LEN=300) :: Format_M
   CHARACTER(LEN=300) :: Format_NF,NF,Root_Code !File name output
-
+  CHARACTER(LEN=300) :: NF_Name
   ! Associaion de varialbe
   DOUBLE PRECISION :: delta,Thetas,Thetab,nu_v
   common /arg/ delta,Thetas,Thetab,nu_v
@@ -102,9 +103,12 @@ PROGRAM MAIN
 
   ! Debut de la boucle sur le temps
   tmps_n = 0D0
-
+  ERROR_CODE = 0
   TEMPS: DO WHILE (tmps<tmps_m)
 
+     IF (tmps>1D-4) THEN
+        Dt = 1D-6
+     ENDIF
      IF (tmps>2.5D0) THEN
         Dt = 1D-5
      ENDIF
@@ -138,22 +142,39 @@ PROGRAM MAIN
         H(:,2) = H(:,3); Xi(:,2) = Xi(:,3); T(:,2) = T(:,3); BL(:,2) = BL(:,3); Ts(:,2)= Ts(:,3)
         
         ! Module Epaisseur
-        CALL THICKNESS_SOLVER(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,eps_1)
+        CALL THICKNESS_SOLVER(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,eps_1,ERROR_CODE)
+        IF (ERROR_CODE == 1) THEN
+           WRITE(NF_Name,Format_NF),Root_Code,NF,'_BUG'
+           OPEN(unit =1,file=NF_Name, action ="write",status ="replace")
+           WRITE(1,*)'Le CODE A PLANTE DANS LE SOLVER THICKNESS'
+           CLOSE(1)
+           STOP
+        END IF
         F1 = ABS(MAXVAL((H(:,4)-H(:,3))/(H(:,3))))
 
         ! Module heat transport
-        CALL  THERMAL_SOLVER(Xi,H,T,Ts,BL,P,M,dist,ray,sigma,nu,Pe,psi,delta0,el,grav,Dr,Dt,eps_1,k,N1,tmps)
+        CALL  THERMAL_SOLVER(Xi,H,T,Ts,BL,P,M,dist,ray,sigma,nu,Pe,psi,delta0,el,grav,Dr,Dt,eps_1,k,N1,tmps,ERROR_CODE)
+        IF (ERROR_CODE == 1) THEN
+           WRITE(NF_Name,Format_NF),Root_Code,NF,'_BUG'
+           OPEN(unit =1,file=NF_Name, action ="write",status ="replace")
+           WRITE(1,*)'Le CODE A PLANTE DANS LE THERMAL SOLVER'
+           CLOSE(1)
+           STOP
+        END IF
         Size = COUNT(Xi(:,3)>1D-10)
         F2 = ABS(MAXVAL((Xi(:Size,4)-Xi(:Size,3))/(Xi(:Size,3))))
 
 
         !Condition d'arret  ou de sorti de boucle
         IF (Ite_Glob>20000) THEN
-           PRINT*,'Erreur Ite Global',F1,F2
+           WRITE(NF_Name,Format_NF),Root_Code,NF,'_BUG'
+           OPEN(unit =1,file=NF_Name, action ="write",status ="replace")
+           WRITE(1,*)'Le CODE A PLANTE DANS LE MAIN BOUCLE'
+           CLOSE(1)
            STOP
         END IF
 
-        ! print*,'Ite_Glob',F1,F2,Ite_Glob
+        print*,'Ite_Glob',F1,F2,Ite_Glob
         IF (F1<eps_1 .AND. F2<eps_1 ) EXIT
 
         F1t = F1; H(:,4) = H(:,3)
@@ -188,9 +209,8 @@ PROGRAM MAIN
      k = k+1
 
      tmps_n = tmps
-
-     ! IF (k>1000) STOP
      tmps = tmps+Dt
+     print*,tmps,Dt
 
   END DO TEMPS
 
