@@ -1,9 +1,13 @@
-#!/bin/sh
-#SBATCH -J Run
-#SBATCH --nodes Null
-#SBATCH --partition cpunormal
+#!/bin/bash
+
+#SBATCH -J Name
+#SBATCH --nodes=Nnode
+#SBATCH --ntasks=Ntask
+#SBATCH --exclusive
+
 echo "Running on: $SLURM_NODELIST"
 cd dir
 module purge
 module load intel/compiler slurm
 
+srun -l --multi-prog Multi_Run
