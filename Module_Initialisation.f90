@@ -39,16 +39,16 @@ CONTAINS
     M = 2000    
     Dt = 1D-6
     Dr = 1D-2
-    eps_1 = 1D-2
+    eps_1 = 1D-4
 
     ! Nombre sans dimensions
     el = 1D0
     grav = 0D0
-    delta0 = 1D-1
-    sigma = 2D-2
-    nu = 1D-6
-    Pe = 1D0
-    psi = 0D0
+    delta0 = 5D-3
+    sigma = 5D-2
+    nu = 1D-3
+    Pe = 1D-3
+    psi = 5D0
     N1 = 1D5
 
     ! Variable pour l'outxsput
