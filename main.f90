@@ -173,8 +173,7 @@ PROGRAM MAIN
            CLOSE(1)
            STOP
         END IF
-
-        print*,'Ite_Glob',F1,F2,Ite_Glob
+        
         IF (F1<eps_1 .AND. F2<eps_1 ) EXIT
 
         F1t = F1; H(:,4) = H(:,3)
@@ -210,7 +209,7 @@ PROGRAM MAIN
 
      tmps_n = tmps
      tmps = tmps+Dt
-     print*,tmps,Dt
+     print*,'tmps',tmps,Dt
 
   END DO TEMPS
 

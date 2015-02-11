@@ -164,6 +164,7 @@ CONTAINS
     En_t2 = Int_1_t2
     ! Energie sources en J s
     Phi_s = Int_4-psi*Int_2
+    PRINT*,Phi_s,'Conservation',int_4,psi*Int_2
     ! Energie lost en J s
     Phi_l = 4D0*Pe*Int_3
     
