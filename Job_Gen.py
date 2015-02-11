@@ -26,8 +26,8 @@ import datetime
 # 1) Parametre a creer :
 
 if _platform == "linux" or _platform == "linux2":
-    Root_ELAS = '/gpfs/users/thorey/ELAS_GRAV/'
-    Root_Run = '/gpfs/users/thorey/ELAS_GRAV/' # Modifier la pour le dossier ou l'on va travailler
+    Root_ELAS = '/gpfs/users/thorey/ELAS/'
+    Root_Run = '/gpfs/users/thorey/ELAS/' # Modifier la pour le dossier ou l'on va travailler
     Root_Code = '/home/thorey/Code_ELAS/'
     Name_Folder_Run = '' # Remplir si on veut faire un test dans un dossier specific
     Bactrace_Run = 'Bactrack.txt'
@@ -46,13 +46,13 @@ Dict_Param = {'Sigma': ['5D-2'],
               'Delta0': ['5D-3'],
               'Grav': ['0D0'],
               'El': ['1D0'],
-              'Nu': ['1D-1','1D-2','1D-3','1D-4','1D-5','1D-6'],
-              'Pe': ['1D-1','1D-2','1D-3','1D-4','1D-5'],
-              'Psi': ['0.D0'],
+              'Nu': ['1D0','1D-2','1D-3'],
+              'Pe': ['1D0','1D-1','1D-2','1D-3','1D-4'],
+              'Psi': ['0.D0','1D0','5D0'],
               'N1' : ['1D5'],
               'Dr' : ['1D-2'],
-              'Ep': ['1D-4','1D-5'],
-              'Dt' : ['1D-7','1D-6']}
+              'Ep': ['1D-4'],
+              'Dt' : ['1D-6']}
 
 M_grid = 4000
 Init = 0 # 1 If you want to begin for the last backup
