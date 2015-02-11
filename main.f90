@@ -146,7 +146,7 @@ PROGRAM MAIN
         IF (ERROR_CODE == 1) THEN
            WRITE(NF_Name,Format_NF),Root_Code,NF,'_BUG'
            OPEN(unit =1,file=NF_Name, action ="write",status ="replace")
-           WRITE(1,*)'Le CODE A PLANTE DANS LE SOLVER THICKNESS'
+           WRITE(1,*)'Le CODE A PLANTE DANS LE SOLVER THICKNESS',tmps
            CLOSE(1)
            STOP
         END IF
@@ -157,7 +157,7 @@ PROGRAM MAIN
         IF (ERROR_CODE == 1) THEN
            WRITE(NF_Name,Format_NF),Root_Code,NF,'_BUG'
            OPEN(unit =1,file=NF_Name, action ="write",status ="replace")
-           WRITE(1,*)'Le CODE A PLANTE DANS LE THERMAL SOLVER'
+           WRITE(1,*)'Le CODE A PLANTE DANS LE THERMAL SOLVER',tmps
            CLOSE(1)
            STOP
         END IF
@@ -169,7 +169,7 @@ PROGRAM MAIN
         IF (Ite_Glob>20000) THEN
            WRITE(NF_Name,Format_NF),Root_Code,NF,'_BUG'
            OPEN(unit =1,file=NF_Name, action ="write",status ="replace")
-           WRITE(1,*)'Le CODE A PLANTE DANS LE MAIN BOUCLE'
+           WRITE(1,*)'Le CODE A PLANTE DANS LE MAIN BOUCLE',tmps
            CLOSE(1)
            STOP
         END IF
@@ -209,7 +209,6 @@ PROGRAM MAIN
 
      tmps_n = tmps
      tmps = tmps+Dt
-     print*,'tmps',tmps,Dt
 
   END DO TEMPS
 
