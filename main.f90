@@ -106,13 +106,6 @@ PROGRAM MAIN
   ERROR_CODE = 0
   TEMPS: DO WHILE (tmps<tmps_m)
 
-     IF (tmps>1D-4) THEN
-        Dt = 1D-6
-     ENDIF
-     IF (tmps>2.5D0) THEN
-        Dt = 1D-5
-     ENDIF
-
      OPEN(unit=3,file='Output.txt')
 
      Cas=0
@@ -146,7 +139,7 @@ PROGRAM MAIN
         IF (ERROR_CODE == 1) THEN
            WRITE(NF_Name,Format_NF),Root_Code,NF,'_BUG'
            OPEN(unit =1,file=NF_Name, action ="write",status ="replace")
-           WRITE(1,*)'Le CODE A PLANTE DANS LE SOLVER THICKNESS'
+           WRITE(1,*)'Le CODE A PLANTE DANS LE SOLVER THICKNESS',tmps
            CLOSE(1)
            STOP
         END IF
@@ -157,7 +150,7 @@ PROGRAM MAIN
         IF (ERROR_CODE == 1) THEN
            WRITE(NF_Name,Format_NF),Root_Code,NF,'_BUG'
            OPEN(unit =1,file=NF_Name, action ="write",status ="replace")
-           WRITE(1,*)'Le CODE A PLANTE DANS LE THERMAL SOLVER'
+           WRITE(1,*)'Le CODE A PLANTE DANS LE THERMAL SOLVER',tmps
            CLOSE(1)
            STOP
         END IF
@@ -169,12 +162,11 @@ PROGRAM MAIN
         IF (Ite_Glob>20000) THEN
            WRITE(NF_Name,Format_NF),Root_Code,NF,'_BUG'
            OPEN(unit =1,file=NF_Name, action ="write",status ="replace")
-           WRITE(1,*)'Le CODE A PLANTE DANS LE MAIN BOUCLE'
+           WRITE(1,*)'Le CODE A PLANTE DANS LE MAIN BOUCLE',tmps
            CLOSE(1)
            STOP
         END IF
 
-        print*,'Ite_Glob',F1,F2,Ite_Glob
         IF (F1<eps_1 .AND. F2<eps_1 ) EXIT
 
         F1t = F1; H(:,4) = H(:,3)
@@ -210,7 +202,6 @@ PROGRAM MAIN
 
      tmps_n = tmps
      tmps = tmps+Dt
-     print*,tmps,Dt
 
   END DO TEMPS
 
