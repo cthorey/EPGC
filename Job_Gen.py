@@ -46,14 +46,15 @@ Dict_Param = {'Sigma': ['5D-2'],
               'Delta0': ['5D-3'],
               'Grav': ['0D0'],
               'El': ['1D0'],
-              'Nu': ['1D0'],
-              'Pe': ['1D0'],
-              'Psi': ['1D0'],
+              'Nu': ['1D0','1D-2','1D-3'],
+              'Pe': ['1D0','1D-1','1D-2','1D-3','1D-4'],
+              'Psi': ['0.D0','1D0','5D0'],
               'N1' : ['1D5'],
               'Dr' : ['1D-2'],
               'Ep': ['1D-4'],
               'Dt' : ['1D-6']}
 
+M_grid = 4000
 Init = 0 # 1 If you want to begin for the last backup
 space = '\n --------------------- \n'
 
@@ -105,6 +106,25 @@ if not os.path.isdir(Root_Run) or not os.path.isdir(Root_Code):
 print 'Root_Run : ' + Root_Run
 print 'Root_Code : ' + Root_Code
 
+################################
+# Journal de ELAS- Record all the version runed
+if Init == 0 :
+    now = datetime.datetime.now()
+    write = distutils.util.strtobool(input("Do you want to write in the journal ?: "))
+    if write:
+        with open(Root_ELAS+Journal_ELAS, 'a') as f:
+            f.write('\n'+'####################'+'\n')
+            f.write('-----------------------------'+'\n')
+            f.write(str(now)+' ------- '+Name_Folder_Run)
+            f.write('\n'+'-----------------------------'+'\n')
+            f.write('Short Description of the runs you are aiming to run ?\n')
+            f.write(str(raw_input('Short descriptin of '+Name_Folder_Run+' ?\n'+'\n')))
+            f.write('\n'+'-----------------------------'+'\n')
+            f.write('Liste des parametres, i.e. Nombre de Runs'+'\n')
+            for key,item in Dict_Param.iteritems():
+                f.write(key+': '+str(item)+'\n')
+            f.write('\n'+'####################'+'\n')
+            
 ################################
 # Date + fichier a ecrire + indications
     
@@ -194,6 +214,8 @@ for run in Dict_Run:
                         to_write = l.replace('Size_Name',str(len(name)))
                     elif l == '    CHARACTER(LEN=Size) :: Root_Code\n':
                         to_write = l.replace('Size',str(len(Racine)))
+                    elif l == '    M = Null\n':
+                        to_write = l.replace('Null',str(M_grid))
                     elif l == '    Sigma = Null\n':
                         to_write = l.replace('Null',run['Sigma'])
                     elif l == '    Delta0 = Null\n':
@@ -252,7 +274,6 @@ for run in Dict_Run:
 
 # Make the fihcier to run on malbec
 if _platform == "linux" or _platform == "linux2":
-    
     with open( str(Root_Code) + 'run.job' , 'r') as script:
         with open(str(Root_Code)+'run_tmp'+'.job', 'wr+') as script_tmp:
             for l in script:
@@ -267,7 +288,6 @@ if _platform == "linux" or _platform == "linux2":
                 else:
                     to_write = l
                 script_tmp.write(to_write)
-
     #On ecrit le fichier Multi_Job
     map(os.remove,[str(Root_Code)+f for f in os.listdir(str(Root_Code))
                    if f.split('_')[0] == 'Multi'])

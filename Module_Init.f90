@@ -36,7 +36,7 @@ CONTAINS
 
     ! Parametre du model
     tmps_m = 1D32  
-    M = 2000    
+    M = Null
     Dt = Null
     Dr = Null
     eps_1 = Null

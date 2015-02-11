@@ -40,7 +40,7 @@ CONTAINS
        IF ( F_err>F_errt) THEN
           PRINT*,'Erreur_Ite_Epais',F_err,F_errt
        END IF
-       IF (z>50000 .OR. F_Err>1D26) THEN
+       IF (z>50000 .OR. F_Err>1D30) THEN
           ERROR_CODE = 1
           EXIT
        ENDIF

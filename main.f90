@@ -106,13 +106,6 @@ PROGRAM MAIN
   ERROR_CODE = 0
   TEMPS: DO WHILE (tmps<tmps_m)
 
-     IF (tmps>1D-4) THEN
-        Dt = 1D-6
-     ENDIF
-     IF (tmps>2.5D0) THEN
-        Dt = 1D-5
-     ENDIF
-
      OPEN(unit=3,file='Output.txt')
 
      Cas=0
@@ -173,7 +166,7 @@ PROGRAM MAIN
            CLOSE(1)
            STOP
         END IF
-        
+
         IF (F1<eps_1 .AND. F2<eps_1 ) EXIT
 
         F1t = F1; H(:,4) = H(:,3)
@@ -209,7 +202,6 @@ PROGRAM MAIN
 
      tmps_n = tmps
      tmps = tmps+Dt
-
   END DO TEMPS
 
   DEALLOCATE(H,T,Xi,BL,Ts)
