@@ -1,10 +1,12 @@
-MODULE MODULE_THERMAL_NEWTON
+MODULE MODULE_THERMAL_NEWTON_CRYS_2
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!  Module newton + Crystalisation on reeecrit le terme dh/dt en fonction de xi
 
 CONTAINS
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!  SUBROUTINE THICKNESS_NEWTON_SOLVER
 
-  SUBROUTINE THERMAL_NEWTON_SOLVER(Xi,H,P,T,Ts,BL,Dt,Dr,theta,dist,ray,M,sigma,nu,Pe,psi,delta0,el,grav,N1,F_err,z,tmps)
+  SUBROUTINE THERMAL_NEWTON_SOLVER_CRYS_2(Xi,H,P,T,Ts,BL,Dt,Dr,theta,dist,ray,M,sigma,nu,Pe,psi,delta0,el,grav,N1,F_err,z,tmps)
 
     !*****************************************************************
     ! Solve for the parameter Xi, and split in Temperature and thermal layer
@@ -30,7 +32,7 @@ CONTAINS
     DOUBLE PRECISION, DIMENSION(:),ALLOCATABLE :: Xi_guess,Xi_tmps
     DOUBLE PRECISION, DIMENSION(:),ALLOCATABLE :: a,b,c,S
     DOUBLE PRECISION, DIMENSION(:),ALLOCATABLE :: a1,b1,c1
-    DOUBLE PRECISION ,DIMENSION(:), ALLOCATABLE :: Xi_m
+    DOUBLE PRECISION ,DIMENSION(:), ALLOCATABLE :: Xi_m,qa
 
     DOUBLE PRECISION :: U
     INTEGER :: i,ndyke,N,Size
@@ -48,6 +50,21 @@ CONTAINS
        N = COUNT(H(:,1)>delta0) +10
     END SELECT
 
+    ! Caracterisation du flux
+    ALLOCATE(qa(1:N),stat=err1)
+    IF (err1>1) THEN
+       PRINT*, 'Erreur alloc flux';STOP
+    END IF
+
+    DO i = 1,N,1
+       U = 2.d0/(sigma)**4.
+       IF (i<ndyke+1) THEN
+          qa(i) = U*(sigma**2.-dist(i)**2.)
+       ELSE 
+          qa(i) = 0.d0
+       END IF
+    END DO
+
     ! Calcule de f tmps n et n+
     ALLOCATE(Xi_tmps(1:N),Xi_guess(1:N),stat=err1)
     IF (err1>1) THEN
@@ -55,9 +72,9 @@ CONTAINS
     END IF
 
     col=1
-    CALL TEMPERATURE_BALMFORTH(Xi_tmps,col,N,Xi,H,T,Ts,BL,P,dist,ray,Dr,nu,Pe,delta0,el,grav,N1,tmps+Dt,psi,Dt)
+    CALL TEMPERATURE_BALMFORTH(Xi_tmps,col,N,Xi,H,T,Ts,BL,P,dist,ray,Dr,nu,Pe,delta0,el,grav,N1,tmps+Dt,psi,Dt,qa)
     col=2
-    CALL TEMPERATURE_BALMFORTH(Xi_guess,col,N,Xi,H,T,Ts,BL,P,dist,ray,Dr,nu,Pe,delta0,el,grav,N1,tmps+Dt,psi,Dt)
+    CALL TEMPERATURE_BALMFORTH(Xi_guess,col,N,Xi,H,T,Ts,BL,P,dist,ray,Dr,nu,Pe,delta0,el,grav,N1,tmps+Dt,psi,Dt,qa)
 
     ! Jacobienner
     ALLOCATE(a1(1:N),b1(1:N),c1(1:N),stat=err1)
@@ -65,7 +82,7 @@ CONTAINS
        PRINT*, 'Erreur allocation dans coeff Temperature'; STOP
     END IF
 
-    CALL JACOBI_TEMPERATURE_BALMFORTH(a1,b1,c1,N,H,BL,T,Ts,Xi,P,Dr,dist,ray,nu,Pe,delta0,el,grav)
+    CALL JACOBI_TEMPERATURE_BALMFORTH(a1,b1,c1,N,H,BL,T,Ts,Xi,P,Dr,dist,ray,nu,Pe,delta0,el,grav,psi,Dt)
 
     !Systeme a inverser
     ALLOCATE(a(1:N),b(1:N),c(1:N),S(1:N),stat= err1)
@@ -111,7 +128,7 @@ CONTAINS
     DEALLOCATE(Xi_m,a,b,c,S)
     DEALLOCATE(Xi_guess,Xi_tmps,a1,b1,c1)
 
-  END SUBROUTINE THERMAL_NEWTON_SOLVER
+  END SUBROUTINE THERMAL_NEWTON_SOLVER_CRYS_2
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !-------------------------------------------------------------------------------------
@@ -367,7 +384,7 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
   !-------------------------------------------------------------------------------------
   !-------------------------------------------------------------------------------------
 
-  SUBROUTINE TEMPERATURE_BALMFORTH(f,col,N,Xi,H,T,Ts,BL,P,dist,ray,Dr,nu,Pe,delta0,el,grav,N1,tmps,psi,Dt)
+  SUBROUTINE TEMPERATURE_BALMFORTH(f,col,N,Xi,H,T,Ts,BL,P,dist,ray,Dr,nu,Pe,delta0,el,grav,N1,tmps,psi,Dt,qa)
 
     !*****************************************************************
     ! Give the vector f
@@ -378,7 +395,7 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
     ! Tableaux
     DOUBLE PRECISION ,DIMENSION(:) , INTENT(INOUT) :: f
     DOUBLE PRECISION ,DIMENSION(:,:), INTENT(IN) :: H,Xi,T,Ts,BL,P
-    DOUBLE PRECISION ,DIMENSION(:), INTENT(IN) :: dist,ray
+    DOUBLE PRECISION ,DIMENSION(:), INTENT(IN) :: dist,ray,qa
 
     ! Prametre du model
     DOUBLE PRECISION ,INTENT(IN) :: Dr 
@@ -435,7 +452,9 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
                &(1-nu)*(22.d0*Ds_a*delta_a-35.d0*Ds_a*h_a-98.d0*T_a*delta_a+105.d0*T_a*h_a))
        END IF IF2
 
-       Crys = 0.5D0*psi*(T(i,col)-1D0)*(H(i,3)-H(i,1))/Dt
+       ! Crys = 0.5D0*psi*(T(i,col)-1D0)*(H(i,3)-H(i,1))/Dt
+       Crys = 0.5D0*psi*(T(i,col)-1D0)*(Ai*h_a*Omega_a-Bi*h_b*Omega_b)+0.5D0*psi*(T(i,col)-1)*qa(i)
+       ! Crys = 3D0*Xi(i,col)*psi*(T(i,col)-1D0)*(1D0/(3D0-2D0*T(i,2))-1D0/(3D0-2D0*T(i,1)))/Dt
        beta = N1*Pe**(-0.5d0)/(sqrt(pi*tmps))
        loss = Pe*beta*Ts(i,col)
        ! loss = 2D0*Pe*T(i,col)/BL(i,col)
@@ -452,105 +471,9 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
        ! print*,i,f(i),loss,Ai*Omega_a*Xi(i,col),-Bi*Omega_b*Xi(i-1,col),Ai*Sigma_a-Bi*Sigma_b,Crys
 
     END DO
+
 
   END SUBROUTINE TEMPERATURE_BALMFORTH
-
-
-!-------------------------------------------------------------------------------------
-  !-------------------------------------------------------------------------------------
-  !  SUBROUTINE TEMPERATURE NOUVELL NOTATION
-  !CRYSTALISATION
-  !-------------------------------------------------------------------------------------
-  !-------------------------------------------------------------------------------------
-
-  SUBROUTINE TEMPERATURE_BALMFORTH_CRYS_2(f,col,N,Xi,H,T,Ts,BL,P,dist,ray,Dr,nu,Pe,delta0,el,grav,N1,tmps,psi,Dt)
-
-    !*****************************************************************
-    ! Give the vector f
-    !*****************************************************************
-
-    IMPLICIT NONE
-
-    ! Tableaux
-    DOUBLE PRECISION ,DIMENSION(:) , INTENT(INOUT) :: f
-    DOUBLE PRECISION ,DIMENSION(:,:), INTENT(IN) :: H,Xi,T,Ts,BL,P
-    DOUBLE PRECISION ,DIMENSION(:), INTENT(IN) :: dist,ray
-
-    ! Prametre du model
-    DOUBLE PRECISION ,INTENT(IN) :: Dr 
-    INTEGER ,INTENT(IN) :: col,N
-
-    ! Nombre sans dimension
-    DOUBLE PRECISION ,INTENT(IN) :: nu,Pe,delta0,el,grav,N1,tmps,psi,Dt
-
-    ! Parametre pour le sous programme
-    DOUBLE PRECISION, PARAMETER :: pi=3.14159265
-
-    DOUBLE PRECISION :: h_a,delta_a,delta_a2,eta_a,Ai,T_a
-    DOUBLE PRECISIOn :: omega_a,sigma_a
-
-    DOUBLE PRECISION :: h_b,delta_b,delta_b2,eta_b,Bi,T_b
-    DOUBLE PRECISIOn :: omega_b,sigma_b,Ts_a,Ts_b,Ds_b,Ds_a
-    DOUBLE PRECISION :: loss,beta
-    DOUBLE PRECISION :: Crys
-    INTEGER :: i,Na
-
-    ! Remplissage de f
-
-    DO i=1,N,1   
-
-       IF1:IF (i .NE. 1) THEN
-          eta_b=(grav*(H(i,3)-H(i-1,3))+el*(P(i,3)-P(i-1,3)))/Dr
-          Bi=(ray(i-1)/(dist(i)*Dr))
-          h_b=0.5d0*(H(i,3)+H(i-1,3))
-          delta_b=0.5d0*(BL(i,col)+BL(i-1,col))
-          delta_b2=0.5d0*(BL(i,col)**2+BL(i-1,col)**2)
-          T_b = 0.5d0*(T(i,col)+T(i-1,col))
-          Ts_b = 0.5d0*(Ts(i,col)+Ts(i-1,col))
-          Ds_b = T_b-Ts_b
-
-          omega_b = (eta_b*delta_b)/10.d0*(nu*(-20.d0*delta_b+30.d0*h_b)+&
-               &(1.d0-nu)*(6.d0*Ds_b*delta_b-15.d0*Ds_b*h_b-20.d0*T_b*delta_b+30.d0*T_b*h_b))
-          sigma_b = (-1.d0/210.d0)*Ds_b*delta_b2*eta_b*(nu*(-98.d0*delta_b+105.d0*h_b)+&
-               &(1-nu)*(22.d0*Ds_b*delta_b-35.d0*Ds_b*h_b-98.d0*T_b*delta_b+105.d0*T_b*h_b))
-       ENDIF IF1
-
-       IF2: IF (i .NE. N) THEN
-          eta_a=(grav*(H(i+1,3)-H(i,3))+el*(P(i+1,3)-P(i,3)))/Dr
-          Ai=(ray(i)/(dist(i)*Dr))
-          h_a=0.5d0*(H(i+1,3)+H(i,3))
-          delta_a=0.5d0*(BL(i+1,col)+BL(i,col))
-          delta_a2=0.5d0*(BL(i+1,col)**2+BL(i,col)**2)
-          T_a = 0.5d0*(T(i,col)+T(i+1,col))
-          Ts_a = 0.5d0*(Ts(i,col)+Ts(i+1,col))
-          Ds_a = T_a-Ts_a
-
-          omega_a = (eta_a*delta_a)/10.d0*(nu*(-20.d0*delta_a+30.d0*h_a)+&
-               &(1.d0-nu)*(6.d0*Ds_a*delta_a-15.d0*Ds_a*h_a-20.d0*T_a*delta_a+30.d0*T_a*h_a))
-          sigma_a = (-1.d0/210.d0)*Ds_a*delta_a2*eta_a*(nu*(-98.d0*delta_a+105.d0*h_a)+&
-               &(1-nu)*(22.d0*Ds_a*delta_a-35.d0*Ds_a*h_a-98.d0*T_a*delta_a+105.d0*T_a*h_a))
-       END IF IF2
-
-       Crys = 0.5D0*psi*(T(i,col)-1D0)*(H(i,3)-H(i,1))/Dt
-       beta = N1*Pe**(-0.5d0)/(sqrt(pi*tmps))
-       loss = Pe*beta*Ts(i,col)
-       ! loss = 2D0*Pe*T(i,col)/BL(i,col)
-       IF4: IF (i==1) THEN
-          f(i)=loss+Ai*Omega_a*Xi(i,col)+Ai*Sigma_a-Crys
-       ELSEIF (i==N) THEN
-          f(i)=loss-Bi*Omega_b*Xi(i-1,col)-Bi*Sigma_b-Crys
-       ELSE
-          f(i)=Ai*Omega_a*Xi(i,col)&
-               &-Bi*Omega_b*Xi(i-1,col)&
-               &+Ai*Sigma_a-Bi*Sigma_b &
-               &+loss-Crys
-       END IF IF4
-       ! print*,i,f(i),loss,Ai*Omega_a*Xi(i,col),-Bi*Omega_b*Xi(i-1,col),Ai*Sigma_a-Bi*Sigma_b,Crys
-
-    END DO
-
-  END SUBROUTINE TEMPERATURE_BALMFORTH_CRYS_2
-
 
   !-------------------------------------------------------------------------------------
   !-------------------------------------------------------------------------------------
@@ -558,7 +481,7 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
   !-------------------------------------------------------------------------------------
   !-------------------------------------------------------------------------------------
 
-  SUBROUTINE JACOBI_TEMPERATURE_BALMFORTH(a,b,c,N,H,BL,T,Ts,Xi,P,Dr,dist,ray,nu,Pe,delta0,el,grav)
+  SUBROUTINE JACOBI_TEMPERATURE_BALMFORTH(a,b,c,N,H,BL,T,Ts,Xi,P,Dr,dist,ray,nu,Pe,delta0,el,grav,psi,Dt)
 
     !*****************************************************************
     ! Give the jacobian coeficient a1,b1,c1
@@ -572,11 +495,11 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
     DOUBLE PRECISION ,DIMENSION(:), INTENT(IN) :: dist,ray
 
     ! Prametre du model
-    DOUBLE PRECISION ,INTENT(IN) :: Dr 
+    DOUBLE PRECISION ,INTENT(IN) :: Dr ,Dt
     INTEGER ,INTENT(IN) :: N
 
     ! Nombre sans dimension
-    DOUBLE PRECISION ,INTENT(IN) :: nu,Pe,delta0,el,grav
+    DOUBLE PRECISION ,INTENT(IN) :: nu,Pe,delta0,el,grav,psi
 
     ! Parametre pour le sous programme
 
@@ -634,8 +557,8 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
           b(i) = Ai*Omega_a
           c(i)=0.d0
        END IF IF3
-
     ENDDO
+
   END SUBROUTINE JACOBI_TEMPERATURE_BALMFORTH
 
  !-------------------------------------------------------------------------------------
@@ -866,4 +789,4 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
     ENDDO
   END SUBROUTINE JACOBI_TEMPERATURE_BALMFORTH_2
 
-END MODULE MODULE_THERMAL_NEWTON
+END MODULE MODULE_THERMAL_NEWTON_CRYS_2

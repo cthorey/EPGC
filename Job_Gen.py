@@ -31,19 +31,20 @@ if _platform == "linux" or _platform == "linux2":
     Root_Code = '/home/thorey/Code_ELAS/'
     Name_Folder_Run = '' # Remplir si on veut faire un test dans un dossier specific
     Bactrace_Run = 'Bactrack.txt'
-    Journal_ELAS = 'Journal_ELAS-GRAV.txt'
-    Compilateur = 'ifort'
+    Journal_ELAS = 'Journal_ELAS.txt'
+    Compilateur = 'ifort -O3 -fp-model fast=2'
 elif _platform == "darwin":
-    Root_Run = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/Code/'
-    Root_Code = '/home/thorey/Code_ELAS/'
+    Root_ELAS = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/Code/TEST_ELAS/Run/'
+    Root_Run = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/Code/TEST_ELAS/Run/'
+    Root_Code = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/Code/Code_ELAS/'
     Name_Folder_Run = '' # Remplir si on veut faire un test dans un dossier specific
     Bactrace_Run = 'Bactrack.txt'
     Journal_ELAS = 'Journal_ELAS.txt'
-    Compilateur = 'gfortran'
+    Compilateur = 'gfortran -O3'
 
 Dict_Param = {'Sigma': ['5D-2'],
               'Delta0': ['5D-3'],
-              'Grav': ['1D0'],
+              'Grav': ['0D0'],
               'El': ['1D0'],
               'Nu': ['1D-1','1D-2','1D-3','1D-4','1D-5','1D-6'],
               'Pe': ['1D-1','1D-2','1D-3','1D-4','1D-5'],
@@ -57,6 +58,12 @@ M_grid = 4000
 Init = 0 # 1 If you want to begin for the last backup
 space = '\n --------------------- \n'
 
+def copy_folder(src,dest):
+    os.mkdir(dest)
+    print dest
+    for filee in [f for f in os.listdir(src) if f[0]!='.']:
+        shutil.copy(filee,dest+'/')
+        
 ################################
 # Creation d'un dossier pour acceuillier les simus
 if Init == 0:
@@ -71,7 +78,8 @@ if Init == 0:
             Nombre_Folder = max([int(version.split('_')[2]) for version in List_Folder_Existant])
             Name_Folder_Run = 'Run_'+str(datetime.date.today())+'_'+str(Nombre_Folder+1)
         os.mkdir(Root_Run+Name_Folder_Run)
-        shutil.copytree(Root_Code,Root_Run+Name_Folder_Run+'/Run_Code')
+        copy_folder(Root_Code,Root_Run+Name_Folder_Run+'/Run_Code')
+        # shutil.copytree(Root_Code,Root_Run+Name_Folder_Run+'/Run_Code')
     else :
         if not os.path.isdir(Root_Run+Name_Folder_Run):
             os.mkdir(Root_Run+Name_Folder_Run)
@@ -265,43 +273,41 @@ for run in Dict_Run:
     subprocess.call(str(Root_Code)+'run_tmp.sh', shell=True)
 
 # Make the fihcier to run on malbec
-# if _platform == "linux" or _platform == "linux2":
-
-with open( str(Root_Code) + 'run.job' , 'r') as script:
-    with open(str(Root_Code)+'run_tmp'+'.job', 'wr+') as script_tmp:
-        for l in script:
-            if l == '#SBATCH -J Name\n':
-                to_write = l.replace('Name','ELGRAV')
-            elif l == '#SBATCH --nodes=Nnode\n':
-                to_write = l.replace('Nnode',str((len(Dict_Run)-1)//16+1))
-            elif l == '#SBATCH --ntasks=Ntask\n':
-                to_write = l.replace('Ntask',str((len(Dict_Run))))
-            elif l == 'cd dir\n':
-                to_write = l.replace('dir',Root_Code)
-            else:
-                to_write = l
-            script_tmp.write(to_write)
-
-#On ecrit le fichier Multi_Job
-map(os.remove,[str(Root_Code)+f for f in os.listdir(str(Root_Code))
-               if f.split('_')[0] == 'Multi'])
-Job_File = str(Root_Code)+'Multi_Run'
-for i,run in enumerate(Dict_Run):
-    name = str('E' + run['El']
-               + '_G' + run['Grav']
-               + '_N' + run['Nu']
-               + '_P' + run['Pe']
-               + '_D' + run['Delta0']
-               + '_C' + run['Psi']
-               + '_R' + run['N1']
-               + '_S' + run['Sigma']
-               + '_Dr' + run['Dr']
-               + '_Ep' + run['Ep']
-               + '_Dt' + run['Dt'])
-    with open(Job_File, 'a') as fc:
+if _platform == "linux" or _platform == "linux2":
+    with open( str(Root_Code) + 'run.job' , 'r') as script:
+        with open(str(Root_Code)+'run_tmp'+'.job', 'wr+') as script_tmp:
+            for l in script:
+                if l == '#SBATCH -J Name\n':
+                    to_write = l.replace('Name','EL')
+                elif l == '#SBATCH --nodes=Nnode\n':
+                    to_write = l.replace('Nnode',str((len(Dict_Run)-1)//16+1))
+                elif l == '#SBATCH --ntasks=Ntask\n':
+                    to_write = l.replace('Ntask',str((len(Dict_Run))))
+                elif l == 'cd dir\n':
+                    to_write = l.replace('dir',Root_Code)
+                else:
+                    to_write = l
+                script_tmp.write(to_write)
+    #On ecrit le fichier Multi_Job
+    map(os.remove,[str(Root_Code)+f for f in os.listdir(str(Root_Code))
+                   if f.split('_')[0] == 'Multi'])
+    Job_File = str(Root_Code)+'Multi_Run'
+    for i,run in enumerate(Dict_Run):
+        name = str('E' + run['El']
+                   + '_G' + run['Grav']
+                   + '_N' + run['Nu']
+                   + '_P' + run['Pe']
+                   + '_D' + run['Delta0']
+                   + '_C' + run['Psi']
+                   + '_R' + run['N1']
+                   + '_S' + run['Sigma']
+                   + '_Dr' + run['Dr']
+                   + '_Ep' + run['Ep']
+                   + '_Dt' + run['Dt'])
+        with open(Job_File, 'a') as fc:
             fc.write(str(i)+' '+name+'\n')
             with open(Root_Code + Bactrace_Run, 'a') as f:
                 f.write(name +'\n')
 
-script = str('sbatch '+ str(Root_Code)+'run_tmp'+'.job')
-subprocess.call(script ,shell=True)
+    script = str('sbatch '+ str(Root_Code)+'run_tmp'+'.job')
+    subprocess.call(script ,shell=True)

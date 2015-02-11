@@ -39,15 +39,15 @@ CONTAINS
     M = 2000    
     Dt = 1D-6
     Dr = 1D-2
-    eps_1 = 1D-2
+    eps_1 = 1D-4
 
     ! Nombre sans dimensions
     el = 1D0
     grav = 0D0
-    delta0 = 1D-1
-    sigma = 2D-2
-    nu = 1D-6
-    Pe = 1D0
+    delta0 = 5D-3
+    sigma = 5D-2
+    nu = 1D0
+    Pe = 1D-2
     psi = 0D0
     N1 = 1D5
 
@@ -163,10 +163,11 @@ CONTAINS
        !    BL(i,:) = H(i,:)/2.d0
        !    T(i,:)  = H(i,:)/H(1,1)
        ! ENDDO
-       Ts = 0.d0
+       Ts = 0d0
        P = 0.d0
        BL = H/(2.d0) 
-       Xi = BL/3.D0*(3.D0-2*T-Ts)
+       ! Xi = BL/3.D0*(3.D0-2*T-Ts)
+       Xi = T/3D0*(3D0*H-2D0*BL)
        !Xi = T*H-2.d0/3.d0*T*BL
        k = 0;k1 = 1;k2 = 1;z = 0;tmps = 0
 
