@@ -313,8 +313,7 @@ SUBROUTINE XI_SPLIT(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
 
     ! Separation des variables
     DO i=1,N
-       Xit =2D0*H(i,3)/6.d0
-
+       Xit =2D0*H(i,3)/2.d0
        IF (Xi(i,3) <= Xit) THEN
           T(i,3) = 3D0*Xi(i,3)/(2D0*H(i,3))
           BL(i,3) = H(i,3)/2.d0
