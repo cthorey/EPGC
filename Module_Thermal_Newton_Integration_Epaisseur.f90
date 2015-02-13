@@ -96,7 +96,7 @@ CONTAINS
        a(i)=-theta*Dt*a1(i)
        b(i)=(1D0+psi)-theta*Dt*b1(i)
        c(i)=-theta*Dt*c1(i)
-       S(i)=(1D0+psi)*(Xi(i,1)-Xi(i,2))+theta*Dt*Xi_guess(i)+(1-theta)*Dt*Xi_tmps(i)
+       S(i)=(1D0+psi)*(Xi(i,1)-Xi(i,2))+theta*Dt*Xi_guess(i)+(1D0-theta)*Dt*Xi_tmps(i)
     END DO
 
 
@@ -313,13 +313,13 @@ SUBROUTINE XI_SPLIT(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
 
     ! Separation des variables
     DO i=1,N
-       Xit =2D0*H(i,3)/2.d0
+       Xit =2D0*H(i,3)/3.d0
        IF (Xi(i,3) <= Xit) THEN
           T(i,3) = 3D0*Xi(i,3)/(2D0*H(i,3))
           BL(i,3) = H(i,3)/2.d0
        ELSEIF (Xi(i,3)> Xit) THEN
           T(i,3)= 1D0
-          BL(i,3)= 3D0*H(i,3)/2D0-3*Xi(i,3)/2D0
+          BL(i,3)= 3D0*H(i,3)/2D0-3D0*Xi(i,3)/2D0
        ENDIF
 
     END DO
@@ -593,232 +593,5 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
 
   END SUBROUTINE JACOBI_TEMPERATURE
 
- !-------------------------------------------------------------------------------------
-  !-------------------------------------------------------------------------------------
-  !  SUBROUTINE TEMPERATURE
-  !-------------------------------------------------------------------------------------
-  !-------------------------------------------------------------------------------------
-
-  SUBROUTINE TEMPERATURE_BALMFORTH_2(f,col,N,Xi,H,T,Ts,BL,P,dist,ray,Dr,nu,Pe,delta0,el,grav,N1,tmps)
-
-    !*****************************************************************
-    ! Give the vector f
-    !*****************************************************************
-
-    IMPLICIT NONE
-
-    ! Tableaux
-    DOUBLE PRECISION ,DIMENSION(:) , INTENT(INOUT) :: f
-    DOUBLE PRECISION ,DIMENSION(:,:), INTENT(IN) :: H,Xi,T,Ts,BL,P
-    DOUBLE PRECISION ,DIMENSION(:), INTENT(IN) :: dist,ray
-
-    ! Prametre du model
-    DOUBLE PRECISION ,INTENT(IN) :: Dr 
-    INTEGER ,INTENT(IN) :: col,N
-
-    ! Nombre sans dimension
-    DOUBLE PRECISION ,INTENT(IN) :: nu,Pe,delta0,el,grav,N1,tmps
-
-    ! Parametre pour le sous programme
-    DOUBLE PRECISION, PARAMETER :: pi=3.14159265
-
-    DOUBLE PRECISION :: h_a,delta_a,delta_a2,eta_a,Ai,T_a
-    DOUBLE PRECISIOn :: omega_a,sigma_a
-
-    DOUBLE PRECISION :: h_b,delta_b,delta_b2,eta_b,Bi,T_b
-    DOUBLE PRECISIOn :: omega_b,sigma_b,Ts_a,Ts_b,Ds_b,Ds_a
-    DOUBLE PRECISION :: omega_i,omega_ai,sigma_i,sigma_ai 
-    DOUBLE PRECISION :: loss,beta
-    INTEGER :: i
-
-    ! Remplissage de f
-
-    DO i=1,N,1   
-
-  IF1:IF (i .NE. 1) THEN
-          eta_b=(grav*(H(i,3)-H(i-1,3))+el*(P(i,3)-P(i-1,3)))/Dr
-          Bi=(ray(i-1)/(dist(i)*Dr))
-
-          omega_i =BL(i,col)/10.d0*(nu*(-20.d0*BL(i,col)+30.d0*H(i,3))+&
-               &(1.d0-nu)*(6.d0*(T(i,col)-Ts(i,col))*BL(i,col)-15.d0*(T(i,col)-Ts(i,col))*H(i,3)&
-               &-20.d0*T(i,col)*BL(i,col)+30.d0*T(i,col)*H(i,3)))
-
-          omega_i =BL(i-1,col)/10.d0*(nu*(-20.d0*BL(i-1,col)+30.d0*H(i-1,3))+&
-               &(1.d0-nu)*(6.d0*(T(i-1,col)-Ts(i-1,col))*BL(i-1,col)-15.d0*(T(i-1,col)-Ts(i-1,col))*H(i-1,3)&
-               &-20.d0*T(i-1,col)*BL(i-1,col)+30.d0*T(i-1,col)*H(i-1,3)))
-
-          sigma_ai = (-1.d0/210.d0)*(T(i,col)-Ts(i,col))*BL(i,col)**2.*(nu*(-98.d0*BL(i,col)+105.d0*H(i,3))+&
-               &(1-nu)*(22.d0*(T(i,col)-Ts(i,col))*BL(i,col)-35.d0*(T(i,col)-Ts(i,col))*H(i,3)-98.d0*T(i,col)*BL(i,col)&
-               +105.d0*T(i,col)*H(i,3)))
-
-          sigma_ai = (-1.d0/210.d0)*(T(i-1,col)-Ts(i-1,col))*BL(i-1,col)**2*(nu*(-98.d0*BL(i-1,col)+105.d0*H(i-1,3))+&
-               &(1-nu)*(22.d0*(T(i-1,col)-Ts(i-1,col))*BL(i-1,col)-35.d0*(T(i-1,col)-Ts(i-1,col))*H(i-1,3)&
-               -98.d0*T(i-1,col)*BL(i-1,col)+105.d0*T(i-1,col)*H(i-1,3)))
-
-
-          IF (omega_i==0 .AND. omega_ai ==0) THEN
-             omega_b = 0.d0
-          ELSE
-             omega_b = eta_a*2.d0*omega_i*omega_ai/(omega_i+omega_ai)
-          ENDIF
-          IF (sigma_i==0 .AND. sigma_ai ==0) THEN
-             sigma_b = 0.d0
-          ELSE
-             sigma_b = eta_a*2.d0*sigma_i*sigma_ai/(sigma_i+sigma_ai)
-          ENDIF
-
-       ENDIF IF1
-
-       IF2: IF (i .NE. N) THEN
-          eta_a=(grav*(H(i+1,3)-H(i,3))+el*(P(i+1,3)-P(i,3)))/Dr
-          Ai=(ray(i)/(dist(i)*Dr))
-
-          omega_i =  (BL(i,col))/10.d0*(nu*(-20.d0*BL(i,col)+30.d0*H(i,3))+&
-               &(1.d0-nu)*(6.d0*(T(i,col)-Ts(i,col))*BL(i,col)-15.d0*(T(i,col)-Ts(i,col))*H(i,3)&
-               &-20.d0*T(i,col)*BL(i,col)+30.d0*T(i,col)*H(i,3)))
-          omega_ai =   (BL(i+1,col))/10.d0*(nu*(-20.d0*BL(i+1,col)+30.d0*H(i+1,3))+&
-               &(1.d0-nu)*(6.d0*(T(i+1,col)-Ts(i+1,col))*BL(i+1,col)&
-               &-15.d0*(T(i+1,col)-Ts(i+1,col))*H(i+1,3)-20.d0*T(i+1,col)*BL(i+1,col)&
-               &+30.d0*T(i+1,col)*H(i+1,3)))
-
-          sigma_ai = (-1.d0/210.d0)*(T(i,col)-Ts(i,col))*BL(i,col)**2.*(nu*(-98.d0*BL(i,col)+105.d0*H(i,3))+&
-               &(1-nu)*(22.d0*(T(i,col)-Ts(i,col))*BL(i,col)-35.d0*(T(i,col)-Ts(i,col))*H(i,3)-98.d0*T(i,col)*BL(i,col)&
-               +105.d0*T(i,col)*H(i,3)))
-
-          sigma_ai = (-1.d0/210.d0)*(T(i+1,col)-Ts(i+1,col))*BL(i+1,col)**2.*(nu*(-98.d0*BL(i+1,col)+105.d0*H(i+1,3))+&
-               &(1-nu)*(22.d0*(T(i+1,col)-Ts(i+1,col))*BL(i+1,col)-35.d0*(T(i+1,col)-Ts(i+1,col))*H(i+1,3)&
-               -98.d0*T(i+1,col)*BL(i+1,col)+105.d0*T(i+1,col)*H(i+1,3)))
-
-          IF (omega_i==0 .AND. omega_ai ==0) THEN
-             omega_a = 0.d0
-          ELSE
-             omega_a = eta_a*2.d0*omega_i*omega_ai/(omega_i+omega_ai)
-          ENDIF
-          IF (sigma_i==0 .AND. sigma_ai ==0) THEN
-             sigma_a = 0.d0
-          ELSE
-             sigma_a = eta_a*2.d0*sigma_i*sigma_ai/(sigma_i+sigma_ai)
-          ENDIF
-        
-       END IF IF2
-
-       beta = N1*Pe**(-0.5d0)/(sqrt(pi*tmps))
-       loss = Pe*beta*Ts(i,col)
-       ! loss = 2*Pe*T(i,col)/BL(i,col)
-
-       IF4: IF (i==1) THEN
-          f(i)=loss+Ai*Omega_a*Xi(i,col)+Ai*Sigma_a
-       ELSEIF (i==N) THEN
-          f(i)=loss-Bi*Omega_b*Xi(i-1,col)-Bi*Sigma_b
-       ELSE
-          f(i)=Ai*Omega_a*Xi(i,col)&
-               &-Bi*Omega_b*Xi(i-1,col)&
-               &+Ai*Sigma_a-Bi*Sigma_b &
-               &+loss
-       END IF IF4
-
-    END DO
-
-  END SUBROUTINE TEMPERATURE_BALMFORTH_2
-
-  !-------------------------------------------------------------------------------------
-  !-------------------------------------------------------------------------------------
-  !  SUBROUTINE JACOBIENNE TEMPERATURE
-  !-------------------------------------------------------------------------------------
-  !-------------------------------------------------------------------------------------
-
-  SUBROUTINE JACOBI_TEMPERATURE_BALMFORTH_2(a,b,c,N,H,BL,T,Ts,Xi,P,Dr,dist,ray,nu,Pe,delta0,el,grav)
-
-    !*****************************************************************
-    ! Give the jacobian coeficient a1,b1,c1
-    !*****************************************************************
-
-    IMPLICIT NONE
-
-    ! Tableaux
-    DOUBLE PRECISION ,DIMENSION(:) , INTENT(INOUT) :: a,b,c
-    DOUBLE PRECISION ,DIMENSION(:,:), INTENT(IN) :: H,BL,T,Ts,Xi,P
-    DOUBLE PRECISION ,DIMENSION(:), INTENT(IN) :: dist,ray
-
-    ! Prametre du model
-    DOUBLE PRECISION ,INTENT(IN) :: Dr 
-    INTEGER ,INTENT(IN) :: N
-
-    ! Nombre sans dimension
-    DOUBLE PRECISION ,INTENT(IN) :: nu,Pe,delta0,el,grav
-
-    ! Parametre pour le sous programme
-
-    DOUBLE PRECISION :: h_a,delta_a,delta_a2,eta_a,Ai,T_a,zeta_a
-    DOUBLE PRECISIOn :: omega_a,sigma_a
-    DOUBLE PRECISION :: h_b,delta_b,delta_b2,eta_b,Bi,T_b,zeta_b
-    DOUBLE PRECISIOn :: omega_b,sigma_b,Ds_b,Ds_a,Ts_a,Ts_b
-    DOUBLE PRECISION :: omega_i,omega_ai,sigma_i,sigma_ai 
-    DOUBLE PRECISION :: loss
-
-    INTEGER :: i,col
-
-    ! Remplissage de la matrice Jacobienne
-
-    col=2
-
-    DO i=1,N,1
-       IF1:IF (i .NE. 1) THEN
-          eta_b=(grav*(H(i,3)-H(i-1,3))+el*(P(i,3)-P(i-1,3)))/Dr
-          Bi=(ray(i-1)/(dist(i)*Dr))
-
-          omega_i =BL(i,col)/10.d0*(nu*(-20.d0*BL(i,col)+30.d0*H(i,3))+&
-               &(1.d0-nu)*(6.d0*(T(i,col)-Ts(i,col))*BL(i,col)-15.d0*(T(i,col)-Ts(i,col))*H(i,3)&
-               &-20.d0*T(i,col)*BL(i,col)+30.d0*T(i,col)*H(i,3)))
-
-          omega_i =BL(i-1,col)/10.d0*(nu*(-20.d0*BL(i-1,col)+30.d0*H(i-1,3))+&
-               &(1.d0-nu)*(6.d0*(T(i-1,col)-Ts(i-1,col))*BL(i-1,col)-15.d0*(T(i-1,col)-Ts(i-1,col))*H(i-1,3)&
-               &-20.d0*T(i-1,col)*BL(i-1,col)+30.d0*T(i-1,col)*H(i-1,3)))
-          omega_b = eta_b*2*omega_i*omega_ai/(omega_i+omega_ai)
-
-          IF (omega_i==0 .AND. omega_ai ==0) THEN
-             omega_b = 0.d0
-          ELSE
-             omega_b = eta_a*2.d0*omega_i*omega_ai/(omega_i+omega_ai)
-          ENDIF
-       ENDIF IF1
-
-       IF2: IF (i .NE. N) THEN
-          eta_a=(grav*(H(i+1,3)-H(i,3))+el*(P(i+1,3)-P(i,3)))/Dr
-          Ai=(ray(i)/(dist(i)*Dr))
-
-          omega_i =  (BL(i,col))/10.d0*(nu*(-20.d0*BL(i,col)+30.d0*H(i,3))+&
-               &(1.d0-nu)*(6.d0*(T(i,col)-Ts(i,col))*BL(i,col)-15.d0*(T(i,col)-Ts(i,col))*H(i,3)&
-               &-20.d0*T(i,col)*BL(i,col)+30.d0*T(i,col)*H(i,3)))
-          omega_ai =   (BL(i+1,col))/10.d0*(nu*(-20.d0*BL(i+1,col)+30.d0*H(i+1,3))+&
-               &(1.d0-nu)*(6.d0*(T(i+1,col)-Ts(i+1,col))*BL(i+1,col)&
-               &-15.d0*(T(i+1,col)-Ts(i+1,col))*H(i+1,3)-20.d0*T(i+1,col)*BL(i+1,col)&
-               &+30.d0*T(i+1,col)*H(i+1,3)))
-
-          IF (omega_i==0 .AND. omega_ai ==0) THEN
-             omega_a = 0.d0
-          ELSE
-             omega_a = eta_a*2.d0*omega_i*omega_ai/(omega_i+omega_ai)
-          ENDIF
-       END IF IF2
-
-       Ai =0.d0
-       Bi =0.d0
-       IF3:IF (i==1) THEN
-          a(i)=0.d0
-          b(i)=Ai*Omega_a
-          c(i)=0.d0
-       ELSEIF (i==N) THEN
-          a(i)=-Bi*Omega_b
-          b(i)=0.d0
-          c(i)=0.d0
-       ELSE
-          a(i) = -Bi*Omega_b
-          b(i) = Ai*Omega_a
-          c(i)=0.d0
-       END IF IF3
-
-    ENDDO
-  END SUBROUTINE JACOBI_TEMPERATURE_BALMFORTH_2
 
 END MODULE MODULE_THERMAL_NEWTON_INT_EPAISSEUR

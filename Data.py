@@ -13,7 +13,7 @@ import seaborn as sns
 import pandas as pd
 
 reset = 0
-Folder = '2015-02-11_0'
+Folder = '2015-02-13_1'
 REGIME = 'ELAS'
 Folder_malbec = 'Run_'+Folder+'/'
 Folder_laptop = 'Run_'+Folder+'/'

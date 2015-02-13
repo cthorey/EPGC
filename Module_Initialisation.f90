@@ -47,8 +47,8 @@ CONTAINS
     delta0 = 5D-3
     sigma = 5D-2
     nu = 1D0
-    Pe = 1D0
-    psi = 3D-1
+    Pe = 0D0
+    psi = 1D0
     N1 = 1D5
 
     ! Variable pour l'outxsput
@@ -166,8 +166,8 @@ CONTAINS
        Ts = 0d0
        P = 0.d0
        BL = H/(2.d0) 
-       Xi = BL/3.D0*(3.D0-2*T-Ts)
-       ! Xi = T/3D0*(3D0*H-2D0*BL)
+       ! Xi = BL/3.D0*(3.D0-2*T-Ts)
+       Xi = T/3D0*(3D0*H-2D0*BL)
        !Xi = T*H-2.d0/3.d0*T*BL
        k = 0;k1 = 1;k2 = 1;z = 0;tmps = 0
 
