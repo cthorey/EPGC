@@ -202,6 +202,7 @@ PROGRAM MAIN
 
      tmps_n = tmps
      tmps = tmps+Dt
+
   END DO TEMPS
 
   DEALLOCATE(H,T,Xi,BL,Ts)

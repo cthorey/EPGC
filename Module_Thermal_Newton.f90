@@ -94,11 +94,15 @@ CONTAINS
 
     DO i=1,N,1
        Xi(i,3)=Xi_m(i)+Xi(i,2)
+       IF (Xi(i,3)>H(i,3)/2.0) THEN
+          Xi(i:,3) = H(i:,3)/2.0
+          EXIT
+       ENDIF
     END DO
 
     ! Separation variables
-    CALL XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
-    ! CALL XI_SPLIT(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
+    ! CALL XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
+    CALL XI_SPLIT(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
     ! Calcule de l'erreur
     IF (DOT_PRODUCT(Xi(:,2),Xi(:,2)) == 0D0) THEN
        F_err = ABS(MAXVAL(Xi_m(:)))
@@ -435,10 +439,10 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
                &(1-nu)*(22.d0*Ds_a*delta_a-35.d0*Ds_a*h_a-98.d0*T_a*delta_a+105.d0*T_a*h_a))
        END IF IF2
 
-       Crys = 0.5D0*psi*(T(i,col)-1D0)*(H(i,3)-H(i,1))/Dt
-       beta = N1*Pe**(-0.5d0)/(sqrt(pi*tmps))
-       loss = Pe*beta*Ts(i,col)
-       ! loss = 2D0*Pe*T(i,col)/BL(i,col)
+       ! Crys = 0.5D0*psi*(T(i,col)-1D0)*(H(i,3)-H(i,1))/Dt
+       ! beta = N1*Pe**(-0.5d0)/(sqrt(pi*tmps))
+       ! loss = Pe*beta*Ts(i,col)
+       loss = 2D0*Pe*T(i,col)/BL(i,col)
        IF4: IF (i==1) THEN
           f(i)=loss+Ai*Omega_a*Xi(i,col)+Ai*Sigma_a-Crys
        ELSEIF (i==N) THEN
