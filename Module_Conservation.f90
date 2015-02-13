@@ -167,7 +167,6 @@ CONTAINS
     ! Energie lost en J s
     Phi_l = 4D0*Pe*Int_3
     
-    ! PRINT*,'Conservation chaleur',tmps,D_p-D_c,D_p
   END SUBROUTINE ENERGY_CONSERVATION
 
 END MODULE MODULE_CONSERVATION
