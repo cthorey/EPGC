@@ -94,10 +94,10 @@ CONTAINS
 
     DO i=1,N,1
        Xi(i,3)=Xi_m(i)+Xi(i,2)
-       IF (Xi(i,3)>H(i,3)/2.0) THEN
-          Xi(i:,3) = H(i:,3)/2.0
-          EXIT
-       ENDIF
+       ! IF (Xi(i,3)>H(i,3)/2.0) THEN
+       !    Xi(i:,3) = H(i:,3)/2.0
+       !    EXIT
+       ! ENDIF
     END DO
 
     ! Separation variables

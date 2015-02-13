@@ -46,13 +46,13 @@ Dict_Param = {'Sigma': ['5D-2'],
               'Delta0': ['5D-3'],
               'Grav': ['0D0'],
               'El': ['1D0'],
-              'Nu': ['1D0','1D-2','1D-3'],
-              'Pe': ['1D0','1D-1','1D-2','1D-3'],
-              'Psi': ['0D0','1D0','5D0'],
+              'Nu': ['1D0'],
+              'Pe': ['1D0'],
+              'Psi': ['0D0','3D-1','1D0','5D0'],
               'N1' : ['1D5'],
               'Dr' : ['1D-2'],
               'Ep': ['1D-4'],
-              'Dt' : ['1D-6','1D-7']}
+              'Dt' : ['1D-6']}
 
 M_grid = 4000
 Init = 0 # 1 If you want to begin for the last backup
