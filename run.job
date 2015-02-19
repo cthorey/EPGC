@@ -3,11 +3,11 @@
 #SBATCH -J Name
 #SBATCH --nodes=Nnode
 #SBATCH --ntasks=Ntask
-#SBATCH --exclusive
 
 echo "Running on: $SLURM_NODELIST"
 cd dir
 module purge
 module load intel/compiler slurm
+module load python/gcc/2.7.3_ext
 
 srun -l --multi-prog Multi_Run

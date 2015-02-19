@@ -148,12 +148,14 @@ CONTAINS
           ray(i) = dist(i)+0.5d0*Dr
        END DO
        H = delta0
-       T = 0d0
+       T = 1d0
+       BL = 1D-7
+       ! T(:5,:) = 1D0
+       ! BL(:5,:) = 1D-7
        Ts = 0.d0
        P = 0.d0
-       BL = H/(2.d0) 
-       Xi = BL/3.D0*(3.D0-2*T-Ts)
- 
+       ! Xi = BL/3.D0*(3.D0-2*T-Ts)
+       Xi = T/3D0*(3D0*H-2D0*BL)
        k = 0;k1 = 1;k2 = 1;z = 0;tmps = 0
 
     CASE(1)

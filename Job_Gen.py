@@ -32,7 +32,7 @@ if _platform == "linux" or _platform == "linux2":
     Name_Folder_Run = '' # Remplir si on veut faire un test dans un dossier specific
     Bactrace_Run = 'Bactrack.txt'
     Journal_ELAS = 'Journal_ELAS.txt'
-    Compilateur = 'ifort -O3 -fp-model fast=2'
+    Compilateur = 'ifort'
 elif _platform == "darwin":
     Root_ELAS = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/Code/TEST_ELAS/Run/'
     Root_Run = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/Code/TEST_ELAS/Run/'
@@ -40,15 +40,15 @@ elif _platform == "darwin":
     Name_Folder_Run = '' # Remplir si on veut faire un test dans un dossier specific
     Bactrace_Run = 'Bactrack.txt'
     Journal_ELAS = 'Journal_ELAS.txt'
-    Compilateur = 'gfortran -O3'
+    Compilateur = 'gfortran'
 
 Dict_Param = {'Sigma': ['5D-2'],
               'Delta0': ['5D-3'],
               'Grav': ['0D0'],
               'El': ['1D0'],
               'Nu': ['1D0'],
-              'Pe': ['1D0'],
-              'Psi': ['0D0','3D-1','1D0','5D0'],
+              'Pe': ['0D0','1D0','1D-2'],
+              'Psi': ['0D0','1D0','5D0'],
               'N1' : ['1D5'],
               'Dr' : ['1D-2'],
               'Ep': ['1D-4'],
