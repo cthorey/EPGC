@@ -202,6 +202,7 @@ PROGRAM MAIN
 
      tmps_n = tmps
      tmps = tmps+Dt
+     print*,tmps,Xi(1,3)
 
   END DO TEMPS
 
