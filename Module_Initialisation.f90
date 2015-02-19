@@ -48,7 +48,7 @@ CONTAINS
     sigma = 5D-2
     nu = 1D0
     Pe = 0D0
-    psi = 1D0
+    psi = 0D0
     N1 = 1D5
 
     ! Variable pour l'outxsput
@@ -158,16 +158,13 @@ CONTAINS
        END DO
        H = delta0
        T = 0D0
-       ! DO i = 1,10
-       !    H(i,:) = (dist(10)-dist(i)**2)**2
-       !    BL(i,:) = H(i,:)/2.d0
-       !    T(i,:)  = H(i,:)/H(1,1)
-       ! ENDDO
        Ts = 0d0
        P = 0.d0
-       BL = H/(2.d0) 
-       ! Xi = BL/3.D0*(3.D0-2*T-Ts)
-       Xi = T/3D0*(3D0*H-2D0*BL)
+       BL = H/(2D0)
+       T(:5,:) =1D0
+       BL(:5,:) = 1D-7
+       Xi = BL/3D0*(3D0-2D0*T)
+       ! Xi = T/3D0*(3D0*H-2D0*BL)
        !Xi = T*H-2.d0/3.d0*T*BL
        k = 0;k1 = 1;k2 = 1;z = 0;tmps = 0
 
