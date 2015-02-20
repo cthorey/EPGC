@@ -149,7 +149,7 @@ CONTAINS
        END DO
        H = delta0
        DO i=1,100,1
-          H(i,:) = 10*(dist(30)**2-dist(i)**2)**2+delta0
+          H(i,:) = (dist(100)**2-dist(i)**2)**2+delta0
        ENDDO
        T = 1D0
        BL = 1D-7

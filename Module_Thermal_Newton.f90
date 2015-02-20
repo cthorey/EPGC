@@ -47,6 +47,13 @@ CONTAINS
     CASE(.FALSE.)
        N = COUNT(H(:,1)>delta0) 
     END SELECT
+    N = COUNT(H(:,3)>delta0)
+    DO i =1,M,1
+       IF (H(i,3)<delta0) THEN
+          N = i-1;EXIT
+       ENDIF
+    ENDDO
+       
 
     ! Calcule de f tmps n et n+
     ALLOCATE(Xi_tmps(1:N),Xi_guess(1:N),stat=err1)
@@ -74,10 +81,17 @@ CONTAINS
     END IF
 
     DO i=1,N,1
-       a(i)=-theta*Dt*a1(i)
-       b(i)=(1D0+psi)-theta*Dt*b1(i)
-       c(i)=-theta*Dt*c1(i)
-       S(i)=(1D0+psi)*(Xi(i,1)-Xi(i,2))+theta*Dt*Xi_guess(i)+(1-theta)*Dt*Xi_tmps(i)
+       IF (i ==N) THEN
+          a(i) =1D0
+          b(i) =-1D0
+          c(i) =0D0
+          S(i) =0D0
+       ELSE
+          a(i)=-theta*Dt*a1(i)
+          b(i)=(1D0+psi)-theta*Dt*b1(i)
+          c(i)=-theta*Dt*c1(i)
+          S(i)=(1D0+psi)*(Xi(i,1)-Xi(i,2))+theta*Dt*Xi_guess(i)+(1-theta)*Dt*Xi_tmps(i)
+       ENDIF
     END DO
 
     a(1)=0
