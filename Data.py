@@ -13,12 +13,12 @@ import seaborn as sns
 import pandas as pd
 
 reset = 0
-Folder = ['2015-01-09_'+str(i) for i in [0]]
+Folder = ['2015-02-19_'+str(i) for i in [6]]
 for Folder in Folder:
     REGIME = 'ELAS'
     Folder_malbec = 'Run_'+Folder+'/'
-    Folder_laptop = 'Run_'+Folder+'/'
-    Workspace_laptop = 'Workspace_'+Folder+'/'
+    Folder_laptop = 'TEST_CRYSTALISATION/Run_'+Folder+'/'
+    Workspace_laptop = 'TEST_CRYSTALISATION/Workspace_'+Folder+'/'
     Routine_python = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/Routine/ELAS/E_Load'
     Root_malbec = '/gpfs/users/thorey/'+REGIME+'/'+Folder_malbec
     Root_laptop = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/SCAPAD/'+REGIME+'/'+Folder_laptop
@@ -38,7 +38,6 @@ for Folder in Folder:
 
     #######################
     # main
-    
     # On fait un peu de menage
     if reset == 1: # On enleve le dossier et tous ls workspace pr recommecner de zero
         try :
