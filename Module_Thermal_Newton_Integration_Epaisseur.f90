@@ -111,9 +111,14 @@ CONTAINS
     
     CALL TRIDIAG(a,b,c,S,N,Xi_m)
     ! CALL NONA_DIAGO(N,Xi_m,a,b,a,b,c,0,g,k,l,S)
-    CALL NONA_DIAGO(N,Xi_m,c*0D0,c*0D0,c*0D0,a,b,c,c*0D0,c*0D0,c*0D0,S)
+    ! CALL NONA_DIAGO(N,Xi_m,c*0D0,c*0D0,c*0D0,a,b,c,c*0D0,c*0D0,c*0D0,S)
     DO i=1,N,1
        Xi(i,3)=Xi_m(i)+Xi(i,2)
+       ! IF (Xi(i,3)>(H(i,3))) THEN
+       !    XI(i,3) = (1D0-1D-7)*H(i,3)
+       ! ELSEIF (XI(i,3)<0.D0) THEN
+       !    Xi(i,3) =1D-7
+       ! ENDIF
     END DO
 
     ! Separation variables
@@ -416,6 +421,8 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
     DOUBLE PRECISION :: h_b,h_b2,delta_b,delta_b2,delta_b3,eta_b
     DOUBLE PRECISION :: T_b,T_b2,omega_b,sigma_b,delta_b4
 
+    DOUBLE PRECISION :: Crys
+
     INTEGER :: i,Na
 
     ! Remplissage de f
@@ -478,19 +485,24 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
           & eta_a*nu - 2.0d0/3.0d0*T_a*delta_a*eta_a*h_a*nu
        END IF IF2
 
-
+       IF (i<6) THEN
+          Crys = psi*(H(i,3)-H(i,1))/Dt
+       ELSE
+          Crys = 0D0
+       ENDIF
+       
        IF4: IF (i==1) THEN          
           f(i) = -(Ai*Omega_a*Xi(i,col))&
                &-(Ai*h_a*Sigma_a)&
-               &-4D0*Pe*T(i,col)/BL(i,col)+qa(i)
+               &-4D0*Pe*T(i,col)/BL(i,col)+qa(i)+Crys
        ELSEIF (i==N) THEN
           f(i) = -(-Bi*Omega_b*Xi(i-1,col))&
                &-(-Bi*h_b*Sigma_b)&
-               &-4D0*Pe*T(i,col)/BL(i,col)+qa(i)
+               &-4D0*Pe*T(i,col)/BL(i,col)+qa(i)+Crys
        ELSE
           f(i) = -(Ai*Omega_a*Xi(i,col)-Bi*Omega_b*Xi(i-1,col))&
                &-(Ai*h_a*Sigma_a-Bi*h_b*Sigma_b)&
-               &-4D0*Pe*T(i,col)/BL(i,col)+qa(i)
+               &-4D0*Pe*T(i,col)/BL(i,col)+qa(i)+Crys
        END IF IF4
     END DO
   END SUBROUTINE TEMPERATURE

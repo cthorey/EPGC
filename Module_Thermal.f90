@@ -35,7 +35,7 @@ CONTAINS
     LOGICAL :: cho
 
     ! Schema utilise
-    theta = 1d0
+    theta = 1D0
     F_err = 20; F_errt = 20
     z =0
 

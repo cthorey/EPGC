@@ -61,6 +61,7 @@ CONTAINS
        ELSE 
           qa(i) = 0.d0
        END IF
+       qa(i) =0D0
     END DO
 
 
