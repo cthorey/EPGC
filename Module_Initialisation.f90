@@ -157,12 +157,13 @@ CONTAINS
           ray(i) = dist(i)+0.5d0*Dr
        END DO
        H = delta0
-       T = 0D0
+       DO i=1,100,1
+          H(i,:) = (dist(100)**2-dist(i)**2)**2+delta0
+       ENDDO
+       T = 1D0
+       BL = 1D-7
        Ts = 0d0
        P = 0.d0
-       BL = H/(2D0)
-       T(:5,:) =1D0
-       BL(:5,:) = 1D-7
        Xi = BL/3D0*(3D0-2D0*T)
        ! Xi = T/3D0*(3D0*H-2D0*BL)
        !Xi = T*H-2.d0/3.d0*T*BL
