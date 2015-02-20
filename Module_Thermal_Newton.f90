@@ -43,9 +43,9 @@ CONTAINS
     CHO=COUNT(H(:,1)>delta0)<ndyke
     SELECT CASE (CHO)
     CASE(.TRUE.)
-       N = ndyke +10   ! Cas ou on donne pas de profile initiale...
+       N = ndyke  ! Cas ou on donne pas de profile initiale...
     CASE(.FALSE.)
-       N = COUNT(H(:,1)>delta0) +10
+       N = COUNT(H(:,1)>delta0) 
     END SELECT
 
     ! Calcule de f tmps n et n+
@@ -93,10 +93,10 @@ CONTAINS
 
     DO i=1,N,1
        Xi(i,3)=Xi_m(i)+Xi(i,2)
-       ! IF (Xi(i,3)>H(i,3)/2.0) THEN
-       !    Xi(i:,3) = H(i:,3)/2.0
-       !    EXIT
-       ! ENDIF
+       IF (Xi(i,3)>H(i,3)/2.0) THEN
+          Xi(i:,3) = H(i:,3)/2.0
+          EXIT
+       ENDIF
     END DO
 
     ! Separation variables
@@ -438,15 +438,14 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
                &(1-nu)*(22.d0*Ds_a*delta_a-35.d0*Ds_a*h_a-98.d0*T_a*delta_a+105.d0*T_a*h_a))
        END IF IF2
 
-       IF (i<6) THEN
-          Crys =0D0
-       ELSE
-          Crys = 0.5D0*psi*(H(i,3)-H(i,1))/Dt
-       ENDIF
+       ! IF (i<ndyke+1) THEN
+       !    Crys =0D0
+       ! ELSE
+       Crys = 0.5D0*psi*(H(i,3)-H(i,1))/Dt
+       ! ENDIF
        ! beta = N1*Pe**(-0.5d0)/(sqrt(pi*tmps))
        ! loss = Pe*beta*Ts(i,col)
-       ! loss = 2D0*Pe*T(i,col)/BL(i,col)
-       loss = 0D0
+       loss = 2D0*Pe*T(i,col)/BL(i,col)
        IF4: IF (i==1) THEN
           f(i)=loss+Ai*Omega_a*Xi(i,col)+Ai*Sigma_a+Crys
        ELSEIF (i==N) THEN
