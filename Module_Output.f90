@@ -127,7 +127,6 @@ CONTAINS
                &'Fr_Mu_R','Fr_Mu_T','Fr_Mu_Mu','Fr_Mu_H',&
                &'Fr_005_R','Fr_005_T','Fr_005_Mu'
 
-
           DO i=1,M,1
              IF (H(i,3) == delta0) EXIT
              WRITE(2,Format_Data)tmps, dist(i), H(i,3),&

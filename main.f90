@@ -59,6 +59,7 @@ PROGRAM MAIN
   !Necessaire au bon fonctionnement
   INTEGER :: cas,size
   INTEGER :: ERROR_CODE
+  INTEGER :: Naa
 
   ! String variable pour les nom fichiers
   CHARACTER(LEN=300) :: Output_racine,Input_Racine,Input_Data_Name
@@ -105,6 +106,12 @@ PROGRAM MAIN
   tmps_n = 0D0
   ERROR_CODE = 0
   TEMPS: DO WHILE (tmps<tmps_m)
+     
+     IF (tmps>1D-5) THEN
+        Dt = 1D-6
+     ELSEIF (tmps >3D0) THEN
+        Dt = 1D-5
+     ENDIF
 
      OPEN(unit=3,file='Output.txt')
 

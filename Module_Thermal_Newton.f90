@@ -37,24 +37,13 @@ CONTAINS
     INTEGER :: err1,col
     LOGICAL :: CHO
 
-
-    ! Taille de la grille
     ndyke=sigma/Dr
-    CHO=COUNT(H(:,1)>delta0)<ndyke
-    SELECT CASE (CHO)
-    CASE(.TRUE.)
-       N = ndyke  ! Cas ou on donne pas de profile initiale...
-    CASE(.FALSE.)
-       N = COUNT(H(:,1)>delta0) 
-    END SELECT
-    N = COUNT(H(:,3)>delta0)
     DO i =1,M,1
-       IF (H(i,3)<delta0) THEN
+       IF (H(i,1)<delta0) THEN
           N = i-1;EXIT
        ENDIF
     ENDDO
-       
-
+    N=M-1
     ! Calcule de f tmps n et n+
     ALLOCATE(Xi_tmps(1:N),Xi_guess(1:N),stat=err1)
     IF (err1>1) THEN
@@ -81,17 +70,10 @@ CONTAINS
     END IF
 
     DO i=1,N,1
-       IF (i ==N) THEN
-          a(i) =1D0
-          b(i) =-1D0
-          c(i) =0D0
-          S(i) =0D0
-       ELSE
           a(i)=-theta*Dt*a1(i)
-          b(i)=(1D0+psi)-theta*Dt*b1(i)
+          b(i)=1D0-theta*Dt*b1(i)
           c(i)=-theta*Dt*c1(i)
-          S(i)=(1D0+psi)*(Xi(i,1)-Xi(i,2))+theta*Dt*Xi_guess(i)+(1-theta)*Dt*Xi_tmps(i)
-       ENDIF
+          S(i)=(Xi(i,1)-Xi(i,2))+theta*Dt*Xi_guess(i)+(1-theta)*Dt*Xi_tmps(i)
     END DO
 
     a(1)=0
@@ -107,24 +89,30 @@ CONTAINS
 
     DO i=1,N,1
        Xi(i,3)=Xi_m(i)+Xi(i,2)
-       IF (Xi(i,3)>H(i,3)/2.0) THEN
-          Xi(i:,3) = H(i:,3)/2.0
+       IF (Xi(i,3) >H(i,3)/2D0) THEN
+          Xi(i:,3) = H(i:,3)/2D0
           EXIT
        ENDIF
     END DO
 
     ! Separation variables
-    ! CALL XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
-    CALL XI_SPLIT(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
+    ! CALL XI_SPLIT(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
+    CALL XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
+
     ! Calcule de l'erreur
-    IF (DOT_PRODUCT(Xi(:,2),Xi(:,2)) == 0D0) THEN
+    IF (DOT_PRODUCT(Xi(:,3),Xi(:,3))==DOT_PRODUCT(H(:,3)/2D0,H(:,3)/2D0)) THEN
+       F_err = 0D0 ! Cas ou le refroidissemnt est trop important et tout devient nulle
+    ELSEIF (DOT_PRODUCT(Xi(:,2),Xi(:,2)) == 0D0) THEN
        F_err = ABS(MAXVAL(Xi_m(:)))
     ELSE
        Size = COUNT(Xi(:,2)>1D-10)
        F_err = ABS(MAXVAL(((Xi(:Size,3)-Xi(:Size,2))/Xi(:Size,2))))
     ENDIF
 
-
+    ! T(N+1:,3) = T(N,3)
+    ! BL(N+1:,3) = BL(N,3)
+    ! Ts(N+1:,3) = Ts(N,3)
+    ! Xi(N+1:,3) = Xi(N,3)
     DEALLOCATE(Xi_m,a,b,c,S)
     DEALLOCATE(Xi_guess,Xi_tmps,a1,b1,c1)
 
@@ -308,11 +296,9 @@ SUBROUTINE XI_SPLIT(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
     DOUBLE PRECISION, PARAMETER :: pi=3.14159265
     DOUBLE PRECISION :: Xit,Tss,beta,d1,d2,Dr
 
-
     ! Separation des variables
     DO i=1,N
        Xit = H(i,3)/6.d0
-
        IF (Xi(i,3) <= Xit) THEN
           T(i,3) = 1.d0
           BL(i,3) = 3.d0*Xi(i,3)
@@ -320,9 +306,7 @@ SUBROUTINE XI_SPLIT(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
           T(i,3)= 3.d0/2.D0-(3.d0*Xi(i,3)/H(i,3))
           BL(i,3)=H(i,3)/2.d0
        ENDIF
-
     END DO
-
   END SUBROUTINE XI_SPLIT
   
   !-------------------------------------------------------------------------------------
@@ -369,10 +353,10 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
           Ts(i,3) =(-12.d0*Xi(i,3)+6.d0*H(i,3))/((beta*H(i,3)+6.d0)*H(i,3))
           BL(i,3) = H(i,3)/2.d0
           T(i,3) = Ts(i,3)/4.d0*(beta*H(i,3)+4.d0)
-       ENDIF
-       IF (T(i,3)<1D-8) THEN
-          T(i,3) =0.d0
-          Ts(i,3) =0.d0
+       ! ENDIF
+       ! ! IF (T(i,3)<1D-8) THEN
+       ! !    T(i,3) =0.d0
+       ! !    Ts(i,3) =0.d0
        ENDIF
     END DO
 
@@ -413,7 +397,6 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
     DOUBLE PRECISION :: h_b,delta_b,delta_b2,eta_b,Bi,T_b
     DOUBLE PRECISIOn :: omega_b,sigma_b,Ts_a,Ts_b,Ds_b,Ds_a
     DOUBLE PRECISION :: loss,beta
-    DOUBLE PRECISION :: Crys
     INTEGER :: i,Na
 
     ! Remplissage de f
@@ -452,25 +435,22 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
                &(1-nu)*(22.d0*Ds_a*delta_a-35.d0*Ds_a*h_a-98.d0*T_a*delta_a+105.d0*T_a*h_a))
        END IF IF2
 
-       ! IF (i<ndyke+1) THEN
-       !    Crys =0D0
-       ! ELSE
-       Crys = 0.5D0*psi*(H(i,3)-H(i,1))/Dt
-       ! ENDIF
-       ! beta = N1*Pe**(-0.5d0)/(sqrt(pi*tmps))
-       ! loss = Pe*beta*Ts(i,col)
-       loss = 2D0*Pe*T(i,col)/BL(i,col)
+       beta = N1*Pe**(-0.5d0)/(sqrt(pi*tmps))
+       loss = Pe*beta*Ts(i,col)
+       ! loss = (2*Pe*T(i,col)/BL(i,col))
+       ! print*,i,loss,Ai*Omega_a*Xi(i,col)&
+       !         &-Bi*Omega_b*Xi(i-1,col)&
+       !         &+Ai*Sigma_a-Bi*Sigma_b 
        IF4: IF (i==1) THEN
-          f(i)=loss+Ai*Omega_a*Xi(i,col)+Ai*Sigma_a+Crys
+          f(i)=loss+Ai*Omega_a*Xi(i,col)+Ai*Sigma_a
        ELSEIF (i==N) THEN
-          f(i)=loss-Bi*Omega_b*Xi(i-1,col)-Bi*Sigma_b+Crys
+          f(i)=loss-Bi*Omega_b*Xi(i-1,col)-Bi*Sigma_b
        ELSE
           f(i)=Ai*Omega_a*Xi(i,col)&
                &-Bi*Omega_b*Xi(i-1,col)&
                &+Ai*Sigma_a-Bi*Sigma_b &
-               &+loss+Crys
+               &+loss
        END IF IF4
-       ! print*,i,f(i),loss,Ai*Omega_a*Xi(i,col),-Bi*Omega_b*Xi(i-1,col),Ai*Sigma_a-Bi*Sigma_b,Crys
 
     END DO
 

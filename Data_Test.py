@@ -50,7 +50,6 @@ for elt in subdirs:
     Nsd = Nsd.applymap(lambda x: to_string(x))
     Nsd = Nsd.applymap(lambda x: to_number(x))
 
-
     for i, file in enumerate(files):
         print file
         Data_tmp = pd.read_csv(Racine+file,

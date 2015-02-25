@@ -37,7 +37,7 @@ CONTAINS
     ! Parametre du model
     tmps_m = 1D32  
     M = 2000    
-    Dt = 1D-6
+    Dt = 1D-7
     Dr = 1D-2
     eps_1 = 1D-4
 
@@ -46,8 +46,8 @@ CONTAINS
     grav = 0D0
     delta0 = 5D-3
     sigma = 5D-2
-    nu = 1D0
-    Pe = 0D0
+    nu = 1D-6
+    Pe = 1D0
     psi = 0D0
     N1 = 1D5
 
@@ -157,13 +157,10 @@ CONTAINS
           ray(i) = dist(i)+0.5d0*Dr
        END DO
        H = delta0
-       DO i=1,100,1
-          H(i,:) = (dist(100)**2-dist(i)**2)**2+delta0
-       ENDDO
        T = 1D0
-       BL = 1D-7
+       BL = 1D-4
        Ts = 0d0
-       P = 0.d0
+       P = 0d0
        Xi = BL/3D0*(3D0-2D0*T)
        ! Xi = T/3D0*(3D0*H-2D0*BL)
        !Xi = T*H-2.d0/3.d0*T*BL
