@@ -109,10 +109,6 @@ CONTAINS
        F_err = ABS(MAXVAL(((Xi(:Size,3)-Xi(:Size,2))/Xi(:Size,2))))
     ENDIF
 
-    ! T(N+1:,3) = T(N,3)
-    ! BL(N+1:,3) = BL(N,3)
-    ! Ts(N+1:,3) = Ts(N,3)
-    ! Xi(N+1:,3) = Xi(N,3)
     DEALLOCATE(Xi_m,a,b,c,S)
     DEALLOCATE(Xi_guess,Xi_tmps,a1,b1,c1)
 
@@ -353,10 +349,6 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
           Ts(i,3) =(-12.d0*Xi(i,3)+6.d0*H(i,3))/((beta*H(i,3)+6.d0)*H(i,3))
           BL(i,3) = H(i,3)/2.d0
           T(i,3) = Ts(i,3)/4.d0*(beta*H(i,3)+4.d0)
-       ! ENDIF
-       ! ! IF (T(i,3)<1D-8) THEN
-       ! !    T(i,3) =0.d0
-       ! !    Ts(i,3) =0.d0
        ENDIF
     END DO
 

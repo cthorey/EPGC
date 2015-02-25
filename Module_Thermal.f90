@@ -6,7 +6,6 @@ USE MODULE_THERMAL_NEWTON
 USE MODULE_THERMAL_GFD
 USE MODULE_SURFACE_TEMPERATURE
 USE MODULE_THERMAL_NEWTON_OLD
-USE MODULE_THERMAL_NEWTON_CRYS_2
 USE MODULE_THERMAL_NEWTON_INT_EPAISSEUR
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
