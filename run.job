@@ -3,6 +3,7 @@
 #SBATCH -J Name
 #SBATCH --nodes=Nnode
 #SBATCH --ntasks=Ntask
+#SBATCH --exclusive
 
 echo "Running on: $SLURM_NODELIST"
 cd dir
