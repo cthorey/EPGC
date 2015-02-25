@@ -436,11 +436,7 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
        END IF IF2
 
        beta = N1*Pe**(-0.5d0)/(sqrt(pi*tmps))
-       loss = Pe*beta*Ts(i,col)
-       ! loss = (2*Pe*T(i,col)/BL(i,col))
-       ! print*,i,loss,Ai*Omega_a*Xi(i,col)&
-       !         &-Bi*Omega_b*Xi(i-1,col)&
-       !         &+Ai*Sigma_a-Bi*Sigma_b 
+       loss = Pe*beta*Ts(i,col)/(1+psi)
        IF4: IF (i==1) THEN
           f(i)=loss+Ai*Omega_a*Xi(i,col)+Ai*Sigma_a
        ELSEIF (i==N) THEN

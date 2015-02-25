@@ -43,7 +43,7 @@ CONTAINS
        CALL THERMAL_NEWTON_SOLVER(Xi,H,P,T,Ts,BL,Dt,Dr,theta,dist,ray,M,sigma,nu,Pe,psi,delta0,el,grav,N1,F_err,z,tmps)
        z=z+1
        IF (F_err>F_errt) THEN
-          PRINT*,tmps,z,'Erreur_Ite_Temp',F_err,F_errt
+          ! PRINT*,tmps,z,'Erreur_Ite_Temp',F_err,F_errt
        ENDIF
        IF (z>20000) THEN
           ERROR_CODE = 1
