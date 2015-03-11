@@ -4,6 +4,8 @@ MODULE MODULE_THICKNESS
 
 USE MODULE_THICKNESS_NEWTON
 USE MODULE_THICKNESS_GFD
+USE MODULE_THICKNESS_VISCO
+USE MODULE_THICKNESS_ARRHENIUS
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!  SUBROUTINES

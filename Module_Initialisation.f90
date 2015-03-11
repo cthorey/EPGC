@@ -46,7 +46,7 @@ CONTAINS
     grav = 0D0
     delta0 = 5D-3
     sigma = 5D-2
-    nu = 1D-6
+    nu = 0D0
     Pe = 1D0
     psi = 0D0
     N1 = 1D5

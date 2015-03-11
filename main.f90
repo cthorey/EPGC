@@ -210,6 +210,7 @@ PROGRAM MAIN
      tmps_n = tmps
      tmps = tmps+Dt
 
+     print*,'t',tmps
   END DO TEMPS
 
   DEALLOCATE(H,T,Xi,BL,Ts)
