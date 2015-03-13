@@ -1,11 +1,11 @@
-MODULE MODULE_THICKNESS_ROSCOE
+MODULE MODULE_THICKNESS_SKIN_NEWTON_ROSCOE
 
 CONTAINS
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!  SUBROUTINE THICKNESS_NEWTON_SOLVER
 
-  SUBROUTINE  THICKNESS_NEWTON_ROSCOE(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,z,F_err,theta)
+  SUBROUTINE  THICKNESS_SKIN_NEWTON_ROSCOE(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,z,F_err,theta)
 
     !*****************************************************************
     !Solve for the thickness in the thickenss evolution equation using the Newton
@@ -155,7 +155,7 @@ CONTAINS
     DEALLOCATE(Hm,a,b,c,d,e,f,g,k,l,S,Coeff,qa)
     DEALLOCATE(fguess,ftmps,a1,b1,c1,d1,e1,f1,g1,k1,l1)
 
-  END SUBROUTINE THICKNESS_NEWTON_ROSCOE
+  END SUBROUTINE THICKNESS_SKIN_NEWTON_ROSCOE
 
   !-------------------------------------------------------------------------------------
   !-------------------------------------------------------------------------------------
@@ -838,5 +838,5 @@ CONTAINS
     RETURN
   END SUBROUTINE TRIDIAG
 
-END MODULE MODULE_THICKNESS_ROSCOE
+END MODULE MODULE_THICKNESS_SKIN_NEWTON_ROSCOE
 
