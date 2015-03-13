@@ -27,7 +27,6 @@ import datetime
 
 if _platform == "linux" or _platform == "linux2":
     Root_ELAS = '/gpfs/users/thorey/ELAS/'
-    Root_Run = '/gpfs/users/thorey/ELAS/' # Modifier la pour le dossier ou l'on va travailler
     Root_Code = '/home/thorey/Code_ELAS/'
     Name_Folder_Run = '' # Remplir si on veut faire un test dans un dossier specific
     Bactrace_Run = 'Bactrack.txt'
@@ -35,7 +34,6 @@ if _platform == "linux" or _platform == "linux2":
     Compilateur = 'ifort'
 elif _platform == "darwin":
     Root_ELAS = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/Code/TEST/ELAS/'
-    Root_Run = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/Code/TEST/ELAS/'
     Root_Code = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/Code/Code_ELAS/'
     Name_Folder_Run = '' # Remplir si on veut faire un test dans un dossier specific
     Bactrace_Run = 'Bactrack.txt'
@@ -75,6 +73,14 @@ def copy_folder(src,dest):
         
 ################################
 # Creation d'un dossier pour acceuillier les simus
+Dict_Model = {0: 'Int_Epaisseur', 1: 'Skin'}
+Dict_Schema = {0: 'Newton', 1: 'GFD'}
+Dict_Rheology = {0: 'Bercovici', 1: 'Roscoe', 2: 'Arrhenius'}            
+Root_Run = Root_ELAS +\
+           'M'+Dict_Model[Model]+'_'\
+           'TSc_'+Dict_Schema[T_Schema]+'_'\
+           'HSc_'+Dict_Schema[H_Schema]+'_'\
+           'R'+Dict_Rheology[Rheology]+'/'
 if Init == 0:
     if Name_Folder_Run == '':
         print datetime.date.today()
@@ -218,7 +224,7 @@ for run in Dict_Run:
             
     # Creation de constante_tmp.f90 temporaire
     with open( str(Root_Code)+'Module_Init.f90' , 'r') as script:
-            with open(str(Root_Code)+'Module_Init'+'_tmp.f90', 'wr+') as script_tmp:
+            with open(str(Root_Code)+'Module_Init'+'_tmp_1.f90', 'wr+') as script_tmp:
                 for l in script:
                     if l == '    CHARACTER(LEN=Size) :: Root\n':
                         to_write = l.replace('Size',str(len(Root_Run)))
@@ -279,6 +285,19 @@ for run in Dict_Run:
                         to_write = l
                     script_tmp.write(to_write)
 
+    # ON decoupe les lignes trop grandes
+    with open( str(Root_Code)+'Module_Init_tmp_1.f90' , 'r') as script:
+        with open(str(Root_Code)+'Module_Init'+'_tmp.f90', 'wr+') as script_tmp:
+            for line in script:
+                if line.split('=')[0] != '    Root ' and line.split('=')[0] != '    Root_Code ':
+                    to_write = line
+                    script_tmp.write(to_write)
+                else:
+                    to_write1 = line[:70]+"'&\n"
+                    to_write2 = "&//'"+line[70:]
+                    script_tmp.write(to_write1)
+                    script_tmp.write(to_write2)
+            
     # Make executble with name: name
     with open(str(Root_Code)+'run.sh' , 'r') as script:
             with open(str(Root_Code)+'run_tmp.sh', 'wr+') as script_tmp:
