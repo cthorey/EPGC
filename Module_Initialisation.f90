@@ -47,7 +47,7 @@ CONTAINS
     delta0 = 5D-3
     sigma = 2D-2
     nu = 1D-3
-    Pe = 1D-1
+    Pe = 1D-2
     psi = 0D0
     N1 = 1D5
 

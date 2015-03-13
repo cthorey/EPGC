@@ -1,11 +1,14 @@
-
-MODULE MODULE_THERMAL_NEWTON
+MODULE MODULE_THERMAL_SKIN_NEWTON_ARRHENIUS
 
 CONTAINS
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!  SUBROUTINE THICKNESS_NEWTON_SOLVER
+!!!!!!!!  Equation : Heat equation
+!!!!!!!!  Model : Skin theory (Balmforth2004)
+!!!!!!!!  Schema : Newton_Rhapsod method
+!!!!!!!!  Model couplage : Arrhenius rehology (Diniega2008) 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  SUBROUTINE THERMAL_NEWTON_SOLVER(Xi,H,P,T,Ts,BL,Dt,Dr,theta,dist,ray,M,sigma,nu,Pe,psi,delta0,el,grav,N1,F_err,z,tmps)
+  SUBROUTINE THERMAL_SKIN_NEWTON_ARRHENIUS(Xi,H,P,T,Ts,BL,Dt,Dr,theta,dist,ray,M,sigma,nu,Pe,psi,delta0,el,grav,N1,F_err,z,tmps)
 
     !*****************************************************************
     ! Solve for the parameter Xi, and split in Temperature and thermal layer
@@ -91,7 +94,7 @@ CONTAINS
     DO i=1,N,1
        Xi(i,3)=Xi_m(i)+Xi(i,2)
        IF (Xi(i,3) >H(i,3)/2D0) THEN
-          Xi(i:,3) = H(i:,3)/2D0
+          Xi(i:,3) = 0.9999999*H(i:,3)/2D0
           EXIT
        ENDIF
     END DO
@@ -113,7 +116,7 @@ CONTAINS
     DEALLOCATE(Xi_m,a,b,c,S)
     DEALLOCATE(Xi_guess,Xi_tmps,a1,b1,c1)
 
-  END SUBROUTINE THERMAL_NEWTON_SOLVER
+  END SUBROUTINE THERMAL_SKIN_NEWTON_ARRHENIUS
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !-------------------------------------------------------------------------------------
@@ -382,10 +385,10 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
     DOUBLE PRECISION ,INTENT(IN) :: nu,Pe,delta0,el,grav,N1,tmps,psi,Dt
 
     ! Parametre pour le sous programme
-    DOUBLE PRECISION, PARAMETER :: pi=3.14159265
+    DOUBLE PRECISION, PARAMETER :: pi=3.14159265358979d0
 
     DOUBLE PRECISION :: h_a,delta_a,delta_a2,eta_a,Ai,T_a
-    DOUBLE PRECISIOn :: omega_a,sigma_a
+    DOUBLE PRECISIOn :: omega_a,sigma_a,delta_a3,delta_b3
 
     DOUBLE PRECISION :: h_b,delta_b,delta_b2,eta_b,Bi,T_b
     DOUBLE PRECISIOn :: omega_b,sigma_b,Ts_a,Ts_b,Ds_b,Ds_a
@@ -402,14 +405,36 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
           h_b=0.5d0*(H(i,3)+H(i-1,3))
           delta_b=0.5d0*(BL(i,col)+BL(i-1,col))
           delta_b2=0.5d0*(BL(i,col)**2+BL(i-1,col)**2)
+          delta_b3=0.5d0*(BL(i,col)**3+BL(i-1,col)**3)
           T_b = 0.5d0*(T(i,col)+T(i-1,col))
           Ts_b = 0.5d0*(Ts(i,col)+Ts(i-1,col))
           Ds_b = T_b-Ts_b
 
-          omega_b = (eta_b*delta_b)/10.d0*(nu*(-20.d0*delta_b+30.d0*h_b)+&
-               &(1.d0-nu)*(6.d0*Ds_b*delta_b-15.d0*Ds_b*h_b-20.d0*T_b*delta_b+30.d0*T_b*h_b))
-          sigma_b = (-1.d0/210.d0)*Ds_b*delta_b2*eta_b*(nu*(-98.d0*delta_b+105.d0*h_b)+&
-               &(1-nu)*(22.d0*Ds_b*delta_b-35.d0*Ds_b*h_b-98.d0*T_b*delta_b+105.d0*T_b*h_b))
+          IF (nu < 1D0) THEN
+              omega_b = 3*sqrt(pi)*Ds_b**(-1.5d0)*delta_b2*eta_b*nu*nu**(-T_b)&
+             & *(-log(nu))**(-1.5d0)*erf(sqrt(Ds_b)*sqrt(-log(nu))) - 6*1.0/Ds_b&
+             & *delta_b2*eta_b*nu*nu**(-T_b)*1.0/(-log(nu)) - 3*1.0/Ds_b*&
+             & delta_b*eta_b*h_b*nu*nu**Ds_b*nu**(-T_b)*1.0/(-log(nu)) + 3*1.0/&
+             & Ds_b*delta_b*eta_b*h_b*nu*nu**(-T_b)*1.0/(-log(nu))
+
+             sigma_b = (3.0d0/2.0d0)*sqrt(pi)*Ds_b**(-1.5d0)*delta_b3*eta_b*&
+             & nu*nu**(-T_b)*(-log(nu))**(-2.5d0)*erf(sqrt(Ds_b)*sqrt(-log(nu&
+             & ))) - 1.0/Ds_b*delta_b3*eta_b*nu*nu**Ds_b*nu**(-T_b)*(-log(nu))&
+             & **(-2.0d0) - 2*1.0/Ds_b*delta_b3*eta_b*nu*nu**(-T_b)*(-log(nu))&
+             & **(-2.0d0) - 1.0/Ds_b*delta_b2*eta_b*h_b*nu*nu**Ds_b*nu**(-T_b)&
+             & *(-log(nu))**(-2.0d0) + 1.0/Ds_b*delta_b2*eta_b*h_b*nu*nu**(&
+             & -T_b)*(-log(nu))**(-2.0d0) + sqrt(pi)*Ds_b**(-0.5d0)*delta_b3*&
+             & eta_b*nu*nu**(-T_b)*(-log(nu))**(-2.5d0)*log(nu)*erf(sqrt(Ds_b)*&
+             & sqrt(-log(nu))) - 2*delta_b3*eta_b*nu*nu**(-T_b)*(-log(nu))**(&
+             & -2.0d0)*log(nu) + delta_b2*eta_b*h_b*nu*nu**(-T_b)*(-log(nu))**&
+             & (-2.0d0)*log(nu)
+          ELSEIF (nu .EQ. 1D0) THEN
+             omega_b = -2*delta_b**2*eta_b + 3*delta_b*eta_b*h_b
+             sigma_b = (7.0d0/15.0d0)*Ds_b*delta_b**3*eta_b - 1.0d0/2.0d0*Ds_b*&
+                  & delta_b**2*eta_b*h_b
+          ENDIF
+          
+
        ENDIF IF1
 
        IF2: IF (i .NE. N) THEN
@@ -417,30 +442,52 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
           Ai=(ray(i)/(dist(i)*Dr))
           h_a=0.5d0*(H(i+1,3)+H(i,3))
           delta_a=0.5d0*(BL(i+1,col)+BL(i,col))
-          delta_a2=0.5d0*(BL(i+1,col)**2+BL(i,col)**2)
+          delta_a2 = 0.5d0*(BL(i+1,col)**2+BL(i,col)**2)
+          delta_a3 = 0.5d0*(BL(i+1,col)**3+BL(i,col)**3)
           T_a = 0.5d0*(T(i,col)+T(i+1,col))
           Ts_a = 0.5d0*(Ts(i,col)+Ts(i+1,col))
           Ds_a = T_a-Ts_a
+          
+          IF (nu < 1D0) THEN
+             omega_a = 3*sqrt(pi)*Ds_a**(-1.5d0)*delta_a2*eta_a*nu*nu**(-T_a)&
+             & *(-log(nu))**(-1.5d0)*erf(sqrt(Ds_a)*sqrt(-log(nu))) - 6*1.0/Ds_a&
+             & *delta_a2*eta_a*nu*nu**(-T_a)*1.0/(-log(nu)) - 3*1.0/Ds_a*&
+             & delta_a*eta_a*h_a*nu*nu**Ds_a*nu**(-T_a)*1.0/(-log(nu)) + 3*1.0/&
+             & Ds_a*delta_a*eta_a*h_a*nu*nu**(-T_a)*1.0/(-log(nu))
 
-          omega_a = (eta_a*delta_a)/10.d0*(nu*(-20.d0*delta_a+30.d0*h_a)+&
-               &(1.d0-nu)*(6.d0*Ds_a*delta_a-15.d0*Ds_a*h_a-20.d0*T_a*delta_a+30.d0*T_a*h_a))
-          sigma_a = (-1.d0/210.d0)*Ds_a*delta_a2*eta_a*(nu*(-98.d0*delta_a+105.d0*h_a)+&
-               &(1-nu)*(22.d0*Ds_a*delta_a-35.d0*Ds_a*h_a-98.d0*T_a*delta_a+105.d0*T_a*h_a))
-       END IF IF2
+             sigma_a = (3.0d0/2.0d0)*sqrt(pi)*Ds_a**(-1.5d0)*delta_a3*eta_a*&
+             & nu*nu**(-T_a)*(-log(nu))**(-2.5d0)*erf(sqrt(Ds_a)*sqrt(-log(nu&
+             & ))) - 1.0/Ds_a*delta_a3*eta_a*nu*nu**Ds_a*nu**(-T_a)*(-log(nu))&
+             & **(-2.0d0) - 2*1.0/Ds_a*delta_a3*eta_a*nu*nu**(-T_a)*(-log(nu))&
+             & **(-2.0d0) - 1.0/Ds_a*delta_a2*eta_a*h_a*nu*nu**Ds_a*nu**(-T_a)&
+             & *(-log(nu))**(-2.0d0) + 1.0/Ds_a*delta_a2*eta_a*h_a*nu*nu**(&
+             & -T_a)*(-log(nu))**(-2.0d0) + sqrt(pi)*Ds_a**(-0.5d0)*delta_a3*&
+             & eta_a*nu*nu**(-T_a)*(-log(nu))**(-2.5d0)*log(nu)*erf(sqrt(Ds_a)*&
+             & sqrt(-log(nu))) - 2*delta_a3*eta_a*nu*nu**(-T_a)*(-log(nu))**(&
+             & -2.0d0)*log(nu) + delta_a2*eta_a*h_a*nu*nu**(-T_a)*(-log(nu))**&
+             & (-2.0d0)*log(nu)
+          ELSEIF (nu .EQ. 1D0) THEN
+             omega_a = -2*delta_a2*eta_a + 3*delta_a*eta_a*h_a
+             sigma_a = (7.0d0/15.0d0)*Ds_a*delta_a3*eta_a - 1.0d0/2.0d0*Ds_a*&
+                  & delta_a2*eta_a*h_a
+          ENDIF
+         
+      END IF IF2
 
-       beta = N1*Pe**(-0.5d0)/(sqrt(pi*tmps))
-       loss = Pe*beta*Ts(i,col)/(1+psi)
-       IF4: IF (i==1) THEN
-          f(i)=loss+Ai*Omega_a*Xi(i,col)+Ai*Sigma_a
-       ELSEIF (i==N) THEN
-          f(i)=loss-Bi*Omega_b*Xi(i-1,col)-Bi*Sigma_b
-       ELSE
-          f(i)=Ai*Omega_a*Xi(i,col)&
-               &-Bi*Omega_b*Xi(i-1,col)&
-               &+Ai*Sigma_a-Bi*Sigma_b &
-               &+loss
-       END IF IF4
-
+      beta = N1*Pe**(-0.5d0)/(sqrt(pi*tmps))
+      loss = Pe*beta*Ts(i,col)/(1+psi)
+      ! loss = 2D0*Pe**(-1D0)*(1D0/(1D0+psi))*T(i,col)/BL(i,col)
+      IF4: IF (i==1) THEN
+         f(i)=Ai*Omega_a*Xi(i,col)+Ai*Sigma_a+loss
+      ELSEIF (i==N) THEN
+         f(i)=-Bi*Omega_b*Xi(i-1,col)-Bi*Sigma_b+loss
+      ELSE
+         f(i)=Ai*Omega_a*Xi(i,col)&
+              &-Bi*Omega_b*Xi(i-1,col)&
+              &+Ai*Sigma_a-Bi*Sigma_b &
+              &+loss
+      END IF IF4
+      
     END DO
 
   END SUBROUTINE TEMPERATURE_BALMFORTH
@@ -470,13 +517,14 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
 
     ! Nombre sans dimension
     DOUBLE PRECISION ,INTENT(IN) :: nu,Pe,delta0,el,grav
-
+    DOUBLE PRECISION, PARAMETER :: pi=3.14159265358979d0
     ! Parametre pour le sous programme
 
     DOUBLE PRECISION :: h_a,delta_a,delta_a2,eta_a,Ai,T_a,zeta_a
     DOUBLE PRECISIOn :: omega_a,sigma_a
     DOUBLE PRECISION :: h_b,delta_b,delta_b2,eta_b,Bi,T_b,zeta_b
     DOUBLE PRECISIOn :: omega_b,sigma_b,Ds_b,Ds_a,Ts_a,Ts_b
+    DOUBLE PRECISION :: delta_b3,delta_a3
     DOUBLE PRECISION :: loss
 
     INTEGER :: i,col
@@ -486,32 +534,52 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
     col=2
 
     DO i=1,N,1
-       IF1:IF (i .NE. 1) THEN
+    IF1:IF (i .NE. 1) THEN
           eta_b=(grav*(H(i,3)-H(i-1,3))+el*(P(i,3)-P(i-1,3)))/Dr
           Bi=(ray(i-1)/(dist(i)*Dr))
           h_b=0.5d0*(H(i,3)+H(i-1,3))
           delta_b=0.5d0*(BL(i,col)+BL(i-1,col))
           delta_b2=0.5d0*(BL(i,col)**2+BL(i-1,col)**2)
+          delta_b3=0.5d0*(BL(i,col)**3+BL(i-1,col)**3)
           T_b = 0.5d0*(T(i,col)+T(i-1,col))
           Ts_b = 0.5d0*(Ts(i,col)+Ts(i-1,col))
           Ds_b = T_b-Ts_b
-             
-          omega_b = (eta_b*delta_b)/10.d0*(nu*(-20.d0*delta_b+30.d0*h_b)+&
-               &(1.d0-nu)*(6.d0*Ds_b*delta_b-15.d0*Ds_b*h_b-20.d0*T_b*delta_b+30.d0*T_b*h_b))
+
+          IF (nu < 1D0) THEN
+              omega_b = 3*sqrt(pi)*Ds_b**(-1.5d0)*delta_b2*eta_b*nu*nu**(-T_b)&
+                   & *(-log(nu))**(-1.5d0)*erf(sqrt(Ds_b)*sqrt(-log(nu))) - 6*1.0/Ds_b&
+                   & *delta_b2*eta_b*nu*nu**(-T_b)*1.0/(-log(nu)) - 3*1.0/Ds_b*&
+                   & delta_b*eta_b*h_b*nu*nu**Ds_b*nu**(-T_b)*1.0/(-log(nu)) + 3*1.0/&
+                   & Ds_b*delta_b*eta_b*h_b*nu*nu**(-T_b)*1.0/(-log(nu))
+           ELSEIF (nu .EQ. 1D0) THEN
+              omega_b = -2*delta_b**2*eta_b + 3*delta_b*eta_b*h_b
+          ENDIF
+
        ENDIF IF1
+
        IF2: IF (i .NE. N) THEN
           eta_a=(grav*(H(i+1,3)-H(i,3))+el*(P(i+1,3)-P(i,3)))/Dr
           Ai=(ray(i)/(dist(i)*Dr))
           h_a=0.5d0*(H(i+1,3)+H(i,3))
           delta_a=0.5d0*(BL(i+1,col)+BL(i,col))
-          delta_a2=0.5d0*(BL(i+1,col)**2+BL(i,col)**2)
+          delta_a2 = 0.5d0*(BL(i+1,col)**2+BL(i,col)**2)
+          delta_a3 = 0.5d0*(BL(i+1,col)**3+BL(i,col)**3)
           T_a = 0.5d0*(T(i,col)+T(i+1,col))
           Ts_a = 0.5d0*(Ts(i,col)+Ts(i+1,col))
           Ds_a = T_a-Ts_a
 
-          omega_a = (eta_a*delta_a)/10.d0*(nu*(-20.d0*delta_a+30.d0*h_a)+&
-               &(1.d0-nu)*(6.d0*Ds_a*delta_a-15.d0*Ds_a*h_a-20.d0*T_a*delta_a+30.d0*T_a*h_a))
-       END IF IF2
+          IF (nu < 1D0) THEN
+             omega_a = 3*sqrt(pi)*Ds_a**(-1.5d0)*delta_a2*eta_a*nu*nu**(-T_a)&
+             & *(-log(nu))**(-1.5d0)*erf(sqrt(Ds_a)*sqrt(-log(nu))) - 6*1.0/Ds_a&
+             & *delta_a2*eta_a*nu*nu**(-T_a)*1.0/(-log(nu)) - 3*1.0/Ds_a*&
+             & delta_a*eta_a*h_a*nu*nu**Ds_a*nu**(-T_a)*1.0/(-log(nu)) + 3*1.0/&
+             & Ds_a*delta_a*eta_a*h_a*nu*nu**(-T_a)*1.0/(-log(nu))
+          ELSEIF (nu .EQ. 1D0) THEN
+             omega_a = -2*delta_a2*eta_a + 3*delta_a*eta_a*h_a
+          ENDIF
+     
+         
+      END IF IF2
 
 
        IF3:IF (i==1) THEN
@@ -530,6 +598,4 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
 
     ENDDO
   END SUBROUTINE JACOBI_TEMPERATURE_BALMFORTH
-
-
-END MODULE MODULE_THERMAL_NEWTON
+END MODULE MODULE_THERMAL_SKIN_NEWTON_ARRHENIUS

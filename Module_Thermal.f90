@@ -2,12 +2,12 @@ MODULE MODULE_THERMAL
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!  IMPORTATIONS DES MODULES
-USE MODULE_THERMAL_NEWTON
-USE MODULE_THERMAL_GFD
-USE MODULE_SURFACE_TEMPERATURE
-USE MODULE_THERMAL_NEWTON_INT_EPAISSEUR
-USE MODULE_THERMAL_ROSCOE
-USE MODULE_THERMAL_NEWTON_ARRHENIUS
+  
+USE MODULE_THERMAL_SKIN_NEWTON_BERCOVICI
+USE MODULE_THERMAL_SKIN_GFD_BERCOVICI
+USE MODULE_THERMAL_INTE_NEWTON_BERCOVICI
+USE MODULE_THERMAL_SKIN_NEWTON_ROSCOE
+USE MODULE_THERMAL_SKIN_NEWTON_ARRHENIUS
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!  SUBROUTINES
@@ -40,7 +40,7 @@ CONTAINS
     z =0
 
     THERMAL_ITERATION: DO 
-       CALL THERMAL_NEWTON_SOLVER_ARRHENIUS(Xi,H,P,T,Ts,BL,Dt,Dr,theta,dist,ray,M,sigma,nu,Pe,psi,delta0,el,grav,N1,F_err,z,tmps)
+       CALL THERMAL_SKIN_NEWTON_ARRHENIUS(Xi,H,P,T,Ts,BL,Dt,Dr,theta,dist,ray,M,sigma,nu,Pe,psi,delta0,el,grav,N1,F_err,z,tmps)
        z=z+1
        ! PRINT*,F_err,z,'Temperature'
        IF (F_err>F_errt) THEN

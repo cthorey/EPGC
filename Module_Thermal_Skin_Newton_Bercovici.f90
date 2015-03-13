@@ -1,14 +1,15 @@
 
-MODULE MODULE_THERMAL_NEWTON_INT_EPAISSEUR
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!  Module newton ou l on integre sur lepaissuer lequation de la 
-!!!!!!!!  chaleur. Se referer au poluy Model_Integration_Epaisseur.pdf
+MODULE MODULE_THERMAL_SKIN_NEWTON_BERCOVICI
 
 CONTAINS
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!  SUBROUTINE THICKNESS_NEWTON_SOLVER
+!!!!!!!!  Equation : Heat equation
+!!!!!!!!  Model : Skin theory (Balmforth2004)
+!!!!!!!!  Schema : Newton_Rhapsod method
+!!!!!!!!  Model couplage : Bercovici rheology (1995) 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  SUBROUTINE THERMAL_NEWTON_SOLVER_H(Xi,H,P,T,Ts,BL,Dt,Dr,theta,dist,ray,M,sigma,nu,Pe,psi,delta0,el,grav,N1,F_err,z,tmps)
+  SUBROUTINE THERMAL_SKIN_NEWTON_BERCOVICI(Xi,H,P,T,Ts,BL,Dt,Dr,theta,dist,ray,M,sigma,nu,Pe,psi,delta0,el,grav,N1,F_err,z,tmps)
 
     !*****************************************************************
     ! Solve for the parameter Xi, and split in Temperature and thermal layer
@@ -34,39 +35,20 @@ CONTAINS
     DOUBLE PRECISION, DIMENSION(:),ALLOCATABLE :: Xi_guess,Xi_tmps
     DOUBLE PRECISION, DIMENSION(:),ALLOCATABLE :: a,b,c,S
     DOUBLE PRECISION, DIMENSION(:),ALLOCATABLE :: a1,b1,c1
-    DOUBLE PRECISION ,DIMENSION(:), ALLOCATABLE :: Xi_m,qa
+    DOUBLE PRECISION ,DIMENSION(:), ALLOCATABLE :: Xi_m
 
     DOUBLE PRECISION :: U
     INTEGER :: i,ndyke,N,Size
     INTEGER :: err1,col
     LOGICAL :: CHO
 
-
-    ! Taille de la grille
     ndyke=sigma/Dr
-    CHO=COUNT(H(:,1)>delta0)<ndyke
-    SELECT CASE (CHO)
-    CASE(.TRUE.)
-       N = ndyke +10   ! Cas ou on donne pas de profile initiale...
-    CASE(.FALSE.)
-       N = COUNT(H(:,1)>delta0) +10
-    END SELECT
-
-    ! Caracterisation du flux
-    ALLOCATE(qa(1:N),stat=err1)
-    IF (err1>1) THEN
-       PRINT*, 'Erreur alloc flux';STOP
-    END IF
-
-    DO i = 1,N,1
-       U = 2.d0/(sigma)**4.
-       IF (i<ndyke+1) THEN
-          qa(i) = U*(sigma**2.-dist(i)**2.)
-       ELSE 
-          qa(i) = 0.d0
-       END IF
-    END DO
-
+    DO i =1,M,1
+       IF (H(i,1)<delta0) THEN
+          N = i-1;EXIT
+       ENDIF
+    ENDDO
+    N=M-1
     ! Calcule de f tmps n et n+
     ALLOCATE(Xi_tmps(1:N),Xi_guess(1:N),stat=err1)
     IF (err1>1) THEN
@@ -74,9 +56,9 @@ CONTAINS
     END IF
 
     col=1
-    CALL TEMPERATURE(Xi_tmps,col,N,Xi,H,T,Ts,BL,P,dist,ray,Dr,nu,Pe,delta0,el,grav,N1,tmps+Dt,psi,Dt,qa)
+    CALL TEMPERATURE_BALMFORTH(Xi_tmps,col,N,Xi,H,T,Ts,BL,P,dist,ray,Dr,nu,Pe,delta0,el,grav,N1,tmps+Dt,psi,Dt)
     col=2
-    CALL TEMPERATURE(Xi_guess,col,N,Xi,H,T,Ts,BL,P,dist,ray,Dr,nu,Pe,delta0,el,grav,N1,tmps+Dt,psi,Dt,qa)
+    CALL TEMPERATURE_BALMFORTH(Xi_guess,col,N,Xi,H,T,Ts,BL,P,dist,ray,Dr,nu,Pe,delta0,el,grav,N1,tmps+Dt,psi,Dt)
 
     ! Jacobienner
     ALLOCATE(a1(1:N),b1(1:N),c1(1:N),stat=err1)
@@ -84,7 +66,7 @@ CONTAINS
        PRINT*, 'Erreur allocation dans coeff Temperature'; STOP
     END IF
 
-    CALL JACOBI_TEMPERATURE(a1,b1,c1,N,H,BL,T,Ts,Xi,P,Dr,dist,ray,nu,Pe,delta0,el,grav,psi,Dt)
+    CALL JACOBI_TEMPERATURE_BALMFORTH(a1,b1,c1,N,H,BL,T,Ts,Xi,P,Dr,dist,ray,nu,Pe,delta0,el,grav)
 
     !Systeme a inverser
     ALLOCATE(a(1:N),b(1:N),c(1:N),S(1:N),stat= err1)
@@ -93,12 +75,11 @@ CONTAINS
     END IF
 
     DO i=1,N,1
-       a(i)=-theta*Dt*a1(i)
-       b(i)=(1D0+psi)-theta*Dt*b1(i)
-       c(i)=-theta*Dt*c1(i)
-       S(i)=(1D0+psi)*(Xi(i,1)-Xi(i,2))+theta*Dt*Xi_guess(i)+(1D0-theta)*Dt*Xi_tmps(i)
+          a(i)=-theta*Dt*a1(i)
+          b(i)=1D0-theta*Dt*b1(i)
+          c(i)=-theta*Dt*c1(i)
+          S(i)=(Xi(i,1)-Xi(i,2))+theta*Dt*Xi_guess(i)+(1-theta)*Dt*Xi_tmps(i)
     END DO
-
 
     a(1)=0
     c(N)=0
@@ -110,32 +91,33 @@ CONTAINS
     END IF
     
     CALL TRIDIAG(a,b,c,S,N,Xi_m)
-    ! CALL NONA_DIAGO(N,Xi_m,a,b,a,b,c,0,g,k,l,S)
-    ! CALL NONA_DIAGO(N,Xi_m,c*0D0,c*0D0,c*0D0,a,b,c,c*0D0,c*0D0,c*0D0,S)
+
     DO i=1,N,1
        Xi(i,3)=Xi_m(i)+Xi(i,2)
-       ! IF (Xi(i,3)>(H(i,3))) THEN
-       !    XI(i,3) = (1D0-1D-7)*H(i,3)
-       ! ELSEIF (XI(i,3)<0.D0) THEN
-       !    Xi(i,3) =1D-7
-       ! ENDIF
+       IF (Xi(i,3) >H(i,3)/2D0) THEN
+          Xi(i:,3) = H(i:,3)/2D0
+          EXIT
+       ENDIF
     END DO
 
     ! Separation variables
-    CALL XI_SPLIT(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
+    ! CALL XI_SPLIT(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
+    CALL XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
+
     ! Calcule de l'erreur
-    IF (DOT_PRODUCT(Xi(:,2),Xi(:,2)) == 0D0) THEN
+    IF (DOT_PRODUCT(Xi(:,3),Xi(:,3))==DOT_PRODUCT(H(:,3)/2D0,H(:,3)/2D0)) THEN
+       F_err = 0D0 ! Cas ou le refroidissemnt est trop important et tout devient nulle
+    ELSEIF (DOT_PRODUCT(Xi(:,2),Xi(:,2)) == 0D0) THEN
        F_err = ABS(MAXVAL(Xi_m(:)))
     ELSE
        Size = COUNT(Xi(:,2)>1D-10)
        F_err = ABS(MAXVAL(((Xi(:Size,3)-Xi(:Size,2))/Xi(:Size,2))))
     ENDIF
 
-
     DEALLOCATE(Xi_m,a,b,c,S)
     DEALLOCATE(Xi_guess,Xi_tmps,a1,b1,c1)
 
-  END SUBROUTINE THERMAL_NEWTON_SOLVER_H
+  END SUBROUTINE THERMAL_SKIN_NEWTON_BERCOVICI
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !-------------------------------------------------------------------------------------
@@ -315,20 +297,17 @@ SUBROUTINE XI_SPLIT(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
     DOUBLE PRECISION, PARAMETER :: pi=3.14159265
     DOUBLE PRECISION :: Xit,Tss,beta,d1,d2,Dr
 
-
     ! Separation des variables
     DO i=1,N
-       Xit =2D0*H(i,3)/3.d0
+       Xit = H(i,3)/6.d0
        IF (Xi(i,3) <= Xit) THEN
-          T(i,3) = 3D0*Xi(i,3)/(2D0*H(i,3))
-          BL(i,3) = H(i,3)/2.d0
+          T(i,3) = 1.d0
+          BL(i,3) = 3.d0*Xi(i,3)
        ELSEIF (Xi(i,3)> Xit) THEN
-          T(i,3)= 1D0
-          BL(i,3)= 3D0*H(i,3)/2D0-3D0*Xi(i,3)/2D0
+          T(i,3)= 3.d0/2.D0-(3.d0*Xi(i,3)/H(i,3))
+          BL(i,3)=H(i,3)/2.d0
        ENDIF
-
     END DO
-
   END SUBROUTINE XI_SPLIT
   
   !-------------------------------------------------------------------------------------
@@ -376,10 +355,6 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
           BL(i,3) = H(i,3)/2.d0
           T(i,3) = Ts(i,3)/4.d0*(beta*H(i,3)+4.d0)
        ENDIF
-       IF (T(i,3)<1D-8) THEN
-          T(i,3) =0.d0
-          Ts(i,3) =0.d0
-       ENDIF
     END DO
 
   END SUBROUTINE XI_SPLIT_BALMFORTH
@@ -390,7 +365,7 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
   !-------------------------------------------------------------------------------------
   !-------------------------------------------------------------------------------------
 
-  SUBROUTINE TEMPERATURE(f,col,N,Xi,H,T,Ts,BL,P,dist,ray,Dr,nu,Pe,delta0,el,grav,N1,tmps,psi,Dt,qa)
+  SUBROUTINE TEMPERATURE_BALMFORTH(f,col,N,Xi,H,T,Ts,BL,P,dist,ray,Dr,nu,Pe,delta0,el,grav,N1,tmps,psi,Dt)
 
     !*****************************************************************
     ! Give the vector f
@@ -401,7 +376,7 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
     ! Tableaux
     DOUBLE PRECISION ,DIMENSION(:) , INTENT(INOUT) :: f
     DOUBLE PRECISION ,DIMENSION(:,:), INTENT(IN) :: H,Xi,T,Ts,BL,P
-    DOUBLE PRECISION ,DIMENSION(:), INTENT(IN) :: dist,ray,qa
+    DOUBLE PRECISION ,DIMENSION(:), INTENT(IN) :: dist,ray
 
     ! Prametre du model
     DOUBLE PRECISION ,INTENT(IN) :: Dr 
@@ -413,16 +388,12 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
     ! Parametre pour le sous programme
     DOUBLE PRECISION, PARAMETER :: pi=3.14159265
 
-    DOUBLE PRECISION :: Ai
-    DOUBLE PRECISION :: h_a,h_a2,delta_a,delta_a2,delta_a3,eta_a
-    DOUBLE PRECISION :: T_a,T_a2,omega_a,sigma_a,delta_a4
+    DOUBLE PRECISION :: h_a,delta_a,delta_a2,eta_a,Ai,T_a
+    DOUBLE PRECISIOn :: omega_a,sigma_a
 
-    DOUBLE PRECISION :: Bi
-    DOUBLE PRECISION :: h_b,h_b2,delta_b,delta_b2,delta_b3,eta_b
-    DOUBLE PRECISION :: T_b,T_b2,omega_b,sigma_b,delta_b4
-
-    DOUBLE PRECISION :: Crys
-
+    DOUBLE PRECISION :: h_b,delta_b,delta_b2,eta_b,Bi,T_b
+    DOUBLE PRECISIOn :: omega_b,sigma_b,Ts_a,Ts_b,Ds_b,Ds_a
+    DOUBLE PRECISION :: loss,beta
     INTEGER :: i,Na
 
     ! Remplissage de f
@@ -433,79 +404,50 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
           eta_b=(grav*(H(i,3)-H(i-1,3))+el*(P(i,3)-P(i-1,3)))/Dr
           Bi=(ray(i-1)/(dist(i)*Dr))
           h_b=0.5d0*(H(i,3)+H(i-1,3))
-          h_b2 = 0.5d0*(H(i,3)**2+H(i-1,3)**2)
           delta_b=0.5d0*(BL(i,col)+BL(i-1,col))
           delta_b2=0.5d0*(BL(i,col)**2+BL(i-1,col)**2)
-          delta_b3=0.5d0*(BL(i,col)**3+BL(i-1,col)**3)
-          delta_b4=0.5d0*(BL(i,col)**4+BL(i-1,col)**4)
           T_b = 0.5d0*(T(i,col)+T(i-1,col))
-          T_b2 = 0.5d0*(T(i,col)**2+T(i-1,col)**2)
+          Ts_b = 0.5d0*(Ts(i,col)+Ts(i-1,col))
+          Ds_b = T_b-Ts_b
 
-          omega_b = -4.0d0/5.0d0*T_b*delta_b3*eta_b*nu/h_b + 0.8d0*T_b*&
-          & delta_b3*eta_b/h_b + 2*T_b*delta_b2*eta_b*nu - 2.0d0*T_b*&
-          & delta_b2*eta_b - 2*T_b*delta_b*eta_b*h_b*nu + 2.0d0*T_b*delta_b&
-          & *eta_b*h_b + T_b*eta_b*h_b2*nu - 1.0d0*T_b*eta_b*h_b2 - eta_b&
-          & *h_b2*nu
-
-          sigma_b = -8.0d0/15.0d0*T_b2*delta_b4*eta_b*nu/h_b2 +&
-          & 0.533333333333333d0*T_b2*delta_b4*eta_b/h_b2 + (54.0d0/&
-          & 35.0d0)*T_b2*delta_b3*eta_b*nu/h_b - 1.54285714285714d0*T_b2&
-          & *delta_b3*eta_b/h_b - 5.0d0/3.0d0*T_b2*delta_b2*eta_b*nu +&
-          & 1.66666666666667d0*T_b2*delta_b2*eta_b + (2.0d0/3.0d0)*T_b2&
-          & *delta_b*eta_b*h_b*nu - 0.666666666666667d0*T_b2*delta_b*eta_b*&
-          & h_b - 2.0d0/5.0d0*T_b*delta_b3*eta_b*nu/h_b + T_b*delta_b2*&
-          & eta_b*nu - 2.0d0/3.0d0*T_b*delta_b*eta_b*h_b*nu
+          omega_b = (eta_b*delta_b)/10.d0*(nu*(-20.d0*delta_b+30.d0*h_b)+&
+               &(1.d0-nu)*(6.d0*Ds_b*delta_b-15.d0*Ds_b*h_b-20.d0*T_b*delta_b+30.d0*T_b*h_b))
+          sigma_b = (-1.d0/210.d0)*Ds_b*delta_b2*eta_b*(nu*(-98.d0*delta_b+105.d0*h_b)+&
+               &(1-nu)*(22.d0*Ds_b*delta_b-35.d0*Ds_b*h_b-98.d0*T_b*delta_b+105.d0*T_b*h_b))
        ENDIF IF1
 
        IF2: IF (i .NE. N) THEN
           eta_a=(grav*(H(i+1,3)-H(i,3))+el*(P(i+1,3)-P(i,3)))/Dr
           Ai=(ray(i)/(dist(i)*Dr))
           h_a=0.5d0*(H(i+1,3)+H(i,3))
-          h_a2=0.5d0*(H(i+1,3)**2+H(i,3)**2)
           delta_a=0.5d0*(BL(i+1,col)+BL(i,col))
           delta_a2=0.5d0*(BL(i+1,col)**2+BL(i,col)**2)
-          delta_a3=0.5d0*(BL(i+1,col)**3+BL(i,col)**3)
-          delta_a4=0.5d0*(BL(i+1,col)**4+BL(i,col)**4)
           T_a = 0.5d0*(T(i,col)+T(i+1,col))
-          T_a2 = 0.5d0*(T(i,col)**2+T(i+1,col)**2)
+          Ts_a = 0.5d0*(Ts(i,col)+Ts(i+1,col))
+          Ds_a = T_a-Ts_a
 
-          omega_a = -4.0d0/5.0d0*T_a*delta_a3*eta_a*nu/h_a + 0.8d0*T_a*&
-          & delta_a3*eta_a/h_a + 2*T_a*delta_a2*eta_a*nu - 2.0d0*T_a*&
-          & delta_a2*eta_a - 2*T_a*delta_a*eta_a*h_a*nu + 2.0d0*T_a*delta_a&
-          & *eta_a*h_a + T_a*eta_a*h_a2*nu - 1.0d0*T_a*eta_a*h_a2 - eta_a&
-          & *h_a2*nu
-          
-          sigma_a = -8.0d0/15.0d0*T_a2*delta_a4*eta_a*nu/h_a2 +&
-          & 0.533333333333333d0*T_a2*delta_a4*eta_a/h_a2 + (54.0d0/&
-          & 35.0d0)*T_a2*delta_a3*eta_a*nu/h_a - 1.54285714285714d0*T_a2&
-          & *delta_a3*eta_a/h_a - 5.0d0/3.0d0*T_a2*delta_a2*eta_a*nu +&
-          & 1.66666666666667d0*T_a2*delta_a2*eta_a + (2.0d0/3.0d0)*T_a2&
-          & *delta_a*eta_a*h_a*nu - 0.666666666666667d0*T_a2*delta_a*eta_a*&
-          & h_a - 2.0d0/5.0d0*T_a*delta_a3*eta_a*nu/h_a + T_a*delta_a2*&
-          & eta_a*nu - 2.0d0/3.0d0*T_a*delta_a*eta_a*h_a*nu
+          omega_a = (eta_a*delta_a)/10.d0*(nu*(-20.d0*delta_a+30.d0*h_a)+&
+               &(1.d0-nu)*(6.d0*Ds_a*delta_a-15.d0*Ds_a*h_a-20.d0*T_a*delta_a+30.d0*T_a*h_a))
+          sigma_a = (-1.d0/210.d0)*Ds_a*delta_a2*eta_a*(nu*(-98.d0*delta_a+105.d0*h_a)+&
+               &(1-nu)*(22.d0*Ds_a*delta_a-35.d0*Ds_a*h_a-98.d0*T_a*delta_a+105.d0*T_a*h_a))
        END IF IF2
 
-       IF (i<6) THEN
-          Crys = psi*(H(i,3)-H(i,1))/Dt
-       ELSE
-          Crys = 0D0
-       ENDIF
-       
-       IF4: IF (i==1) THEN          
-          f(i) = -(Ai*Omega_a*Xi(i,col))&
-               &-(Ai*h_a*Sigma_a)&
-               &-4D0*Pe*T(i,col)/BL(i,col)+qa(i)+Crys
+       beta = N1*Pe**(-0.5d0)/(sqrt(pi*tmps))
+       loss = Pe*beta*Ts(i,col)/(1+psi)
+       IF4: IF (i==1) THEN
+          f(i)=loss+Ai*Omega_a*Xi(i,col)+Ai*Sigma_a
        ELSEIF (i==N) THEN
-          f(i) = -(-Bi*Omega_b*Xi(i-1,col))&
-               &-(-Bi*h_b*Sigma_b)&
-               &-4D0*Pe*T(i,col)/BL(i,col)+qa(i)+Crys
+          f(i)=loss-Bi*Omega_b*Xi(i-1,col)-Bi*Sigma_b
        ELSE
-          f(i) = -(Ai*Omega_a*Xi(i,col)-Bi*Omega_b*Xi(i-1,col))&
-               &-(Ai*h_a*Sigma_a-Bi*h_b*Sigma_b)&
-               &-4D0*Pe*T(i,col)/BL(i,col)+qa(i)+Crys
+          f(i)=Ai*Omega_a*Xi(i,col)&
+               &-Bi*Omega_b*Xi(i-1,col)&
+               &+Ai*Sigma_a-Bi*Sigma_b &
+               &+loss
        END IF IF4
+
     END DO
-  END SUBROUTINE TEMPERATURE
+
+  END SUBROUTINE TEMPERATURE_BALMFORTH
 
   !-------------------------------------------------------------------------------------
   !-------------------------------------------------------------------------------------
@@ -513,7 +455,7 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
   !-------------------------------------------------------------------------------------
   !-------------------------------------------------------------------------------------
 
-  SUBROUTINE JACOBI_TEMPERATURE(a,b,c,N,H,BL,T,Ts,Xi,P,Dr,dist,ray,nu,Pe,delta0,el,grav,psi,Dt)
+  SUBROUTINE JACOBI_TEMPERATURE_BALMFORTH(a,b,c,N,H,BL,T,Ts,Xi,P,Dr,dist,ray,nu,Pe,delta0,el,grav)
 
     !*****************************************************************
     ! Give the jacobian coeficient a1,b1,c1
@@ -527,21 +469,19 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
     DOUBLE PRECISION ,DIMENSION(:), INTENT(IN) :: dist,ray
 
     ! Prametre du model
-    DOUBLE PRECISION ,INTENT(IN) :: Dr ,Dt
+    DOUBLE PRECISION ,INTENT(IN) :: Dr 
     INTEGER ,INTENT(IN) :: N
 
     ! Nombre sans dimension
-    DOUBLE PRECISION ,INTENT(IN) :: nu,Pe,delta0,el,grav,psi
+    DOUBLE PRECISION ,INTENT(IN) :: nu,Pe,delta0,el,grav
 
     ! Parametre pour le sous programme
 
-    DOUBLE PRECISION :: Ai
-    DOUBLE PRECISION :: h_a,h_a2,delta_a,delta_a2,delta_a3,eta_a
-    DOUBLE PRECISION :: T_a,T_a2,omega_a,sigma_a,delta_a4
-
-    DOUBLE PRECISION :: Bi
-    DOUBLE PRECISION :: h_b,h_b2,delta_b,delta_b2,delta_b3,eta_b
-    DOUBLE PRECISION :: T_b,T_b2,omega_b,sigma_b,delta_b4
+    DOUBLE PRECISION :: h_a,delta_a,delta_a2,eta_a,Ai,T_a,zeta_a
+    DOUBLE PRECISIOn :: omega_a,sigma_a
+    DOUBLE PRECISION :: h_b,delta_b,delta_b2,eta_b,Bi,T_b,zeta_b
+    DOUBLE PRECISIOn :: omega_b,sigma_b,Ds_b,Ds_a,Ts_a,Ts_b
+    DOUBLE PRECISION :: loss
 
     INTEGER :: i,col
 
@@ -554,56 +494,46 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
           eta_b=(grav*(H(i,3)-H(i-1,3))+el*(P(i,3)-P(i-1,3)))/Dr
           Bi=(ray(i-1)/(dist(i)*Dr))
           h_b=0.5d0*(H(i,3)+H(i-1,3))
-          h_b2 = 0.5d0*(H(i,3)**2+H(i-1,3)**2)
           delta_b=0.5d0*(BL(i,col)+BL(i-1,col))
           delta_b2=0.5d0*(BL(i,col)**2+BL(i-1,col)**2)
-          delta_b3=0.5d0*(BL(i,col)**3+BL(i-1,col)**3)
-          delta_b4=0.5d0*(BL(i,col)**4+BL(i-1,col)**4)
           T_b = 0.5d0*(T(i,col)+T(i-1,col))
-          T_b2 = 0.5d0*(T(i,col)**2+T(i-1,col)**2)
-
-          omega_b = -4.0d0/5.0d0*T_b*delta_b3*eta_b*nu/h_b + 0.8d0*T_b*&
-          & delta_b3*eta_b/h_b + 2*T_b*delta_b2*eta_b*nu - 2.0d0*T_b*&
-          & delta_b2*eta_b - 2*T_b*delta_b*eta_b*h_b*nu + 2.0d0*T_b*delta_b&
-          & *eta_b*h_b + T_b*eta_b*h_b2*nu - 1.0d0*T_b*eta_b*h_b2 - eta_b&
-          & *h_b2*nu
+          Ts_b = 0.5d0*(Ts(i,col)+Ts(i-1,col))
+          Ds_b = T_b-Ts_b
+             
+          omega_b = (eta_b*delta_b)/10.d0*(nu*(-20.d0*delta_b+30.d0*h_b)+&
+               &(1.d0-nu)*(6.d0*Ds_b*delta_b-15.d0*Ds_b*h_b-20.d0*T_b*delta_b+30.d0*T_b*h_b))
        ENDIF IF1
        IF2: IF (i .NE. N) THEN
           eta_a=(grav*(H(i+1,3)-H(i,3))+el*(P(i+1,3)-P(i,3)))/Dr
           Ai=(ray(i)/(dist(i)*Dr))
           h_a=0.5d0*(H(i+1,3)+H(i,3))
-          h_a2=0.5d0*(H(i+1,3)**2+H(i,3)**2)
           delta_a=0.5d0*(BL(i+1,col)+BL(i,col))
           delta_a2=0.5d0*(BL(i+1,col)**2+BL(i,col)**2)
-          delta_a3=0.5d0*(BL(i+1,col)**3+BL(i,col)**3)
-          delta_a4=0.5d0*(BL(i+1,col)**4+BL(i,col)**4)
           T_a = 0.5d0*(T(i,col)+T(i+1,col))
-          T_a2 = 0.5d0*(T(i,col)**2+T(i+1,col)**2)
+          Ts_a = 0.5d0*(Ts(i,col)+Ts(i+1,col))
+          Ds_a = T_a-Ts_a
 
-          omega_a = -4.0d0/5.0d0*T_a*delta_a3*eta_a*nu/h_a + 0.8d0*T_a*&
-          & delta_a3*eta_a/h_a + 2*T_a*delta_a2*eta_a*nu - 2.0d0*T_a*&
-          & delta_a2*eta_a - 2*T_a*delta_a*eta_a*h_a*nu + 2.0d0*T_a*delta_a&
-          & *eta_a*h_a + T_a*eta_a*h_a2*nu - 1.0d0*T_a*eta_a*h_a2 - eta_a&
-          & *h_a2*nu
+          omega_a = (eta_a*delta_a)/10.d0*(nu*(-20.d0*delta_a+30.d0*h_a)+&
+               &(1.d0-nu)*(6.d0*Ds_a*delta_a-15.d0*Ds_a*h_a-20.d0*T_a*delta_a+30.d0*T_a*h_a))
        END IF IF2
 
 
        IF3:IF (i==1) THEN
           a(i)=0.d0
-          b(i)=-Ai*Omega_a
+          b(i)=Ai*Omega_a
           c(i)=0.d0
        ELSEIF (i==N) THEN
-          a(i)=Bi*Omega_b
+          a(i)=-Bi*Omega_b
           b(i)=0.d0
           c(i)=0.d0
        ELSE
-          a(i) = Bi*Omega_b
-          b(i) = -Ai*Omega_a
+          a(i) = -Bi*Omega_b
+          b(i) = Ai*Omega_a
           c(i)=0.d0
        END IF IF3
+
     ENDDO
+  END SUBROUTINE JACOBI_TEMPERATURE_BALMFORTH
 
-  END SUBROUTINE JACOBI_TEMPERATURE
 
-
-END MODULE MODULE_THERMAL_NEWTON_INT_EPAISSEUR
+END MODULE MODULE_THERMAL_SKIN_NEWTON_BERCOVICI

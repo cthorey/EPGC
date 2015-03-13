@@ -1,10 +1,14 @@
-MODULE MODULE_THERMAL_GFD
+MODULE MODULE_THERMAL_SKIN_GFD_BERCOVICI
 
 CONTAINS
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!  Subroutine pour résoudre eqaution de la chaleur à l'aide d'une schemé différence fini !
+!!!!!!!!  Equation : Heat equation
+!!!!!!!!  Model : Skin theory (Balmforth2004)
+!!!!!!!!  Schema : Finite differenc scheme
+!!!!!!!!  Model couplage : Bercovici rheology (1996) 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  SUBROUTINE THERMAL_GFD_SOLVER(Xi,H,P,T,Ts,BL,Dt,Dr,theta,dist,ray,M,sigma,nu,Pe,psi,delta0,el,grav,N1,F_err,z,tmps)
+  SUBROUTINE THERMAL_SKIN_GFD_BERCOVICI(Xi,H,P,T,Ts,BL,Dt,Dr,theta,dist,ray,M,sigma,nu,Pe,psi,delta0,el,grav,N1,F_err,z,tmps)
 
     !*****************************************************************
     ! Solve for the parameter Xi, and split in Temperature and thermal layer
@@ -99,7 +103,7 @@ CONTAINS
     DEALLOCATE(Xi_m,a,b,c,S)
     DEALLOCATE(Xi_tmps)
 
-  END SUBROUTINE THERMAL_GFD_SOLVER
+  END SUBROUTINE THERMAL_SKIN_GFD_BERCOVICI
 
   !*****************************************************************
   ! Solve for T and BL from xi for balmofrth with Ts=0
@@ -655,4 +659,4 @@ CONTAINS
   END SUBROUTINE FILLING_MATRIX_2
 
  
-END MODULE MODULE_THERMAL_GFD
+END MODULE MODULE_THERMAL_SKIN_GFD_BERCOVICI

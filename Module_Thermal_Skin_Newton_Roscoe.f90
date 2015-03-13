@@ -1,10 +1,14 @@
-MODULE MODULE_THERMAL_NEWTON_ARRHENIUS
+MODULE MODULE_THERMAL_SKIN_NEWTON_ROSCOE
 
 CONTAINS
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!  SUBROUTINE THICKNESS_NEWTON_SOLVER
+!!!!!!!!  Equation : Heat equation
+!!!!!!!!  Model : Skin theory (Balmforth2004)
+!!!!!!!!  Schema : Newton_Rhapsod method
+!!!!!!!!  Model couplage : Roscoe rehology (tend vers infinity quand phi = maximum packing) 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  SUBROUTINE THERMAL_NEWTON_SOLVER_ARRHENIUS(Xi,H,P,T,Ts,BL,Dt,Dr,theta,dist,ray,M,sigma,nu,Pe,psi,delta0,el,grav,N1,F_err,z,tmps)
+  SUBROUTINE THERMAL_SKIN_NEWTON_ROSCOE(Xi,H,P,T,Ts,BL,Dt,Dr,theta,dist,ray,M,sigma,nu,Pe,psi,delta0,el,grav,N1,F_err,z,tmps)
 
     !*****************************************************************
     ! Solve for the parameter Xi, and split in Temperature and thermal layer
@@ -32,11 +36,12 @@ CONTAINS
     DOUBLE PRECISION, DIMENSION(:),ALLOCATABLE :: a1,b1,c1
     DOUBLE PRECISION ,DIMENSION(:), ALLOCATABLE :: Xi_m
 
-    DOUBLE PRECISION :: U
+    DOUBLE PRECISION :: U,Phi
     INTEGER :: i,ndyke,N,Size
     INTEGER :: err1,col
     LOGICAL :: CHO
-
+    
+    Phi=1D0/0.6D0
     ndyke=sigma/Dr
     DO i =1,M,1
        IF (H(i,1)<delta0) THEN
@@ -51,9 +56,9 @@ CONTAINS
     END IF
 
     col=1
-    CALL TEMPERATURE_BALMFORTH(Xi_tmps,col,N,Xi,H,T,Ts,BL,P,dist,ray,Dr,nu,Pe,delta0,el,grav,N1,tmps+Dt,psi,Dt)
+    CALL TEMPERATURE_BALMFORTH(Xi_tmps,col,N,Xi,H,T,Ts,BL,P,dist,ray,Dr,nu,Pe,delta0,el,grav,N1,tmps+Dt,psi,Dt,Phi)
     col=2
-    CALL TEMPERATURE_BALMFORTH(Xi_guess,col,N,Xi,H,T,Ts,BL,P,dist,ray,Dr,nu,Pe,delta0,el,grav,N1,tmps+Dt,psi,Dt)
+    CALL TEMPERATURE_BALMFORTH(Xi_guess,col,N,Xi,H,T,Ts,BL,P,dist,ray,Dr,nu,Pe,delta0,el,grav,N1,tmps+Dt,psi,Dt,Phi)
 
     ! Jacobienner
     ALLOCATE(a1(1:N),b1(1:N),c1(1:N),stat=err1)
@@ -61,7 +66,7 @@ CONTAINS
        PRINT*, 'Erreur allocation dans coeff Temperature'; STOP
     END IF
 
-    CALL JACOBI_TEMPERATURE_BALMFORTH(a1,b1,c1,N,H,BL,T,Ts,Xi,P,Dr,dist,ray,nu,Pe,delta0,el,grav)
+    CALL JACOBI_TEMPERATURE_BALMFORTH(a1,b1,c1,N,H,BL,T,Ts,Xi,P,Dr,dist,ray,nu,Pe,delta0,el,grav,Phi)
 
     !Systeme a inverser
     ALLOCATE(a(1:N),b(1:N),c(1:N),S(1:N),stat= err1)
@@ -90,7 +95,7 @@ CONTAINS
     DO i=1,N,1
        Xi(i,3)=Xi_m(i)+Xi(i,2)
        IF (Xi(i,3) >H(i,3)/2D0) THEN
-          Xi(i:,3) = 0.9999999*H(i:,3)/2D0
+          Xi(i:,3) = H(i:,3)/2D0
           EXIT
        ENDIF
     END DO
@@ -111,8 +116,8 @@ CONTAINS
 
     DEALLOCATE(Xi_m,a,b,c,S)
     DEALLOCATE(Xi_guess,Xi_tmps,a1,b1,c1)
-
-  END SUBROUTINE THERMAL_NEWTON_SOLVER_ARRHENIUS
+    
+  END SUBROUTINE THERMAL_SKIN_NEWTON_ROSCOE
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !-------------------------------------------------------------------------------------
@@ -360,7 +365,7 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
   !-------------------------------------------------------------------------------------
   !-------------------------------------------------------------------------------------
 
-  SUBROUTINE TEMPERATURE_BALMFORTH(f,col,N,Xi,H,T,Ts,BL,P,dist,ray,Dr,nu,Pe,delta0,el,grav,N1,tmps,psi,Dt)
+  SUBROUTINE TEMPERATURE_BALMFORTH(f,col,N,Xi,H,T,Ts,BL,P,dist,ray,Dr,nu,Pe,delta0,el,grav,N1,tmps,psi,Dt,Phi)
 
     !*****************************************************************
     ! Give the vector f
@@ -378,58 +383,75 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
     INTEGER ,INTENT(IN) :: col,N
 
     ! Nombre sans dimension
-    DOUBLE PRECISION ,INTENT(IN) :: nu,Pe,delta0,el,grav,N1,tmps,psi,Dt
+    DOUBLE PRECISION ,INTENT(IN) :: nu,Pe,delta0,el,grav,N1,tmps,psi,Dt,Phi
 
     ! Parametre pour le sous programme
-    DOUBLE PRECISION, PARAMETER :: pi=3.14159265358979d0
+    DOUBLE PRECISION, PARAMETER :: pi=3.14159265
 
     DOUBLE PRECISION :: h_a,delta_a,delta_a2,eta_a,Ai,T_a
-    DOUBLE PRECISIOn :: omega_a,sigma_a,delta_a3,delta_b3
+    DOUBLE PRECISION :: T_a2,delta_a3,T_a3,Ts_a3,Ts_a2
+    DOUBLE PRECISIOn :: omega_a,sigma_a
 
     DOUBLE PRECISION :: h_b,delta_b,delta_b2,eta_b,Bi,T_b
+    DOUBLE PRECISION :: T_b2,delta_b3,T_b3,Ts_b3,Ts_b2
+
     DOUBLE PRECISIOn :: omega_b,sigma_b,Ts_a,Ts_b,Ds_b,Ds_a
+
     DOUBLE PRECISION :: loss,beta
+    DOUBLE PRECISION :: Phi2 
     INTEGER :: i,Na
 
     ! Remplissage de f
-
+    Phi2 = Phi**2
     DO i=1,N,1   
-
        IF1:IF (i .NE. 1) THEN
           eta_b=(grav*(H(i,3)-H(i-1,3))+el*(P(i,3)-P(i-1,3)))/Dr
           Bi=(ray(i-1)/(dist(i)*Dr))
           h_b=0.5d0*(H(i,3)+H(i-1,3))
-          delta_b=0.5d0*(BL(i,col)+BL(i-1,col))
-          delta_b2=0.5d0*(BL(i,col)**2+BL(i-1,col)**2)
+          delta_b=0.5d0*(BL(i,col)+BL(i-1,col));delta_b2=0.5d0*(BL(i,col)**2+BL(i-1,col)**2)
           delta_b3=0.5d0*(BL(i,col)**3+BL(i-1,col)**3)
-          T_b = 0.5d0*(T(i,col)+T(i-1,col))
-          Ts_b = 0.5d0*(Ts(i,col)+Ts(i-1,col))
-          Ds_b = T_b-Ts_b
+          T_b = 0.5d0*(T(i,col)+T(i-1,col));T_b2 = 0.5d0*(T(i,col)**2+T(i-1,col)**2)
+          T_b3 = 0.5d0*(T(i,col)**3+T(i-1,col)**3)
+          Ts_b = 0.5d0*(Ts(i,col)+Ts(i-1,col));Ts_b2 = 0.5d0*(Ts(i,col)**2+Ts(i-1,col)**2)
+          Ts_b3 = 0.5d0*(Ts(i,col)**3+Ts(i-1,col)**3)
 
-          IF (nu < 1D0) THEN
-              omega_b = 3*sqrt(pi)*Ds_b**(-1.5d0)*delta_b2*eta_b*nu*nu**(-T_b)&
-             & *(-log(nu))**(-1.5d0)*erf(sqrt(Ds_b)*sqrt(-log(nu))) - 6*1.0/Ds_b&
-             & *delta_b2*eta_b*nu*nu**(-T_b)*1.0/(-log(nu)) - 3*1.0/Ds_b*&
-             & delta_b*eta_b*h_b*nu*nu**Ds_b*nu**(-T_b)*1.0/(-log(nu)) + 3*1.0/&
-             & Ds_b*delta_b*eta_b*h_b*nu*nu**(-T_b)*1.0/(-log(nu))
 
-             sigma_b = (3.0d0/2.0d0)*sqrt(pi)*Ds_b**(-1.5d0)*delta_b3*eta_b*&
-             & nu*nu**(-T_b)*(-log(nu))**(-2.5d0)*erf(sqrt(Ds_b)*sqrt(-log(nu&
-             & ))) - 1.0/Ds_b*delta_b3*eta_b*nu*nu**Ds_b*nu**(-T_b)*(-log(nu))&
-             & **(-2.0d0) - 2*1.0/Ds_b*delta_b3*eta_b*nu*nu**(-T_b)*(-log(nu))&
-             & **(-2.0d0) - 1.0/Ds_b*delta_b2*eta_b*h_b*nu*nu**Ds_b*nu**(-T_b)&
-             & *(-log(nu))**(-2.0d0) + 1.0/Ds_b*delta_b2*eta_b*h_b*nu*nu**(&
-             & -T_b)*(-log(nu))**(-2.0d0) + sqrt(pi)*Ds_b**(-0.5d0)*delta_b3*&
-             & eta_b*nu*nu**(-T_b)*(-log(nu))**(-2.5d0)*log(nu)*erf(sqrt(Ds_b)*&
-             & sqrt(-log(nu))) - 2*delta_b3*eta_b*nu*nu**(-T_b)*(-log(nu))**(&
-             & -2.0d0)*log(nu) + delta_b2*eta_b*h_b*nu*nu**(-T_b)*(-log(nu))**&
-             & (-2.0d0)*log(nu)
-          ELSEIF (nu .EQ. 1D0) THEN
-             omega_b = -2*delta_b**2*eta_b + 3*delta_b*eta_b*h_b
-             sigma_b = (7.0d0/15.0d0)*Ds_b*delta_b**3*eta_b - 1.0d0/2.0d0*Ds_b*&
-                  & delta_b**2*eta_b*h_b
-          ENDIF
-          
+          omega_b = -38.0d0/35.0d0*Phi2*T_b2*delta_b2*eta_b + Phi2*&
+               & T_b2*delta_b*eta_b*h_b - 22.0d0/35.0d0*Phi2*T_b*Ts_b*delta_b2&
+               & *eta_b + Phi2*T_b*Ts_b*delta_b*eta_b*h_b + (14.0d0/5.0d0)*&
+               & Phi2*T_b*delta_b2*eta_b - 3*Phi2*T_b*delta_b*eta_b*h_b -&
+               & 2.0d0/7.0d0*Phi2*Ts_b2*delta_b2*eta_b + Phi2*Ts_b2*&
+               & delta_b*eta_b*h_b + (6.0d0/5.0d0)*Phi2*Ts_b*delta_b2*eta_b -&
+               & 3*Phi2*Ts_b*delta_b*eta_b*h_b - 2*Phi2*delta_b2*eta_b + 3*&
+               & Phi2*delta_b*eta_b*h_b - 14.0d0/5.0d0*Phi*T_b*delta_b2*eta_b&
+               & + 3*Phi*T_b*delta_b*eta_b*h_b - 6.0d0/5.0d0*Phi*Ts_b*delta_b2*&
+               & eta_b + 3*Phi*Ts_b*delta_b*eta_b*h_b + 4*Phi*delta_b2*eta_b - 6&
+               & *Phi*delta_b*eta_b*h_b - 2*delta_b2*eta_b + 3*delta_b*eta_b*h_b
+     
+          sigma_b = (187.0d0/630.0d0)*Phi2*T_b3*delta_b3*eta_b - 1.0d0&
+               & /4.0d0*Phi2*T_b3*delta_b2*eta_b*h_b - 1.0d0/6.0d0*Phi2*&
+               & T_b2*Ts_b*delta_b3*eta_b + (1.0d0/12.0d0)*Phi2*T_b2*Ts_b*&
+               & delta_b2*eta_b*h_b - 76.0d0/105.0d0*Phi2*T_b2*delta_b3*&
+               & eta_b + (2.0d0/3.0d0)*Phi2*T_b2*delta_b2*eta_b*h_b - 19.0d0&
+               & /210.0d0*Phi2*T_b*Ts_b2*delta_b3*eta_b + (1.0d0/12.0d0)*Phi2&
+               & *T_b*Ts_b2*delta_b2*eta_b*h_b + (18.0d0/35.0d0)*Phi2*T_b&
+               & *Ts_b*delta_b3*eta_b - 1.0d0/3.0d0*Phi2*T_b*Ts_b*delta_b2*&
+               & eta_b*h_b + (7.0d0/15.0d0)*Phi2*T_b*delta_b3*eta_b - 1.0d0/&
+               & 2.0d0*Phi2*T_b*delta_b2*eta_b*h_b - 5.0d0/126.0d0*Phi2*Ts_b3&
+               & *delta_b3*eta_b + (1.0d0/12.0d0)*Phi2*Ts_b3*delta_b2*&
+               & eta_b*h_b + (22.0d0/105.0d0)*Phi2*Ts_b2*delta_b3*eta_b -&
+               & 1.0d0/3.0d0*Phi2*Ts_b2*delta_b2*eta_b*h_b - 7.0d0/15.0d0*&
+               & Phi2*Ts_b*delta_b3*eta_b + (1.0d0/2.0d0)*Phi2*Ts_b*delta_b2&
+               & *eta_b*h_b + (76.0d0/105.0d0)*Phi*T_b2*delta_b3*eta_b -&
+               & 2.0d0/3.0d0*Phi*T_b2*delta_b2*eta_b*h_b - 18.0d0/35.0d0*Phi*&
+               & T_b*Ts_b*delta_b3*eta_b + (1.0d0/3.0d0)*Phi*T_b*Ts_b*delta_b2&
+               & *eta_b*h_b - 14.0d0/15.0d0*Phi*T_b*delta_b3*eta_b + Phi*T_b*&
+               & delta_b2*eta_b*h_b - 22.0d0/105.0d0*Phi*Ts_b2*delta_b3*&
+               & eta_b + (1.0d0/3.0d0)*Phi*Ts_b2*delta_b2*eta_b*h_b &
+               & + (14.0d0/15.0d0)*Phi*Ts_b*delta_b3*eta_b - Phi*Ts_b*delta_b2*eta_b*h_b&
+               & + (7.0d0/15.0d0)*T_b*delta_b3*eta_b - 1.0d0/2.0d0*T_b*delta_b2&
+               & *eta_b*h_b - 7.0d0/15.0d0*Ts_b*delta_b3*eta_b + (1.0d0/2.0d0)*&
+               & Ts_b*delta_b2*eta_b*h_b
 
        ENDIF IF1
 
@@ -438,53 +460,69 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
           Ai=(ray(i)/(dist(i)*Dr))
           h_a=0.5d0*(H(i+1,3)+H(i,3))
           delta_a=0.5d0*(BL(i+1,col)+BL(i,col))
-          delta_a2 = 0.5d0*(BL(i+1,col)**2+BL(i,col)**2)
-          delta_a3 = 0.5d0*(BL(i+1,col)**3+BL(i,col)**3)
-          T_a = 0.5d0*(T(i,col)+T(i+1,col))
-          Ts_a = 0.5d0*(Ts(i,col)+Ts(i+1,col))
+          delta_a2=0.5d0*(BL(i+1,col)**2+BL(i,col)**2)
+          delta_a3 =0.5d0*(BL(i+1,col)**3+BL(i,col)**3)
+          T_a = 0.5d0*(T(i,col)+T(i+1,col)); T_a2 = 0.5d0*(T(i,col)**2+T(i+1,col)**2)
+          T_a3 = 0.5d0*(T(i,col)**3+T(i+1,col)**3)
+          Ts_a = 0.5d0*(Ts(i,col)+Ts(i+1,col)); Ts_a2 = 0.5d0*(Ts(i,col)**2+Ts(i+1,col)**2)
+          Ts_a3 = 0.5d0*(Ts(i,col)**3+Ts(i+1,col)**3)
           Ds_a = T_a-Ts_a
-          
-          IF (nu < 1D0) THEN
-             omega_a = 3*sqrt(pi)*Ds_a**(-1.5d0)*delta_a2*eta_a*nu*nu**(-T_a)&
-             & *(-log(nu))**(-1.5d0)*erf(sqrt(Ds_a)*sqrt(-log(nu))) - 6*1.0/Ds_a&
-             & *delta_a2*eta_a*nu*nu**(-T_a)*1.0/(-log(nu)) - 3*1.0/Ds_a*&
-             & delta_a*eta_a*h_a*nu*nu**Ds_a*nu**(-T_a)*1.0/(-log(nu)) + 3*1.0/&
-             & Ds_a*delta_a*eta_a*h_a*nu*nu**(-T_a)*1.0/(-log(nu))
 
-             sigma_a = (3.0d0/2.0d0)*sqrt(pi)*Ds_a**(-1.5d0)*delta_a3*eta_a*&
-             & nu*nu**(-T_a)*(-log(nu))**(-2.5d0)*erf(sqrt(Ds_a)*sqrt(-log(nu&
-             & ))) - 1.0/Ds_a*delta_a3*eta_a*nu*nu**Ds_a*nu**(-T_a)*(-log(nu))&
-             & **(-2.0d0) - 2*1.0/Ds_a*delta_a3*eta_a*nu*nu**(-T_a)*(-log(nu))&
-             & **(-2.0d0) - 1.0/Ds_a*delta_a2*eta_a*h_a*nu*nu**Ds_a*nu**(-T_a)&
-             & *(-log(nu))**(-2.0d0) + 1.0/Ds_a*delta_a2*eta_a*h_a*nu*nu**(&
-             & -T_a)*(-log(nu))**(-2.0d0) + sqrt(pi)*Ds_a**(-0.5d0)*delta_a3*&
-             & eta_a*nu*nu**(-T_a)*(-log(nu))**(-2.5d0)*log(nu)*erf(sqrt(Ds_a)*&
-             & sqrt(-log(nu))) - 2*delta_a3*eta_a*nu*nu**(-T_a)*(-log(nu))**(&
-             & -2.0d0)*log(nu) + delta_a2*eta_a*h_a*nu*nu**(-T_a)*(-log(nu))**&
-             & (-2.0d0)*log(nu)
-          ELSEIF (nu .EQ. 1D0) THEN
-             omega_a = -2*delta_a2*eta_a + 3*delta_a*eta_a*h_a
-             sigma_a = (7.0d0/15.0d0)*Ds_a*delta_a3*eta_a - 1.0d0/2.0d0*Ds_a*&
-                  & delta_a2*eta_a*h_a
-          ENDIF
-         
-      END IF IF2
+          omega_a = -38.0d0/35.0d0*Phi2*T_a2*delta_a2*eta_a + Phi2*&
+               & T_a2*delta_a*eta_a*h_a - 22.0d0/35.0d0*Phi2*T_a*Ts_a*delta_a2&
+               & *eta_a + Phi2*T_a*Ts_a*delta_a*eta_a*h_a + (14.0d0/5.0d0)*&
+               & Phi2*T_a*delta_a2*eta_a - 3*Phi2*T_a*delta_a*eta_a*h_a -&
+               & 2.0d0/7.0d0*Phi2*Ts_a2*delta_a2*eta_a + Phi2*Ts_a2*&
+               & delta_a*eta_a*h_a + (6.0d0/5.0d0)*Phi2*Ts_a*delta_a2*eta_a -&
+               & 3*Phi2*Ts_a*delta_a*eta_a*h_a - 2*Phi2*delta_a2*eta_a + 3*&
+               & Phi2*delta_a*eta_a*h_a - 14.0d0/5.0d0*Phi*T_a*delta_a2*eta_a&
+               & + 3*Phi*T_a*delta_a*eta_a*h_a - 6.0d0/5.0d0*Phi*Ts_a*delta_a2*&
+               & eta_a + 3*Phi*Ts_a*delta_a*eta_a*h_a + 4*Phi*delta_a2*eta_a - 6&
+               & *Phi*delta_a*eta_a*h_a - 2*delta_a2*eta_a + 3*delta_a*eta_a*h_a
+     
+          sigma_a = (187.0d0/630.0d0)*Phi2*T_a3*delta_a3*eta_a - 1.0d0&
+               & /4.0d0*Phi2*T_a3*delta_a2*eta_a*h_a - 1.0d0/6.0d0*Phi2*&
+               & T_a2*Ts_a*delta_a3*eta_a + (1.0d0/12.0d0)*Phi2*T_a2*Ts_a*&
+               & delta_a2*eta_a*h_a - 76.0d0/105.0d0*Phi2*T_a2*delta_a3*&
+               & eta_a + (2.0d0/3.0d0)*Phi2*T_a2*delta_a2*eta_a*h_a - 19.0d0&
+               & /210.0d0*Phi2*T_a*Ts_a2*delta_a3*eta_a + (1.0d0/12.0d0)*Phi2&
+               & *T_a*Ts_a2*delta_a2*eta_a*h_a + (18.0d0/35.0d0)*Phi2*T_a&
+               & *Ts_a*delta_a3*eta_a - 1.0d0/3.0d0*Phi2*T_a*Ts_a*delta_a2*&
+               & eta_a*h_a + (7.0d0/15.0d0)*Phi2*T_a*delta_a3*eta_a - 1.0d0/&
+               & 2.0d0*Phi2*T_a*delta_a2*eta_a*h_a - 5.0d0/126.0d0*Phi2*Ts_a3&
+               & *delta_a3*eta_a + (1.0d0/12.0d0)*Phi2*Ts_a3*delta_a2*&
+               & eta_a*h_a + (22.0d0/105.0d0)*Phi2*Ts_a2*delta_a3*eta_a -&
+               & 1.0d0/3.0d0*Phi2*Ts_a2*delta_a2*eta_a*h_a - 7.0d0/15.0d0*&
+               & Phi2*Ts_a*delta_a3*eta_a + (1.0d0/2.0d0)*Phi2*Ts_a*delta_a2&
+               & *eta_a*h_a + (76.0d0/105.0d0)*Phi*T_a2*delta_a3*eta_a -&
+               & 2.0d0/3.0d0*Phi*T_a2*delta_a2*eta_a*h_a - 18.0d0/35.0d0*Phi*&
+               & T_a*Ts_a*delta_a3*eta_a + (1.0d0/3.0d0)*Phi*T_a*Ts_a*delta_a2&
+               & *eta_a*h_a - 14.0d0/15.0d0*Phi*T_a*delta_a3*eta_a + Phi*T_a*&
+               & delta_a2*eta_a*h_a - 22.0d0/105.0d0*Phi*Ts_a2*delta_a3*&
+               & eta_a + (1.0d0/3.0d0)*Phi*Ts_a2*delta_a2*eta_a*h_a &
+               & + (14.0d0/15.0d0)*Phi*Ts_a*delta_a3*eta_a - Phi*Ts_a*delta_a2*eta_a*h_a&
+               & + (7.0d0/15.0d0)*T_a*delta_a3*eta_a - 1.0d0/2.0d0*T_a*delta_a2&
+               & *eta_a*h_a - 7.0d0/15.0d0*Ts_a*delta_a3*eta_a + (1.0d0/2.0d0)*&
+               & Ts_a*delta_a2*eta_a*h_a
 
-      beta = N1*Pe**(-0.5d0)/(sqrt(pi*tmps))
-      loss = Pe*beta*Ts(i,col)/(1+psi)
-      ! loss = 2D0*Pe**(-1D0)*(1D0/(1D0+psi))*T(i,col)/BL(i,col)
-      IF4: IF (i==1) THEN
-         f(i)=Ai*Omega_a*Xi(i,col)+Ai*Sigma_a+loss
-      ELSEIF (i==N) THEN
-         f(i)=-Bi*Omega_b*Xi(i-1,col)-Bi*Sigma_b+loss
-      ELSE
-         f(i)=Ai*Omega_a*Xi(i,col)&
-              &-Bi*Omega_b*Xi(i-1,col)&
-              &+Ai*Sigma_a-Bi*Sigma_b &
-              &+loss
-      END IF IF4
-      
+       END IF IF2
+
+       beta = N1*Pe**(-0.5d0)/(sqrt(pi*tmps))
+       loss = Pe*beta*Ts(i,col)/(1+psi)
+
+       IF4: IF (i==1) THEN
+          f(i)=loss+Ai*Omega_a*Xi(i,col)+Ai*Sigma_a
+       ELSEIF (i==N) THEN
+          f(i)=loss-Bi*Omega_b*Xi(i-1,col)-Bi*Sigma_b
+       ELSE
+          f(i)=Ai*Omega_a*Xi(i,col)&
+               &-Bi*Omega_b*Xi(i-1,col)&
+               &+Ai*Sigma_a-Bi*Sigma_b &
+               &+loss
+       END IF IF4
+
     END DO
+
 
   END SUBROUTINE TEMPERATURE_BALMFORTH
 
@@ -494,7 +532,7 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
   !-------------------------------------------------------------------------------------
   !-------------------------------------------------------------------------------------
 
-  SUBROUTINE JACOBI_TEMPERATURE_BALMFORTH(a,b,c,N,H,BL,T,Ts,Xi,P,Dr,dist,ray,nu,Pe,delta0,el,grav)
+  SUBROUTINE JACOBI_TEMPERATURE_BALMFORTH(a,b,c,N,H,BL,T,Ts,Xi,P,Dr,dist,ray,nu,Pe,delta0,el,grav,Phi)
 
     !*****************************************************************
     ! Give the jacobian coeficient a1,b1,c1
@@ -512,15 +550,19 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
     INTEGER ,INTENT(IN) :: N
 
     ! Nombre sans dimension
-    DOUBLE PRECISION ,INTENT(IN) :: nu,Pe,delta0,el,grav
-    DOUBLE PRECISION, PARAMETER :: pi=3.14159265358979d0
+    DOUBLE PRECISION ,INTENT(IN) :: nu,Pe,delta0,el,grav,Phi
+
     ! Parametre pour le sous programme
 
-    DOUBLE PRECISION :: h_a,delta_a,delta_a2,eta_a,Ai,T_a,zeta_a
+    DOUBLE PRECISION :: h_a,delta_a,delta_a2,eta_a,Ai,T_a
+    DOUBLE PRECISION :: T_a2,delta_a3,T_a3,Ts_a3,Ts_a2
     DOUBLE PRECISIOn :: omega_a,sigma_a
-    DOUBLE PRECISION :: h_b,delta_b,delta_b2,eta_b,Bi,T_b,zeta_b
-    DOUBLE PRECISIOn :: omega_b,sigma_b,Ds_b,Ds_a,Ts_a,Ts_b
-    DOUBLE PRECISION :: delta_b3,delta_a3
+
+    DOUBLE PRECISION :: h_b,delta_b,delta_b2,eta_b,Bi,T_b
+    DOUBLE PRECISION :: T_b2,delta_b3,T_b3,Ts_b3,Ts_b2
+    DOUBLE PRECISIOn :: omega_b,sigma_b,Ts_a,Ts_b,Ds_b,Ds_a
+
+    DOUBLE PRECISION :: Phi2
     DOUBLE PRECISION :: loss
 
     INTEGER :: i,col
@@ -528,54 +570,56 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
     ! Remplissage de la matrice Jacobienne
 
     col=2
-
+          Phi2 = Phi**2
     DO i=1,N,1
-    IF1:IF (i .NE. 1) THEN
-          eta_b=(grav*(H(i,3)-H(i-1,3))+el*(P(i,3)-P(i-1,3)))/Dr
+       IF1:IF (i .NE. 1) THEN
+      eta_b=(grav*(H(i,3)-H(i-1,3))+el*(P(i,3)-P(i-1,3)))/Dr
           Bi=(ray(i-1)/(dist(i)*Dr))
           h_b=0.5d0*(H(i,3)+H(i-1,3))
-          delta_b=0.5d0*(BL(i,col)+BL(i-1,col))
-          delta_b2=0.5d0*(BL(i,col)**2+BL(i-1,col)**2)
+          delta_b=0.5d0*(BL(i,col)+BL(i-1,col));delta_b2=0.5d0*(BL(i,col)**2+BL(i-1,col)**2)
           delta_b3=0.5d0*(BL(i,col)**3+BL(i-1,col)**3)
-          T_b = 0.5d0*(T(i,col)+T(i-1,col))
-          Ts_b = 0.5d0*(Ts(i,col)+Ts(i-1,col))
-          Ds_b = T_b-Ts_b
+          T_b = 0.5d0*(T(i,col)+T(i-1,col));T_b2 = 0.5d0*(T(i,col)**2+T(i-1,col)**2)
+          T_b3 = 0.5d0*(T(i,col)**3+T(i-1,col)**3)
+          Ts_b = 0.5d0*(Ts(i,col)+Ts(i-1,col));Ts_b2 = 0.5d0*(Ts(i,col)**2+Ts(i-1,col)**2)
+          Ts_b3 = 0.5d0*(Ts(i,col)**3+Ts(i-1,col)**3)
 
-          IF (nu < 1D0) THEN
-              omega_b = 3*sqrt(pi)*Ds_b**(-1.5d0)*delta_b2*eta_b*nu*nu**(-T_b)&
-                   & *(-log(nu))**(-1.5d0)*erf(sqrt(Ds_b)*sqrt(-log(nu))) - 6*1.0/Ds_b&
-                   & *delta_b2*eta_b*nu*nu**(-T_b)*1.0/(-log(nu)) - 3*1.0/Ds_b*&
-                   & delta_b*eta_b*h_b*nu*nu**Ds_b*nu**(-T_b)*1.0/(-log(nu)) + 3*1.0/&
-                   & Ds_b*delta_b*eta_b*h_b*nu*nu**(-T_b)*1.0/(-log(nu))
-           ELSEIF (nu .EQ. 1D0) THEN
-              omega_b = -2*delta_b**2*eta_b + 3*delta_b*eta_b*h_b
-          ENDIF
-
+          omega_b = -38.0d0/35.0d0*Phi2*T_b2*delta_b2*eta_b + Phi2*&
+               & T_b2*delta_b*eta_b*h_b - 22.0d0/35.0d0*Phi2*T_b*Ts_b*delta_b2&
+               & *eta_b + Phi2*T_b*Ts_b*delta_b*eta_b*h_b + (14.0d0/5.0d0)*&
+               & Phi2*T_b*delta_b2*eta_b - 3*Phi2*T_b*delta_b*eta_b*h_b -&
+               & 2.0d0/7.0d0*Phi2*Ts_b2*delta_b2*eta_b + Phi2*Ts_b2*&
+               & delta_b*eta_b*h_b + (6.0d0/5.0d0)*Phi2*Ts_b*delta_b2*eta_b -&
+               & 3*Phi2*Ts_b*delta_b*eta_b*h_b - 2*Phi2*delta_b2*eta_b + 3*&
+               & Phi2*delta_b*eta_b*h_b - 14.0d0/5.0d0*Phi*T_b*delta_b2*eta_b&
+               & + 3*Phi*T_b*delta_b*eta_b*h_b - 6.0d0/5.0d0*Phi*Ts_b*delta_b2*&
+               & eta_b + 3*Phi*Ts_b*delta_b*eta_b*h_b + 4*Phi*delta_b2*eta_b - 6&
+               & *Phi*delta_b*eta_b*h_b - 2*delta_b2*eta_b + 3*delta_b*eta_b*h_b
        ENDIF IF1
-
        IF2: IF (i .NE. N) THEN
           eta_a=(grav*(H(i+1,3)-H(i,3))+el*(P(i+1,3)-P(i,3)))/Dr
           Ai=(ray(i)/(dist(i)*Dr))
           h_a=0.5d0*(H(i+1,3)+H(i,3))
           delta_a=0.5d0*(BL(i+1,col)+BL(i,col))
-          delta_a2 = 0.5d0*(BL(i+1,col)**2+BL(i,col)**2)
-          delta_a3 = 0.5d0*(BL(i+1,col)**3+BL(i,col)**3)
-          T_a = 0.5d0*(T(i,col)+T(i+1,col))
-          Ts_a = 0.5d0*(Ts(i,col)+Ts(i+1,col))
+          delta_a2=0.5d0*(BL(i+1,col)**2+BL(i,col)**2)
+          delta_a3 =0.5d0*(BL(i+1,col)**3+BL(i,col)**3)
+          T_a = 0.5d0*(T(i,col)+T(i+1,col)); T_a2 = 0.5d0*(T(i,col)**2+T(i+1,col)**2)
+          T_a3 = 0.5d0*(T(i,col)**3+T(i+1,col)**3)
+          Ts_a = 0.5d0*(Ts(i,col)+Ts(i+1,col)); Ts_a2 = 0.5d0*(Ts(i,col)**2+Ts(i+1,col)**2)
+          Ts_a3 = 0.5d0*(Ts(i,col)**3+Ts(i+1,col)**3)
           Ds_a = T_a-Ts_a
 
-          IF (nu < 1D0) THEN
-             omega_a = 3*sqrt(pi)*Ds_a**(-1.5d0)*delta_a2*eta_a*nu*nu**(-T_a)&
-             & *(-log(nu))**(-1.5d0)*erf(sqrt(Ds_a)*sqrt(-log(nu))) - 6*1.0/Ds_a&
-             & *delta_a2*eta_a*nu*nu**(-T_a)*1.0/(-log(nu)) - 3*1.0/Ds_a*&
-             & delta_a*eta_a*h_a*nu*nu**Ds_a*nu**(-T_a)*1.0/(-log(nu)) + 3*1.0/&
-             & Ds_a*delta_a*eta_a*h_a*nu*nu**(-T_a)*1.0/(-log(nu))
-          ELSEIF (nu .EQ. 1D0) THEN
-             omega_a = -2*delta_a2*eta_a + 3*delta_a*eta_a*h_a
-          ENDIF
-     
-         
-      END IF IF2
+          omega_a = -38.0d0/35.0d0*Phi2*T_a2*delta_a2*eta_a + Phi2*&
+               & T_a2*delta_a*eta_a*h_a - 22.0d0/35.0d0*Phi2*T_a*Ts_a*delta_a2&
+               & *eta_a + Phi2*T_a*Ts_a*delta_a*eta_a*h_a + (14.0d0/5.0d0)*&
+               & Phi2*T_a*delta_a2*eta_a - 3*Phi2*T_a*delta_a*eta_a*h_a -&
+               & 2.0d0/7.0d0*Phi2*Ts_a2*delta_a2*eta_a + Phi2*Ts_a2*&
+               & delta_a*eta_a*h_a + (6.0d0/5.0d0)*Phi2*Ts_a*delta_a2*eta_a -&
+               & 3*Phi2*Ts_a*delta_a*eta_a*h_a - 2*Phi2*delta_a2*eta_a + 3*&
+               & Phi2*delta_a*eta_a*h_a - 14.0d0/5.0d0*Phi*T_a*delta_a2*eta_a&
+               & + 3*Phi*T_a*delta_a*eta_a*h_a - 6.0d0/5.0d0*Phi*Ts_a*delta_a2*&
+               & eta_a + 3*Phi*Ts_a*delta_a*eta_a*h_a + 4*Phi*delta_a2*eta_a - 6&
+               & *Phi*delta_a*eta_a*h_a - 2*delta_a2*eta_a + 3*delta_a*eta_a*h_a
+       END IF IF2
 
 
        IF3:IF (i==1) THEN
@@ -594,4 +638,6 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
 
     ENDDO
   END SUBROUTINE JACOBI_TEMPERATURE_BALMFORTH
-END MODULE MODULE_THERMAL_NEWTON_ARRHENIUS
+
+
+END MODULE MODULE_THERMAL_SKIN_NEWTON_ROSCOE
