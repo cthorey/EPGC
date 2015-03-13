@@ -1,11 +1,11 @@
-MODULE MODULE_THICKNESS_SKIN_GFD_BERCOVICI
+MODULE MODULE_THICKNESS_INTE_GFD_BERCOVICI
 
 CONTAINS
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!  SUBROUTINE THICKNESS_NEWTON_SOLVER
 
-  SUBROUTINE  THICKNESS_SKIN_GFD_BERCOVICI(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,z,F_err,theta)
+  SUBROUTINE  THICKNESS_INTE_GFD_BERCOVICI(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,z,F_err,theta)
 
     !*****************************************************************
     !Solve for the thickness in the thickenss evolution equation using the Newton
@@ -94,8 +94,8 @@ CONTAINS
 
     DEALLOCATE(Hm,a,b,c,S,qa)
 
-  END SUBROUTINE THICKNESS_SKIN_GFD_BERCOVICI
-
+  END SUBROUTINE THICKNESS_INTE_GFD_BERCOVICI
+  
   
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !-------------------------------------------------------------------------------------
@@ -323,5 +323,5 @@ CONTAINS
   END SUBROUTINE TRIDIAG
 
 
-END MODULE MODULE_THICKNESS_SKIN_GFD_BERCOVICI
+END MODULE MODULE_THICKNESS_INTE_GFD_BERCOVICI
 

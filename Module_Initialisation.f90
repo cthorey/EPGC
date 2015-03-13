@@ -5,7 +5,7 @@ CONTAINS
   SUBROUTINE  CONSTANTE(M,tmps_m,Dt,Dr,sample,el,grav,delta0,sigma,nu,Pe,psi,N1,&
        &eps_1,Format_O,Format_NSD,Init,Input_Racine,Output_Racine,Input_Data_Name&
        &,Format_NSD_Init_0,Format_NSD_Init_1,Format_Input_Data,Format_RV,Format_Backup,&
-       &NF,Format_NF,Root_Code)
+       &NF,Format_NF,Root_Code,Model,T_Schema,H_Schema,Rheology)
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!  DECLARATION DES VARIABLES 
@@ -14,6 +14,7 @@ CONTAINS
 
     ! Parametre du model
     INTEGER, INTENT(INOUT) :: M,sample,Init
+    INTEGER, INTENT(INOUT) :: Model,T_Schema,H_Schema,Rheology
     DOUBLE PRECISION, INTENT(INOUT) :: Dt,Dr,tmps_m
 
     ! Nombre sans dimension
@@ -34,6 +35,17 @@ CONTAINS
 
     CHARACTER(LEN=64) :: Root
 
+    !Definition
+    ! Model: {0: Integration Epaisseur, 1: Skin thermal layer}
+    ! Schema :{0: Newton_Rhaspod, 1: Finite difference}
+    ! Rheology: {0: Bercovici, 1: Roscoe, 2: Arrhenius}
+    
+    !Choix du model
+    Model = 1
+    T_Schema = 0
+    H_Schema = 0
+    Rheology = 2
+    
     ! Parametre du model
     tmps_m = 1D32  
     M = 2000    
@@ -44,10 +56,10 @@ CONTAINS
     ! Nombre sans dimensions
     el = 1D0
     grav = 0D0
-    delta0 = 5D-3
-    sigma = 2D-2
-    nu = 1D-3
-    Pe = 1D-2
+    delta0 = 1D-2
+    sigma = 4D-2
+    nu = 1D-6
+    Pe = 1D-1
     psi = 0D0
     N1 = 1D5
 
@@ -106,7 +118,8 @@ CONTAINS
   SUBROUTINE INITIALISATION(Format_O,Format_NSD,M,H,T,Ts,Xi,BL,P,dist,ray,k,k1,k2,z,tmps,&
        &Dt,Dr,eps_1,el,grav,delta0,sigma,nu,Pe,Psi,N1,sample,Init,compteur,tmps_m,&
        &Input_Data_Name,Input_racine,Output_Racine,NF,Format_NF,Root_Code&
-       &,Format_NSD_Init_0,Format_NSD_Init_1,Format_Input_Data,Format_RV,Format_Backup)
+       &,Format_NSD_Init_0,Format_NSD_Init_1,Format_Input_Data,Format_RV,Format_Backup&
+       &,Model,T_Schema,H_Schema,Rheology)
 
     IMPLICIT NONE
 
@@ -117,6 +130,7 @@ CONTAINS
     ! Parametre necessaire au bon deroulement des operation
     INTEGER , INTENT(INOUT) :: k,k1,k2,z,compteur,Init
     INTEGER , INTENT(INOUT) :: sample
+    INTEGER , INTENT(INOUT) :: Model,T_Schema,H_Schema,Rheology
     DOUBLE PRECISION, INTENT(INOUT) :: tmps
     CHARACTER(LEN=300) , INTENT(INOUT) :: Format_NF,NF,Root_Code
 
@@ -145,10 +159,10 @@ CONTAINS
     SELECT CASE (Init)
 
     CASE(0)
-       CALL CONSTANTE(M,tmps_m,Dt,Dr,sample,el,grav,delta0,sigma,nu,Pe,psi,N1,&
+       CALL  CONSTANTE(M,tmps_m,Dt,Dr,sample,el,grav,delta0,sigma,nu,Pe,psi,N1,&
        &eps_1,Format_O,Format_NSD,Init,Input_Racine,Output_Racine,Input_Data_Name&
        &,Format_NSD_Init_0,Format_NSD_Init_1,Format_Input_Data,Format_RV,Format_Backup,&
-       &NF,Format_NF,Root_Code)
+       &NF,Format_NF,Root_Code,Model,T_Schema,H_Schema,Rheology)
 
        compteur = 0 
        dist = 0;ray = 0

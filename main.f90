@@ -29,6 +29,9 @@ PROGRAM MAIN
   INTEGER :: sample,Init
   INTEGER :: k,k1,k2,z,compteur,i
 
+  ! SCHEMA A UTILISER
+  INTEGER Model,T_Schema,H_Schema,Rheology
+  
   ! Nombre sans dimension
   DOUBLE PRECISION :: el,grav,delta0,sigma,nu,Pe,psi,N1
 
@@ -81,11 +84,11 @@ PROGRAM MAIN
 !!!!!!!!  DEBUT DU PROGRAMME
 
   ! Call subroutine const dans le module CONSTANTE
-  CALL   CONSTANTE(M,tmps_m,Dt,Dr,sample,el,grav,delta0,sigma,nu,Pe,Psi,N1,&
+  CALL  CONSTANTE(M,tmps_m,Dt,Dr,sample,el,grav,delta0,sigma,nu,Pe,psi,N1,&
        &eps_1,Format_O,Format_NSD,Init,Input_Racine,Output_Racine,Input_Data_Name&
        &,Format_NSD_Init_0,Format_NSD_Init_1,Format_Input_Data,Format_RV,Format_Backup,&
-       &NF,Format_NF,Root_Code)
-
+       &NF,Format_NF,Root_Code,Model,T_Schema,H_Schema,Rheology)
+  
   ! Allocation des tableaux
   ALLOCATE(H(1:M,4),Xi(1:M,4),Ts(1:M,4),BL(1:M,4),T(1:M,4),&
        &P(1:M,4),ray(1:M),dist(1:M), stat=err1)
@@ -100,16 +103,17 @@ PROGRAM MAIN
   CALL INITIALISATION(Format_O,Format_NSD,M,H,T,Ts,Xi,BL,P,dist,ray,k,k1,k2,z,tmps,&
        &Dt,Dr,eps_1,el,grav,delta0,sigma,nu,Pe,Psi,N1,sample,Init,compteur,tmps_m,&
        &Input_Data_Name,Input_racine,Output_Racine,NF,Format_NF,Root_Code&
-       &,Format_NSD_Init_0,Format_NSD_Init_1,Format_Input_Data,Format_RV,Format_Backup)
+       &,Format_NSD_Init_0,Format_NSD_Init_1,Format_Input_Data,Format_RV,Format_Backup&
+       &,Model,T_Schema,H_Schema,Rheology)
 
   ! Debut de la boucle sur le temps
   tmps_n = 0D0
   ERROR_CODE = 0
   TEMPS: DO WHILE (tmps<tmps_m)
      
-     IF (tmps>1D-2) THEN
+     IF (tmps>1D-1) THEN
         Dt = 1D-6
-     ELSEIF (tmps >3D0) THEN
+     ELSEIF (tmps >10D0) THEN
         Dt = 1D-5
      ENDIF
 
@@ -142,7 +146,8 @@ PROGRAM MAIN
         H(:,2) = H(:,3); Xi(:,2) = Xi(:,3); T(:,2) = T(:,3); BL(:,2) = BL(:,3); Ts(:,2)= Ts(:,3)
         
         ! Module Epaisseur
-        CALL THICKNESS_SOLVER(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,eps_1,ERROR_CODE)
+        CALL THICKNESS_SOLVER(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,eps_1,&
+             &ERROR_CODE,Model,H_Schema,Rheology)
         IF (ERROR_CODE == 1) THEN
            WRITE(NF_Name,Format_NF),Root_Code,NF,'_BUG'
            OPEN(unit =1,file=NF_Name, action ="write",status ="replace")
@@ -154,7 +159,8 @@ PROGRAM MAIN
         F1 = ABS(MAXVAL((H(:,4)-H(:,3))/(H(:,3))))
 
         ! Module heat transport
-        CALL  THERMAL_SOLVER(Xi,H,T,Ts,BL,P,M,dist,ray,sigma,nu,Pe,psi,delta0,el,grav,Dr,Dt,eps_1,k,N1,tmps,ERROR_CODE)
+        CALL  THERMAL_SOLVER(Xi,H,T,Ts,BL,P,M,dist,ray,sigma,nu,Pe,psi,delta0,el,grav,Dr,Dt,eps_1,k,N1,tmps,&
+             &ERROR_CODE,Model,T_Schema,Rheology)
         IF (ERROR_CODE == 1) THEN
            WRITE(NF_Name,Format_NF),Root_Code,NF,'_BUG'
            OPEN(unit =1,file=NF_Name, action ="write",status ="replace")
@@ -212,7 +218,6 @@ PROGRAM MAIN
      tmps_n = tmps
      tmps = tmps+Dt
 
-     print*,'t',tmps
   END DO TEMPS
 
   DEALLOCATE(H,T,Xi,BL,Ts)

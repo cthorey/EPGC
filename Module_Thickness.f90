@@ -2,17 +2,17 @@ MODULE MODULE_THICKNESS
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!  IMPORTATIONS DES MODULES
 
-USE MODULE_THICKNESS_NEWTON
-USE MODULE_THICKNESS_GFD
-USE MODULE_THICKNESS_ROSCOE
-USE MODULE_THICKNESS_ARRHENIUS
+  USE MODULE_THICKNESS_SKIN_NEWTON_ARRHENIUS
+  USE MODULE_THICKNESS_SKIN_NEWTON_ROSCOE
+  USE MODULE_THICKNESS_SKIN_NEWTON_BERCOVICI
+  USE MODULE_THICKNESS_INTE_GFD_BERCOVICI
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!  SUBROUTINES
 
 CONTAINS
 
-  SUBROUTINE  THICKNESS_SOLVER(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,eps_1,ERROR_CODE)
+  SUBROUTINE  THICKNESS_SOLVER(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,eps_1,ERROR_CODE,Model,Schema,Rheology)
 
     IMPLICIT NONE
     ! Tableaux
@@ -24,7 +24,8 @@ CONTAINS
     DOUBLE PRECISION ,INTENT(IN) :: Dt,Dr,eps_1
     INTEGER ,INTENT(IN) :: M
     INTEGER, INTENT(INOUT) :: ERROR_CODE
-
+    INTEGER, INTENT(IN) :: Model,Schema,Rheology
+    
     ! Nombre sans dimension
     DOUBLE PRECISION ,INTENT(IN) :: el,grav,sigma,nu,delta0
  
@@ -36,8 +37,23 @@ CONTAINS
     theta = 1.d0
 
     F_err=20; F_errt=20; z=0
-    THICKNESS_ITERATION: DO 
-       CALL  THICKNESS_NEWTON_SOLVER_ARRHENIUS(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,z,F_err,theta)
+    THICKNESS_ITERATION: DO
+       ! CALL SUBROUTINE
+       IF (Model == 1 .AND. Schema == 0 .AND. Rheology == 0) THEN
+          CALL  THICKNESS_SKIN_NEWTON_BERCOVICI(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,z,F_err,theta)
+       ELSEIF (Model == 1 .AND. Schema == 0 .AND. Rheology == 1) THEN
+          CALL  THICKNESS_SKIN_NEWTON_ROSCOE(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,z,F_err,theta)
+       ELSEIF (Model == 1 .AND. Schema == 0 .AND. Rheology == 2) THEN
+          CALL  THICKNESS_SKIN_NEWTON_ARRHENIUS(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,z,F_err,theta)
+       ELSEIF (Model == 0 .AND. Schema == 1 .AND. Rheology == 0) THEN
+          CALL  THICKNESS_INTE_GFD_BERCOVICI(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,z,F_err,theta)
+       ELSE
+          PRINT*,'PAS DE MODULE CORRESPONDANT IMPLEMENTE ENCORE THICKNESS'
+          PRINT*,'MODEL =',Model,'SCHEMA =',Schema,'Rheology =',Rheology
+          ERROR_CODE = 1
+       ENDIF
+
+       ! ITERATIVE PROCEDURE
        z=z+1
        IF ( F_err>F_errt) THEN
           PRINT*,'Erreur_Ite_Epais',F_err,F_errt
@@ -53,5 +69,5 @@ CONTAINS
     END DO THICKNESS_ITERATION
 
   END SUBROUTINE THICKNESS_SOLVER
-
+  
 END MODULE MODULE_THICKNESS

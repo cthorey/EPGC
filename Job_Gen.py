@@ -34,25 +34,33 @@ if _platform == "linux" or _platform == "linux2":
     Journal_ELAS = 'Journal_ELAS.txt'
     Compilateur = 'ifort'
 elif _platform == "darwin":
-    Root_ELAS = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/Code/Code_ELAS/TEST/Run/'
-    Root_Run = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/Code/Code_ELAS/TEST/Run/'
+    Root_ELAS = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/Code/TEST/ELAS/'
+    Root_Run = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/Code/TEST/ELAS/'
     Root_Code = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/Code/Code_ELAS/'
     Name_Folder_Run = '' # Remplir si on veut faire un test dans un dossier specific
     Bactrace_Run = 'Bactrack.txt'
     Journal_ELAS = 'Journal_ELAS.txt'
     Compilateur = 'gfortran'
 
+# !Definition
+# ! Model: {0: Integration Epaisseur, 1: Skin thermal layer}
+# ! Schema :{0: Newton_Rhaspod, 1: Finite difference}
+# ! Rheology: {0: Bercovici, 1: Roscoe, 2: Arrhenius}
+Model = 1
+T_Schema = 0
+H_Schema = 0
+Rheology = 2
 Dict_Param = {'Sigma': ['5D-2'],
               'Delta0': ['5D-3'],
               'Grav': ['0D0'],
               'El': ['1D0'],
-              'Nu': ['1D0','1D-1','1D-2','1D-3','1D-6'],
-              'Pe': ['1D0','1D-1','1D-2','1D-3','1D-4'],
+              'Nu': ['1D0','1D-3','1D-6'],
+              'Pe': ['1D0','1D-2'],
               'Psi': ['0D0','1D0','5D0'],
               'N1' : ['1D5'],
               'Dr' : ['1D-2'],
               'Ep': ['1D-4'],
-              'Dt' : ['1D-6']}
+              'Dt' : ['1D-7']}
 
 M_grid = 4000
 Init = 0 # 1 If you want to begin for the last backup
@@ -62,7 +70,8 @@ def copy_folder(src,dest):
     os.mkdir(dest)
     print dest
     for filee in [f for f in os.listdir(src) if f[0]!='.']:
-        shutil.copy(filee,dest+'/')
+        if not os.path.isdir(src+filee):
+            shutil.copy(filee,dest+'/')
         
 ################################
 # Creation d'un dossier pour acceuillier les simus
@@ -77,13 +86,16 @@ if Init == 0:
         else:
             Nombre_Folder = max([int(version.split('_')[2]) for version in List_Folder_Existant])
             Name_Folder_Run = 'Run_'+str(datetime.date.today())+'_'+str(Nombre_Folder+1)
+        print Name_Folder_Run
+        print Root_Code
+        print Root_Run+Name_Folder_Run+'/Run_Code'
         os.mkdir(Root_Run+Name_Folder_Run)
         copy_folder(Root_Code,Root_Run+Name_Folder_Run+'/Run_Code')
-        # shutil.copytree(Root_Code,Root_Run+Name_Folder_Run+'/Run_Code')
     else :
         if not os.path.isdir(Root_Run+Name_Folder_Run):
             os.mkdir(Root_Run+Name_Folder_Run)
-            shutil.copytree(Root_Code,Root_Run+Name_Folder_Run+'/Run_Code')
+            copy_folder(Root_Code,Root_Run+Name_Folder_Run+'/Run_Code')
+            # shutil.copytree(Root_Code,Root_Run+Name_Folder_Run+'/Run_Code')
         print Root_Run+Name_Folder_Run
 elif Init == 1:
     print Root_Run+Name_Folder_Run
@@ -214,6 +226,14 @@ for run in Dict_Run:
                         to_write = l.replace('Size_Name',str(len(name)))
                     elif l == '    CHARACTER(LEN=Size) :: Root_Code\n':
                         to_write = l.replace('Size',str(len(Racine)))
+                    elif l == '    Model = Null\n':
+                        to_write = l.replace('Null',str(Model))
+                    elif l == '    T_Schema = Null\n':
+                        to_write = l.replace('Null',str(T_Schema))
+                    elif l == '    H_Schema = Null\n':
+                        to_write = l.replace('Null',str(H_Schema))
+                    elif l == '    Rheology = Null\n':
+                        to_write = l.replace('Null',str(Rheology))
                     elif l == '    M = Null\n':
                         to_write = l.replace('Null',str(M_grid))
                     elif l == '    Sigma = Null\n':
