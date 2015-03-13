@@ -45,16 +45,16 @@ CONTAINS
     el = 1D0
     grav = 0D0
     delta0 = 5D-3
-    sigma = 5D-2
-    nu = 0D0
-    Pe = 1D0
+    sigma = 2D-2
+    nu = 1D-3
+    Pe = 1D-1
     psi = 0D0
     N1 = 1D5
 
     ! Variable pour l'outxsput
     sample = (Dt)/(Dt)
     Init = 0
-    Input_Data_Name =  'Backup_0000069.dat'
+    Input_Data_Name =  'Backup_0000015.dat'
     Root = '/Users/thorey/Documents/These/Projet/Refroidissement&
          &/Skin_Model/'
     Root_Code = Root//'Code/Code_ELAS/'

@@ -5,9 +5,9 @@ MODULE MODULE_THERMAL
 USE MODULE_THERMAL_NEWTON
 USE MODULE_THERMAL_GFD
 USE MODULE_SURFACE_TEMPERATURE
-USE MODULE_THERMAL_NEWTON_OLD
 USE MODULE_THERMAL_NEWTON_INT_EPAISSEUR
-USE MODULE_THERMAL_VISCO_2
+USE MODULE_THERMAL_ROSCOE
+USE MODULE_THERMAL_NEWTON_ARRHENIUS
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!  SUBROUTINES
@@ -36,16 +36,18 @@ CONTAINS
 
     ! Schema utilise
     theta = 1D0
-    F_err = 20; F_errt = 20
+    F_err = 100; F_errt = 100
     z =0
 
     THERMAL_ITERATION: DO 
-       CALL THERMAL_NEWTON_SOLVER_V(Xi,H,P,T,Ts,BL,Dt,Dr,theta,dist,ray,M,sigma,nu,Pe,psi,delta0,el,grav,N1,F_err,z,tmps)
+       CALL THERMAL_NEWTON_SOLVER_ARRHENIUS(Xi,H,P,T,Ts,BL,Dt,Dr,theta,dist,ray,M,sigma,nu,Pe,psi,delta0,el,grav,N1,F_err,z,tmps)
        z=z+1
+       ! PRINT*,F_err,z,'Temperature'
        IF (F_err>F_errt) THEN
           PRINT*,tmps,z,'Erreur_Ite_Temp',F_err,F_errt
        ENDIF
        IF (z>20000) THEN
+          PRINT*,z
           ERROR_CODE = 1
           EXIT
        ENDIF

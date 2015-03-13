@@ -4,7 +4,7 @@ MODULE MODULE_THICKNESS
 
 USE MODULE_THICKNESS_NEWTON
 USE MODULE_THICKNESS_GFD
-USE MODULE_THICKNESS_VISCO
+USE MODULE_THICKNESS_ROSCOE
 USE MODULE_THICKNESS_ARRHENIUS
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -37,13 +37,14 @@ CONTAINS
 
     F_err=20; F_errt=20; z=0
     THICKNESS_ITERATION: DO 
-       CALL  THICKNESS_NEWTON_SOLVER(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,z,F_err,theta)
+       CALL  THICKNESS_NEWTON_SOLVER_ARRHENIUS(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,z,F_err,theta)
        z=z+1
        IF ( F_err>F_errt) THEN
           PRINT*,'Erreur_Ite_Epais',F_err,F_errt
        END IF
-       IF (z>50000 .OR. F_Err>1D30) THEN
+       IF (z>50000) THEN
           ERROR_CODE = 1
+          PRINT*,z
           EXIT
        ENDIF
        IF (F_err<eps_1) EXIT

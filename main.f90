@@ -107,7 +107,7 @@ PROGRAM MAIN
   ERROR_CODE = 0
   TEMPS: DO WHILE (tmps<tmps_m)
      
-     IF (tmps>1D-5) THEN
+     IF (tmps>1D-2) THEN
         Dt = 1D-6
      ELSEIF (tmps >3D0) THEN
         Dt = 1D-5
@@ -147,6 +147,7 @@ PROGRAM MAIN
            WRITE(NF_Name,Format_NF),Root_Code,NF,'_BUG'
            OPEN(unit =1,file=NF_Name, action ="write",status ="replace")
            WRITE(1,*)'Le CODE A PLANTE DANS LE SOLVER THICKNESS',tmps
+           PRINT*,'Le CODE A PLANTE DANS LE SOLVER THICKNESS',tmps
            CLOSE(1)
            STOP
         END IF
@@ -158,6 +159,7 @@ PROGRAM MAIN
            WRITE(NF_Name,Format_NF),Root_Code,NF,'_BUG'
            OPEN(unit =1,file=NF_Name, action ="write",status ="replace")
            WRITE(1,*)'Le CODE A PLANTE DANS LE THERMAL SOLVER',tmps
+           PRINT*,'Le CODE A PLANTE DANS LE THERMAL THICKNESS',tmps
            CLOSE(1)
            STOP
         END IF
@@ -170,10 +172,10 @@ PROGRAM MAIN
            WRITE(NF_Name,Format_NF),Root_Code,NF,'_BUG'
            OPEN(unit =1,file=NF_Name, action ="write",status ="replace")
            WRITE(1,*)'Le CODE A PLANTE DANS LE MAIN BOUCLE',tmps
+           PRINT*,'Le CODE A PLANTE DANS LE MAIN BOUCLE',tmps
            CLOSE(1)
            STOP
         END IF
-
         IF (F1<eps_1 .AND. F2<eps_1 ) EXIT
 
         F1t = F1; H(:,4) = H(:,3)
