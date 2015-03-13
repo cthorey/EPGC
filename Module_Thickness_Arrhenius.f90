@@ -272,7 +272,7 @@ CONTAINS
     DOUBLE PRECISION :: h_a,h_b,h_a2,h_b2,h_a3,h_b3,T_a,T_b
     DOUBLE PRECISION :: delta_a,delta_b,delta_a2,delta_b2,delta_a3,delta_b3
     DOUBLE PRECISION :: Ael,Bel,Agrav,Bgrav,phi_a,phi_b
-    DOUBLE PRECISION :: Ts_a,Ts_b,Delta_T_b,Delta_T_a
+    DOUBLE PRECISION :: Ts_a,Ts_b,Ds_b,Ds_a
     INTEGER :: i,err1,algo1
 
     ! Remplissage de f
@@ -294,33 +294,27 @@ CONTAINS
           delta_a3=0.5d0*(BL(i+1,3)**3+BL(i,3)**3)
           T_a=0.5d0*(T(i,3)+T(i+1,3))
           Ts_a = 0.5d0*(Ts(i,3)+Ts(i+1,3))
-          Delta_T_a = T_a -Ts_a
+          Ds_a = T_a -Ts_a
 
-          phi_a = 12.0d0*sqrt(pi)*T_a*delta_a3*exp(1.0d0*T_a/nu)*erf(1.0d0&
-          & *sqrt(T_a - Ts_a)*sqrt(1.0/nu))/(T_a*exp(1.0d0/nu) - Ts_a*exp(&
-          & 1.0d0/nu)) - 12.0d0*sqrt(pi)*T_a*delta_a2*h_a*exp(1.0d0*T_a/nu)&
-          & *erf(1.0d0*sqrt(T_a - Ts_a)*sqrt(1.0/nu))/(T_a*exp(1.0d0/nu) -&
-          & Ts_a*exp(1.0d0/nu)) + 3.0d0*sqrt(pi)*T_a*delta_a*h_a**2*exp(1.0d0&
-          & *T_a/nu)*erf(1.0d0*sqrt(T_a - Ts_a)*sqrt(1.0/nu))/(T_a*exp(1.0d0/&
-          & nu) - Ts_a*exp(1.0d0/nu)) - 12.0d0*sqrt(pi)*Ts_a*delta_a3*exp(&
-          & 1.0d0*T_a/nu)*erf(1.0d0*sqrt(T_a - Ts_a)*sqrt(1.0/nu))/(T_a*exp(&
-          & 1.0d0/nu) - Ts_a*exp(1.0d0/nu)) + 12.0d0*sqrt(pi)*Ts_a*delta_a2&
-          & *h_a*exp(1.0d0*T_a/nu)*erf(1.0d0*sqrt(T_a - Ts_a)*sqrt(1.0/nu))/(&
-          & T_a*exp(1.0d0/nu) - Ts_a*exp(1.0d0/nu)) - 3.0d0*sqrt(pi)*Ts_a*&
-          & delta_a*h_a**2*exp(1.0d0*T_a/nu)*erf(1.0d0*sqrt(T_a - Ts_a)*sqrt(&
-          & 1.0/nu))/(T_a*exp(1.0d0/nu) - Ts_a*exp(1.0d0/nu)) + 6.0d0*sqrt(pi&
-          & )*delta_a3*nu*exp(1.0d0*T_a/nu)*erf(1.0d0*sqrt(T_a - Ts_a)*sqrt&
-          & (1.0/nu))/(T_a*exp(1.0d0/nu) - Ts_a*exp(1.0d0/nu)) + 12.0d0*&
-          & delta_a3*nu*sqrt(1.0/nu)*exp(-1.0d0/nu)*exp(1.0d0*Ts_a/nu)/sqrt&
-          & (T_a - Ts_a) - 8*delta_a3*exp(-1.0d0/nu)*exp(1.0d0*T_a/nu) -&
-          & 24.0d0*delta_a3*exp(-1.0d0/nu)*exp(1.0d0*T_a/nu)/(sqrt(T_a -&
-          & Ts_a)*sqrt(1.0/nu)) - 12.0d0*delta_a2*h_a*nu*sqrt(1.0/nu)*exp(&
-          & -1.0d0/nu)*exp(1.0d0*Ts_a/nu)/sqrt(T_a - Ts_a) + 12*delta_a2*&
-          & h_a*exp(-1.0d0/nu)*exp(1.0d0*T_a/nu) + 12.0d0*delta_a2*h_a*exp(&
-          & -1.0d0/nu)*exp(1.0d0*T_a/nu)/(sqrt(T_a - Ts_a)*sqrt(1.0/nu)) - 6*&
-          & delta_a*h_a**2*exp(-1.0d0/nu)*exp(1.0d0*T_a/nu) + h_a**3*exp(&
-          & -1.0d0/nu)*exp(1.0d0*T_a/nu)
-
+          IF (nu <1D0) THEN
+             phi_a = 6*sqrt(pi)*Ds_a**(-1.5d0)*delta_a3*nu*nu**(-T_a)*(-log(&
+                  & nu))**(-1.5d0)*erf(sqrt(Ds_a)*sqrt(-log(nu))) + 12*1.0/Ds_a*&
+                  & delta_a3*nu*nu**Ds_a*nu**(-T_a)*1.0/(-log(nu)) - 24*1.0/Ds_a*&
+                  & delta_a3*nu*nu**(-T_a)*1.0/(-log(nu)) - 12*1.0/Ds_a*delta_a2*&
+                  & h_a*nu*nu**Ds_a*nu**(-T_a)*1.0/(-log(nu)) + 12*1.0/Ds_a*delta_a2&
+                  & *h_a*nu*nu**(-T_a)*1.0/(-log(nu)) - 12*sqrt(pi)*Ds_a**(-0.5d0)*&
+                  & delta_a3*nu*nu**(-T_a)*(-log(nu))**(-1.5d0)*log(nu)*erf(sqrt(&
+                  & Ds_a)*sqrt(-log(nu))) + 12*sqrt(pi)*Ds_a**(-0.5d0)*delta_a2*h_a&
+                  & *nu*nu**(-T_a)*(-log(nu))**(-1.5d0)*log(nu)*erf(sqrt(Ds_a)*sqrt(&
+                  & -log(nu))) - 3*sqrt(pi)*Ds_a**(-0.5d0)*delta_a*h_a**2*nu*nu**(&
+                  & -T_a)*(-log(nu))**(-1.5d0)*log(nu)*erf(sqrt(Ds_a)*sqrt(-log(nu&
+                  & ))) + 8*delta_a3*nu*nu**(-T_a)*1.0/(-log(nu))*log(nu) - 12*&
+                  & delta_a2*h_a*nu*nu**(-T_a)*1.0/(-log(nu))*log(nu) + 6*delta_a*&
+                  & h_a**2*nu*nu**(-T_a)*1.0/(-log(nu))*log(nu) - h_a**3*nu*nu**(-T_a&
+                  & )*1.0/(-log(nu))*log(nu)
+          ELSEIF (nu .EQ. 1D0) THEN
+             phi_a = h_a**3
+          ENDIF
        ENDIF
 
        IF (i .NE. 1) THEN
@@ -334,32 +328,29 @@ CONTAINS
           delta_b3=0.5d0*(BL(i,3)**3+BL(i-1,3)**3)
           T_b=0.5d0*(T(i,3)+T(i-1,3))
           Ts_b = 0.5d0*(Ts(i,3)+Ts(i-1,3))
-          Delta_T_b = T_b - Ts_b
+          Ds_b = T_b - Ts_b
 
-         phi_b = 12.0d0*sqrt(pi)*T_b*delta_b3*exp(1.0d0*T_b/nu)*erf(1.0d0&
-          & *sqrt(T_b - Ts_b)*sqrt(1.0/nu))/(T_b*exp(1.0d0/nu) - Ts_b*exp(&
-          & 1.0d0/nu)) - 12.0d0*sqrt(pi)*T_b*delta_b2*h_b*exp(1.0d0*T_b/nu)&
-          & *erf(1.0d0*sqrt(T_b - Ts_b)*sqrt(1.0/nu))/(T_b*exp(1.0d0/nu) -&
-          & Ts_b*exp(1.0d0/nu)) + 3.0d0*sqrt(pi)*T_b*delta_b*h_b**2*exp(1.0d0&
-          & *T_b/nu)*erf(1.0d0*sqrt(T_b - Ts_b)*sqrt(1.0/nu))/(T_b*exp(1.0d0/&
-          & nu) - Ts_b*exp(1.0d0/nu)) - 12.0d0*sqrt(pi)*Ts_b*delta_b3*exp(&
-          & 1.0d0*T_b/nu)*erf(1.0d0*sqrt(T_b - Ts_b)*sqrt(1.0/nu))/(T_b*exp(&
-          & 1.0d0/nu) - Ts_b*exp(1.0d0/nu)) + 12.0d0*sqrt(pi)*Ts_b*delta_b2&
-          & *h_b*exp(1.0d0*T_b/nu)*erf(1.0d0*sqrt(T_b - Ts_b)*sqrt(1.0/nu))/(&
-          & T_b*exp(1.0d0/nu) - Ts_b*exp(1.0d0/nu)) - 3.0d0*sqrt(pi)*Ts_b*&
-          & delta_b*h_b**2*exp(1.0d0*T_b/nu)*erf(1.0d0*sqrt(T_b - Ts_b)*sqrt(&
-          & 1.0/nu))/(T_b*exp(1.0d0/nu) - Ts_b*exp(1.0d0/nu)) + 6.0d0*sqrt(pi&
-          & )*delta_b3*nu*exp(1.0d0*T_b/nu)*erf(1.0d0*sqrt(T_b - Ts_b)*sqrt&
-          & (1.0/nu))/(T_b*exp(1.0d0/nu) - Ts_b*exp(1.0d0/nu)) + 12.0d0*&
-          & delta_b3*nu*sqrt(1.0/nu)*exp(-1.0d0/nu)*exp(1.0d0*Ts_b/nu)/sqrt&
-          & (T_b - Ts_b) - 8*delta_b3*exp(-1.0d0/nu)*exp(1.0d0*T_b/nu) -&
-          & 24.0d0*delta_b3*exp(-1.0d0/nu)*exp(1.0d0*T_b/nu)/(sqrt(T_b -&
-          & Ts_b)*sqrt(1.0/nu)) - 12.0d0*delta_b2*h_b*nu*sqrt(1.0/nu)*exp(&
-          & -1.0d0/nu)*exp(1.0d0*Ts_b/nu)/sqrt(T_b - Ts_b) + 12*delta_b2*&
-          & h_b*exp(-1.0d0/nu)*exp(1.0d0*T_b/nu) + 12.0d0*delta_b2*h_b*exp(&
-          & -1.0d0/nu)*exp(1.0d0*T_b/nu)/(sqrt(T_b - Ts_b)*sqrt(1.0/nu)) - 6*&
-          & delta_b*h_b**2*exp(-1.0d0/nu)*exp(1.0d0*T_b/nu) + h_b**3*exp(&
-          & -1.0d0/nu)*exp(1.0d0*T_b/nu)
+          IF (nu <1D0) THEN
+             phi_b = 6*sqrt(pi)*Ds_b**(-1.5d0)*delta_b3*nu*nu**(-T_b)*(-log(&
+                  & nu))**(-1.5d0)*erf(sqrt(Ds_b)*sqrt(-log(nu))) + 12*1.0/Ds_b*&
+                  & delta_b3*nu*nu**Ds_b*nu**(-T_b)*1.0/(-log(nu)) - 24*1.0/Ds_b*&
+                  & delta_b3*nu*nu**(-T_b)*1.0/(-log(nu)) - 12*1.0/Ds_b*delta_b2*&
+                  & h_b*nu*nu**Ds_b*nu**(-T_b)*1.0/(-log(nu)) + 12*1.0/Ds_b*delta_b2&
+                  & *h_b*nu*nu**(-T_b)*1.0/(-log(nu)) - 12*sqrt(pi)*Ds_b**(-0.5d0)*&
+                  & delta_b3*nu*nu**(-T_b)*(-log(nu))**(-1.5d0)*log(nu)*erf(sqrt(&
+                  & Ds_b)*sqrt(-log(nu))) + 12*sqrt(pi)*Ds_b**(-0.5d0)*delta_b2*h_b&
+                  & *nu*nu**(-T_b)*(-log(nu))**(-1.5d0)*log(nu)*erf(sqrt(Ds_b)*sqrt(&
+                  & -log(nu))) - 3*sqrt(pi)*Ds_b**(-0.5d0)*delta_b*h_b**2*nu*nu**(&
+                  & -T_b)*(-log(nu))**(-1.5d0)*log(nu)*erf(sqrt(Ds_b)*sqrt(-log(nu&
+                  & ))) + 8*delta_b3*nu*nu**(-T_b)*1.0/(-log(nu))*log(nu) - 12*&
+                  & delta_b2*h_b*nu*nu**(-T_b)*1.0/(-log(nu))*log(nu) + 6*delta_b*&
+                  & h_b**2*nu*nu**(-T_b)*1.0/(-log(nu))*log(nu) - h_b**3*nu*nu**(-T_b&
+                  & )*1.0/(-log(nu))*log(nu)
+
+
+          ELSEIF (nu .EQ. 1D0) THEN
+             phi_b = h_b**3
+          ENDIF
 
        ENDIF
 
@@ -411,7 +402,7 @@ CONTAINS
     DOUBLE PRECISION ,DIMENSION(:), ALLOCATABLE :: alpha,beta,gamma,lambda,kappa,delta,epsilonn
     DOUBLE PRECISION ::Ael,Bel,Agrav,Bgrav,h_a,h_b,h_a2,h_b2,h_a3,h_b3,T_a,T_b
     DOUBLE PRECISION ::delta_a,delta_b,delta_a2,delta_b2,delta_a3,delta_b3
-    DOUBLE PRECISION :: Ts_a,Ts_b,Delta_T_b,Delta_T_a
+    DOUBLE PRECISION :: Ts_a,Ts_b,Ds_b,Ds_a
     DOUBLE PRECISION :: phi_a,phi_b,dphib_dhi,dphib_dhi1,dphia_dhi,dphia_dhi1
     DOUBLE PRECISION :: H1,H2,P1,P2,hi,hi2,hia,hib,hia2,hib2
     INTEGER :: i,col,algo1,err1
@@ -448,77 +439,58 @@ CONTAINS
           delta_a3=0.5d0*(BL(i+1,3)**3+BL(i,3)**3)
           T_a=0.5d0*(T(i,3)+T(i+1,3))
           Ts_a = 0.5d0*(Ts(i,3)+Ts(i+1,3))
-          Delta_T_a = T_a -Ts_a
+          Ds_a = T_a -Ts_a
           hia = H(i+1,col); hia2 = H(i+1,col)**2
           hi = H(i,col);hi2 = H(i,col)**2
 
-          phi_a = 12.0d0*sqrt(pi)*T_a*delta_a3*exp(1.0d0*T_a/nu)*erf(1.0d0&
-               & *sqrt(T_a - Ts_a)*sqrt(1.0/nu))/(T_a*exp(1.0d0/nu) - Ts_a*exp(&
-               & 1.0d0/nu)) - 12.0d0*sqrt(pi)*T_a*delta_a2*h_a*exp(1.0d0*T_a/nu)&
-               & *erf(1.0d0*sqrt(T_a - Ts_a)*sqrt(1.0/nu))/(T_a*exp(1.0d0/nu) -&
-               & Ts_a*exp(1.0d0/nu)) + 3.0d0*sqrt(pi)*T_a*delta_a*h_a**2*exp(1.0d0&
-               & *T_a/nu)*erf(1.0d0*sqrt(T_a - Ts_a)*sqrt(1.0/nu))/(T_a*exp(1.0d0/&
-               & nu) - Ts_a*exp(1.0d0/nu)) - 12.0d0*sqrt(pi)*Ts_a*delta_a3*exp(&
-               & 1.0d0*T_a/nu)*erf(1.0d0*sqrt(T_a - Ts_a)*sqrt(1.0/nu))/(T_a*exp(&
-               & 1.0d0/nu) - Ts_a*exp(1.0d0/nu)) + 12.0d0*sqrt(pi)*Ts_a*delta_a2&
-               & *h_a*exp(1.0d0*T_a/nu)*erf(1.0d0*sqrt(T_a - Ts_a)*sqrt(1.0/nu))/(&
-               & T_a*exp(1.0d0/nu) - Ts_a*exp(1.0d0/nu)) - 3.0d0*sqrt(pi)*Ts_a*&
-               & delta_a*h_a**2*exp(1.0d0*T_a/nu)*erf(1.0d0*sqrt(T_a - Ts_a)*sqrt(&
-               & 1.0/nu))/(T_a*exp(1.0d0/nu) - Ts_a*exp(1.0d0/nu)) + 6.0d0*sqrt(pi&
-               & )*delta_a3*nu*exp(1.0d0*T_a/nu)*erf(1.0d0*sqrt(T_a - Ts_a)*sqrt&
-               & (1.0/nu))/(T_a*exp(1.0d0/nu) - Ts_a*exp(1.0d0/nu)) + 12.0d0*&
-               & delta_a3*nu*sqrt(1.0/nu)*exp(-1.0d0/nu)*exp(1.0d0*Ts_a/nu)/sqrt&
-               & (T_a - Ts_a) - 8*delta_a3*exp(-1.0d0/nu)*exp(1.0d0*T_a/nu) -&
-               & 24.0d0*delta_a3*exp(-1.0d0/nu)*exp(1.0d0*T_a/nu)/(sqrt(T_a -&
-               & Ts_a)*sqrt(1.0/nu)) - 12.0d0*delta_a2*h_a*nu*sqrt(1.0/nu)*exp(&
-               & -1.0d0/nu)*exp(1.0d0*Ts_a/nu)/sqrt(T_a - Ts_a) + 12*delta_a2*&
-               & h_a*exp(-1.0d0/nu)*exp(1.0d0*T_a/nu) + 12.0d0*delta_a2*h_a*exp(&
-               & -1.0d0/nu)*exp(1.0d0*T_a/nu)/(sqrt(T_a - Ts_a)*sqrt(1.0/nu)) - 6*&
-               & delta_a*h_a**2*exp(-1.0d0/nu)*exp(1.0d0*T_a/nu) + h_a**3*exp(&
-               & -1.0d0/nu)*exp(1.0d0*T_a/nu)
+          IF (nu <1D0) THEN
+             phi_a = 6*sqrt(pi)*Ds_a**(-1.5d0)*delta_a3*nu*nu**(-T_a)*(-log(&
+                  & nu))**(-1.5d0)*erf(sqrt(Ds_a)*sqrt(-log(nu))) + 12*1.0/Ds_a*&
+                  & delta_a3*nu*nu**Ds_a*nu**(-T_a)*1.0/(-log(nu)) - 24*1.0/Ds_a*&
+                  & delta_a3*nu*nu**(-T_a)*1.0/(-log(nu)) - 12*1.0/Ds_a*delta_a2*&
+                  & h_a*nu*nu**Ds_a*nu**(-T_a)*1.0/(-log(nu)) + 12*1.0/Ds_a*delta_a2&
+                  & *h_a*nu*nu**(-T_a)*1.0/(-log(nu)) - 12*sqrt(pi)*Ds_a**(-0.5d0)*&
+                  & delta_a3*nu*nu**(-T_a)*(-log(nu))**(-1.5d0)*log(nu)*erf(sqrt(&
+                  & Ds_a)*sqrt(-log(nu))) + 12*sqrt(pi)*Ds_a**(-0.5d0)*delta_a2*h_a&
+                  & *nu*nu**(-T_a)*(-log(nu))**(-1.5d0)*log(nu)*erf(sqrt(Ds_a)*sqrt(&
+                  & -log(nu))) - 3*sqrt(pi)*Ds_a**(-0.5d0)*delta_a*h_a**2*nu*nu**(&
+                  & -T_a)*(-log(nu))**(-1.5d0)*log(nu)*erf(sqrt(Ds_a)*sqrt(-log(nu&
+                  & ))) + 8*delta_a3*nu*nu**(-T_a)*1.0/(-log(nu))*log(nu) - 12*&
+                  & delta_a2*h_a*nu*nu**(-T_a)*1.0/(-log(nu))*log(nu) + 6*delta_a*&
+                  & h_a**2*nu*nu**(-T_a)*1.0/(-log(nu))*log(nu) - h_a**3*nu*nu**(-T_a&
+                  & )*1.0/(-log(nu))*log(nu)
 
-          dphia_dhi1 = -12.0d0*sqrt(pi)*T_a*delta_a2*exp(1.0d0*T_a/nu)*erf&
-          & (1.0d0*sqrt(T_a - Ts_a)*sqrt(1.0/nu))/(T_a*exp(1.0d0/nu) - Ts_a*&
-          & exp(1.0d0/nu)) + 6.0d0*sqrt(pi)*T_a*delta_a*hi*exp(1.0d0*T_a/nu)*&
-          & erf(1.0d0*sqrt(T_a - Ts_a)*sqrt(1.0/nu))/(T_a*exp(1.0d0/nu) -&
-          & Ts_a*exp(1.0d0/nu)) + 6.0d0*sqrt(pi)*T_a*delta_a*hia*exp(1.0d0*&
-          & T_a/nu)*erf(1.0d0*sqrt(T_a - Ts_a)*sqrt(1.0/nu))/(T_a*exp(1.0d0/&
-          & nu) - Ts_a*exp(1.0d0/nu)) + 12.0d0*sqrt(pi)*Ts_a*delta_a2*exp(&
-          & 1.0d0*T_a/nu)*erf(1.0d0*sqrt(T_a - Ts_a)*sqrt(1.0/nu))/(T_a*exp(&
-          & 1.0d0/nu) - Ts_a*exp(1.0d0/nu)) - 6.0d0*sqrt(pi)*Ts_a*delta_a*hi*&
-          & exp(1.0d0*T_a/nu)*erf(1.0d0*sqrt(T_a - Ts_a)*sqrt(1.0/nu))/(T_a*&
-          & exp(1.0d0/nu) - Ts_a*exp(1.0d0/nu)) - 6.0d0*sqrt(pi)*Ts_a*delta_a&
-          & *hia*exp(1.0d0*T_a/nu)*erf(1.0d0*sqrt(T_a - Ts_a)*sqrt(1.0/nu))/(&
-          & T_a*exp(1.0d0/nu) - Ts_a*exp(1.0d0/nu)) - 12.0d0*delta_a2*nu*&
-          & sqrt(1.0/nu)*exp(-1.0d0/nu)*exp(1.0d0*Ts_a/nu)/sqrt(T_a - Ts_a) +&
-          & 12*delta_a2*exp(-1.0d0/nu)*exp(1.0d0*T_a/nu) + 12.0d0*delta_a2&
-          & *exp(-1.0d0/nu)*exp(1.0d0*T_a/nu)/(sqrt(T_a - Ts_a)*sqrt(1.0/nu&
-          & )) - 12*delta_a*hi*exp(-1.0d0/nu)*exp(1.0d0*T_a/nu) - 12*delta_a*&
-          & hia*exp(-1.0d0/nu)*exp(1.0d0*T_a/nu) + 3*hi**2*exp(-1.0d0/nu)*exp&
-          & (1.0d0*T_a/nu) + 6*hi*hia*exp(-1.0d0/nu)*exp(1.0d0*T_a/nu) + 3*&
-          & hia**2*exp(-1.0d0/nu)*exp(1.0d0*T_a/nu)
+             dphia_dhi1 = -12*1.0/Ds_a*delta_a2*nu*nu**Ds_a*nu**(-T_a)*1.0/(&
+                  & -log(nu)) + 12*1.0/Ds_a*delta_a2*nu*nu**(-T_a)*1.0/(-log(nu)) +&
+                  & 12*sqrt(pi)*Ds_a**(-0.5d0)*delta_a2*nu*nu**(-T_a)*(-log(nu))**(&
+                  & -1.5d0)*log(nu)*erf(sqrt(Ds_a)*sqrt(-log(nu))) - 6*sqrt(pi)*Ds_a&
+                  & **(-0.5d0)*delta_a*hi*nu*nu**(-T_a)*(-log(nu))**(-1.5d0)*log(nu)*&
+                  & erf(sqrt(Ds_a)*sqrt(-log(nu))) - 6*sqrt(pi)*Ds_a**(-0.5d0)*&
+                  & delta_a*hia*nu*nu**(-T_a)*(-log(nu))**(-1.5d0)*log(nu)*erf(sqrt(&
+                  & Ds_a)*sqrt(-log(nu))) - 12*delta_a2*nu*nu**(-T_a)*1.0/(-log(nu&
+                  & ))*log(nu) + 12*delta_a*hi*nu*nu**(-T_a)*1.0/(-log(nu))*log(nu) +&
+                  & 12*delta_a*hia*nu*nu**(-T_a)*1.0/(-log(nu))*log(nu) - 3*hi**2*nu*&
+                  & nu**(-T_a)*1.0/(-log(nu))*log(nu) - 6*hi*hia*nu*nu**(-T_a)*1.0/(&
+                  & -log(nu))*log(nu) - 3*hia**2*nu*nu**(-T_a)*1.0/(-log(nu))*log(nu)
 
-          dphia_dhi = -12.0d0*sqrt(pi)*T_a*delta_a2*exp(1.0d0*T_a/nu)*erf(&
-          & 1.0d0*sqrt(T_a - Ts_a)*sqrt(1.0/nu))/(T_a*exp(1.0d0/nu) - Ts_a*&
-          & exp(1.0d0/nu)) + 6.0d0*sqrt(pi)*T_a*delta_a*hi*exp(1.0d0*T_a/nu)*&
-          & erf(1.0d0*sqrt(T_a - Ts_a)*sqrt(1.0/nu))/(T_a*exp(1.0d0/nu) -&
-          & Ts_a*exp(1.0d0/nu)) + 6.0d0*sqrt(pi)*T_a*delta_a*hia*exp(1.0d0*&
-          & T_a/nu)*erf(1.0d0*sqrt(T_a - Ts_a)*sqrt(1.0/nu))/(T_a*exp(1.0d0/&
-          & nu) - Ts_a*exp(1.0d0/nu)) + 12.0d0*sqrt(pi)*Ts_a*delta_a2*exp(&
-          & 1.0d0*T_a/nu)*erf(1.0d0*sqrt(T_a - Ts_a)*sqrt(1.0/nu))/(T_a*exp(&
-          & 1.0d0/nu) - Ts_a*exp(1.0d0/nu)) - 6.0d0*sqrt(pi)*Ts_a*delta_a*hi*&
-          & exp(1.0d0*T_a/nu)*erf(1.0d0*sqrt(T_a - Ts_a)*sqrt(1.0/nu))/(T_a*&
-          & exp(1.0d0/nu) - Ts_a*exp(1.0d0/nu)) - 6.0d0*sqrt(pi)*Ts_a*delta_a&
-          & *hia*exp(1.0d0*T_a/nu)*erf(1.0d0*sqrt(T_a - Ts_a)*sqrt(1.0/nu))/(&
-          & T_a*exp(1.0d0/nu) - Ts_a*exp(1.0d0/nu)) - 12.0d0*delta_a2*nu*&
-          & sqrt(1.0/nu)*exp(-1.0d0/nu)*exp(1.0d0*Ts_a/nu)/sqrt(T_a - Ts_a) +&
-          & 12*delta_a2*exp(-1.0d0/nu)*exp(1.0d0*T_a/nu) + 12.0d0*delta_a2&
-          & *exp(-1.0d0/nu)*exp(1.0d0*T_a/nu)/(sqrt(T_a - Ts_a)*sqrt(1.0/nu&
-          & )) - 12*delta_a*hi*exp(-1.0d0/nu)*exp(1.0d0*T_a/nu) - 12*delta_a*&
-          & hia*exp(-1.0d0/nu)*exp(1.0d0*T_a/nu) + 3*hi**2*exp(-1.0d0/nu)*exp&
-          & (1.0d0*T_a/nu) + 6*hi*hia*exp(-1.0d0/nu)*exp(1.0d0*T_a/nu) + 3*&
-          & hia**2*exp(-1.0d0/nu)*exp(1.0d0*T_a/nu)
-
+             dphia_dhi = -12*1.0/Ds_a*delta_a2*nu*nu**Ds_a*nu**(-T_a)*1.0/(&
+                  & -log(nu)) + 12*1.0/Ds_a*delta_a2*nu*nu**(-T_a)*1.0/(-log(nu)) +&
+                  & 12*sqrt(pi)*Ds_a**(-0.5d0)*delta_a2*nu*nu**(-T_a)*(-log(nu))**(&
+                  & -1.5d0)*log(nu)*erf(sqrt(Ds_a)*sqrt(-log(nu))) - 6*sqrt(pi)*Ds_a&
+                  & **(-0.5d0)*delta_a*hi*nu*nu**(-T_a)*(-log(nu))**(-1.5d0)*log(nu)*&
+                  & erf(sqrt(Ds_a)*sqrt(-log(nu))) - 6*sqrt(pi)*Ds_a**(-0.5d0)*&
+                  & delta_a*hia*nu*nu**(-T_a)*(-log(nu))**(-1.5d0)*log(nu)*erf(sqrt(&
+                  & Ds_a)*sqrt(-log(nu))) - 12*delta_a2*nu*nu**(-T_a)*1.0/(-log(nu&
+                  & ))*log(nu) + 12*delta_a*hi*nu*nu**(-T_a)*1.0/(-log(nu))*log(nu) +&
+                  & 12*delta_a*hia*nu*nu**(-T_a)*1.0/(-log(nu))*log(nu) - 3*hi**2*nu*&
+                  & nu**(-T_a)*1.0/(-log(nu))*log(nu) - 6*hi*hia*nu*nu**(-T_a)*1.0/(&
+                  & -log(nu))*log(nu) - 3*hia**2*nu*nu**(-T_a)*1.0/(-log(nu))*log(nu)
+             
+          ELSEIF (nu .EQ. 1D0) THEN
+             phi_a = h_a**3
+             dphia_dhi1 = 3*hi**2 + 6*hi*hia + 3*hia**2
+             dphia_dhi = 3*hi**2 + 6*hi*hia + 3*hia**2
+          ENDIF
 
           P1=P(i+1,2)-P(i,2); P2=P(i,2)-P(i-1,2)
           H1=H(i+1,2)-H(i,2); H2=H(i,2)-H(i-1,2)
@@ -535,81 +507,58 @@ CONTAINS
           delta_b3=0.5d0*(BL(i,3)**3+BL(i-1,3)**3)
           T_b=0.5d0*(T(i,3)+T(i-1,3))
           Ts_b = 0.5d0*(Ts(i,3)+Ts(i-1,3))
-          Delta_T_b = T_b - Ts_b
+          Ds_b = T_b - Ts_b
           hib = H(i-1,col); hib2 = H(i-1,col)**2
           hi = H(i,col);hi2 = H(i,col)**2
-          
-          phi_b = 12.0d0*sqrt(pi)*T_b*delta_b3*exp(1.0d0*T_b/nu)*erf(1.0d0&
-               & *sqrt(T_b - Ts_b)*sqrt(1.0/nu))/(T_b*exp(1.0d0/nu) - Ts_b*exp(&
-               & 1.0d0/nu)) - 12.0d0*sqrt(pi)*T_b*delta_b2*h_b*exp(1.0d0*T_b/nu)&
-               & *erf(1.0d0*sqrt(T_b - Ts_b)*sqrt(1.0/nu))/(T_b*exp(1.0d0/nu) -&
-               & Ts_b*exp(1.0d0/nu)) + 3.0d0*sqrt(pi)*T_b*delta_b*h_b**2*exp(1.0d0&
-               & *T_b/nu)*erf(1.0d0*sqrt(T_b - Ts_b)*sqrt(1.0/nu))/(T_b*exp(1.0d0/&
-               & nu) - Ts_b*exp(1.0d0/nu)) - 12.0d0*sqrt(pi)*Ts_b*delta_b3*exp(&
-               & 1.0d0*T_b/nu)*erf(1.0d0*sqrt(T_b - Ts_b)*sqrt(1.0/nu))/(T_b*exp(&
-               & 1.0d0/nu) - Ts_b*exp(1.0d0/nu)) + 12.0d0*sqrt(pi)*Ts_b*delta_b2&
-               & *h_b*exp(1.0d0*T_b/nu)*erf(1.0d0*sqrt(T_b - Ts_b)*sqrt(1.0/nu))/(&
-               & T_b*exp(1.0d0/nu) - Ts_b*exp(1.0d0/nu)) - 3.0d0*sqrt(pi)*Ts_b*&
-               & delta_b*h_b**2*exp(1.0d0*T_b/nu)*erf(1.0d0*sqrt(T_b - Ts_b)*sqrt(&
-               & 1.0/nu))/(T_b*exp(1.0d0/nu) - Ts_b*exp(1.0d0/nu)) + 6.0d0*sqrt(pi&
-               & )*delta_b3*nu*exp(1.0d0*T_b/nu)*erf(1.0d0*sqrt(T_b - Ts_b)*sqrt&
-               & (1.0/nu))/(T_b*exp(1.0d0/nu) - Ts_b*exp(1.0d0/nu)) + 12.0d0*&
-               & delta_b3*nu*sqrt(1.0/nu)*exp(-1.0d0/nu)*exp(1.0d0*Ts_b/nu)/sqrt&
-               & (T_b - Ts_b) - 8*delta_b3*exp(-1.0d0/nu)*exp(1.0d0*T_b/nu) -&
-               & 24.0d0*delta_b3*exp(-1.0d0/nu)*exp(1.0d0*T_b/nu)/(sqrt(T_b -&
-               & Ts_b)*sqrt(1.0/nu)) - 12.0d0*delta_b2*h_b*nu*sqrt(1.0/nu)*exp(&
-               & -1.0d0/nu)*exp(1.0d0*Ts_b/nu)/sqrt(T_b - Ts_b) + 12*delta_b2*&
-               & h_b*exp(-1.0d0/nu)*exp(1.0d0*T_b/nu) + 12.0d0*delta_b2*h_b*exp(&
-               & -1.0d0/nu)*exp(1.0d0*T_b/nu)/(sqrt(T_b - Ts_b)*sqrt(1.0/nu)) - 6*&
-               & delta_b*h_b**2*exp(-1.0d0/nu)*exp(1.0d0*T_b/nu) + h_b**3*exp(&
-               & -1.0d0/nu)*exp(1.0d0*T_b/nu)
-          
-          dphib_dhi1 = -12.0d0*sqrt(pi)*T_b*delta_b2*exp(1.0d0*T_b/nu)*erf&
-               & (1.0d0*sqrt(T_b - Ts_b)*sqrt(1.0/nu))/(T_b*exp(1.0d0/nu) - Ts_b*&
-               & exp(1.0d0/nu)) + 6.0d0*sqrt(pi)*T_b*delta_b*hi*exp(1.0d0*T_b/nu)*&
-               & erf(1.0d0*sqrt(T_b - Ts_b)*sqrt(1.0/nu))/(T_b*exp(1.0d0/nu) -&
-               & Ts_b*exp(1.0d0/nu)) + 6.0d0*sqrt(pi)*T_b*delta_b*hib*exp(1.0d0*&
-               & T_b/nu)*erf(1.0d0*sqrt(T_b - Ts_b)*sqrt(1.0/nu))/(T_b*exp(1.0d0/&
-               & nu) - Ts_b*exp(1.0d0/nu)) + 12.0d0*sqrt(pi)*Ts_b*delta_b2*exp(&
-               & 1.0d0*T_b/nu)*erf(1.0d0*sqrt(T_b - Ts_b)*sqrt(1.0/nu))/(T_b*exp(&
-               & 1.0d0/nu) - Ts_b*exp(1.0d0/nu)) - 6.0d0*sqrt(pi)*Ts_b*delta_b*hi*&
-               & exp(1.0d0*T_b/nu)*erf(1.0d0*sqrt(T_b - Ts_b)*sqrt(1.0/nu))/(T_b*&
-               & exp(1.0d0/nu) - Ts_b*exp(1.0d0/nu)) - 6.0d0*sqrt(pi)*Ts_b*delta_b&
-               & *hib*exp(1.0d0*T_b/nu)*erf(1.0d0*sqrt(T_b - Ts_b)*sqrt(1.0/nu))/(&
-               & T_b*exp(1.0d0/nu) - Ts_b*exp(1.0d0/nu)) - 12.0d0*delta_b2*nu*&
-               & sqrt(1.0/nu)*exp(-1.0d0/nu)*exp(1.0d0*Ts_b/nu)/sqrt(T_b - Ts_b) +&
-               & 12*delta_b2*exp(-1.0d0/nu)*exp(1.0d0*T_b/nu) + 12.0d0*delta_b2&
-               & *exp(-1.0d0/nu)*exp(1.0d0*T_b/nu)/(sqrt(T_b - Ts_b)*sqrt(1.0/nu&
-               & )) - 12*delta_b*hi*exp(-1.0d0/nu)*exp(1.0d0*T_b/nu) - 12*delta_b*&
-               & hib*exp(-1.0d0/nu)*exp(1.0d0*T_b/nu) + 3*hi**2*exp(-1.0d0/nu)*exp&
-               & (1.0d0*T_b/nu) + 6*hi*hib*exp(-1.0d0/nu)*exp(1.0d0*T_b/nu) + 3*&
-               & hib**2*exp(-1.0d0/nu)*exp(1.0d0*T_b/nu)
 
-          dphib_dhi = -12.0d0*sqrt(pi)*T_b*delta_b2*exp(1.0d0*T_b/nu)*erf(&
-               & 1.0d0*sqrt(T_b - Ts_b)*sqrt(1.0/nu))/(T_b*exp(1.0d0/nu) - Ts_b*&
-               & exp(1.0d0/nu)) + 6.0d0*sqrt(pi)*T_b*delta_b*hi*exp(1.0d0*T_b/nu)*&
-               & erf(1.0d0*sqrt(T_b - Ts_b)*sqrt(1.0/nu))/(T_b*exp(1.0d0/nu) -&
-               & Ts_b*exp(1.0d0/nu)) + 6.0d0*sqrt(pi)*T_b*delta_b*hib*exp(1.0d0*&
-               & T_b/nu)*erf(1.0d0*sqrt(T_b - Ts_b)*sqrt(1.0/nu))/(T_b*exp(1.0d0/&
-               & nu) - Ts_b*exp(1.0d0/nu)) + 12.0d0*sqrt(pi)*Ts_b*delta_b2*exp(&
-               & 1.0d0*T_b/nu)*erf(1.0d0*sqrt(T_b - Ts_b)*sqrt(1.0/nu))/(T_b*exp(&
-               & 1.0d0/nu) - Ts_b*exp(1.0d0/nu)) - 6.0d0*sqrt(pi)*Ts_b*delta_b*hi*&
-               & exp(1.0d0*T_b/nu)*erf(1.0d0*sqrt(T_b - Ts_b)*sqrt(1.0/nu))/(T_b*&
-               & exp(1.0d0/nu) - Ts_b*exp(1.0d0/nu)) - 6.0d0*sqrt(pi)*Ts_b*delta_b&
-               & *hib*exp(1.0d0*T_b/nu)*erf(1.0d0*sqrt(T_b - Ts_b)*sqrt(1.0/nu))/(&
-               & T_b*exp(1.0d0/nu) - Ts_b*exp(1.0d0/nu)) - 12.0d0*delta_b2*nu*&
-               & sqrt(1.0/nu)*exp(-1.0d0/nu)*exp(1.0d0*Ts_b/nu)/sqrt(T_b - Ts_b) +&
-               & 12*delta_b2*exp(-1.0d0/nu)*exp(1.0d0*T_b/nu) + 12.0d0*delta_b2&
-               & *exp(-1.0d0/nu)*exp(1.0d0*T_b/nu)/(sqrt(T_b - Ts_b)*sqrt(1.0/nu&
-               & )) - 12*delta_b*hi*exp(-1.0d0/nu)*exp(1.0d0*T_b/nu) - 12*delta_b*&
-               & hib*exp(-1.0d0/nu)*exp(1.0d0*T_b/nu) + 3*hi**2*exp(-1.0d0/nu)*exp&
-               & (1.0d0*T_b/nu) + 6*hi*hib*exp(-1.0d0/nu)*exp(1.0d0*T_b/nu) + 3*&
-               & hib**2*exp(-1.0d0/nu)*exp(1.0d0*T_b/nu)
+          IF (nu <1D0) THEN
+             phi_b = 6*sqrt(pi)*Ds_b**(-1.5d0)*delta_b3*nu*nu**(-T_b)*(-log(&
+             & nu))**(-1.5d0)*erf(sqrt(Ds_b)*sqrt(-log(nu))) + 12*1.0/Ds_b*&
+             & delta_b3*nu*nu**Ds_b*nu**(-T_b)*1.0/(-log(nu)) - 24*1.0/Ds_b*&
+             & delta_b3*nu*nu**(-T_b)*1.0/(-log(nu)) - 12*1.0/Ds_b*delta_b2*&
+             & h_b*nu*nu**Ds_b*nu**(-T_b)*1.0/(-log(nu)) + 12*1.0/Ds_b*delta_b2&
+             & *h_b*nu*nu**(-T_b)*1.0/(-log(nu)) - 12*sqrt(pi)*Ds_b**(-0.5d0)*&
+             & delta_b3*nu*nu**(-T_b)*(-log(nu))**(-1.5d0)*log(nu)*erf(sqrt(&
+             & Ds_b)*sqrt(-log(nu))) + 12*sqrt(pi)*Ds_b**(-0.5d0)*delta_b2*h_b&
+             & *nu*nu**(-T_b)*(-log(nu))**(-1.5d0)*log(nu)*erf(sqrt(Ds_b)*sqrt(&
+             & -log(nu))) - 3*sqrt(pi)*Ds_b**(-0.5d0)*delta_b*h_b**2*nu*nu**(&
+             & -T_b)*(-log(nu))**(-1.5d0)*log(nu)*erf(sqrt(Ds_b)*sqrt(-log(nu&
+             & ))) + 8*delta_b3*nu*nu**(-T_b)*1.0/(-log(nu))*log(nu) - 12*&
+             & delta_b2*h_b*nu*nu**(-T_b)*1.0/(-log(nu))*log(nu) + 6*delta_b*&
+             & h_b**2*nu*nu**(-T_b)*1.0/(-log(nu))*log(nu) - h_b**3*nu*nu**(-T_b&
+             & )*1.0/(-log(nu))*log(nu)
 
+             dphib_dhi = -12*1.0/Ds_b*delta_b2*nu*nu**Ds_b*nu**(-T_b)*1.0/(&
+             & -log(nu)) + 12*1.0/Ds_b*delta_b2*nu*nu**(-T_b)*1.0/(-log(nu)) +&
+             & 12*sqrt(pi)*Ds_b**(-0.5d0)*delta_b2*nu*nu**(-T_b)*(-log(nu))**(&
+             & -1.5d0)*log(nu)*erf(sqrt(Ds_b)*sqrt(-log(nu))) - 6*sqrt(pi)*Ds_b&
+             & **(-0.5d0)*delta_b*hi*nu*nu**(-T_b)*(-log(nu))**(-1.5d0)*log(nu)*&
+             & erf(sqrt(Ds_b)*sqrt(-log(nu))) - 6*sqrt(pi)*Ds_b**(-0.5d0)*&
+             & delta_b*hib*nu*nu**(-T_b)*(-log(nu))**(-1.5d0)*log(nu)*erf(sqrt(&
+             & Ds_b)*sqrt(-log(nu))) - 12*delta_b2*nu*nu**(-T_b)*1.0/(-log(nu&
+             & ))*log(nu) + 12*delta_b*hi*nu*nu**(-T_b)*1.0/(-log(nu))*log(nu) +&
+             & 12*delta_b*hib*nu*nu**(-T_b)*1.0/(-log(nu))*log(nu) - 3*hi**2*nu*&
+             & nu**(-T_b)*1.0/(-log(nu))*log(nu) - 6*hi*hib*nu*nu**(-T_b)*1.0/(&
+             & -log(nu))*log(nu) - 3*hib**2*nu*nu**(-T_b)*1.0/(-log(nu))*log(nu)
 
+             dphib_dhi1 = -12*1.0/Ds_b*delta_b2*nu*nu**Ds_b*nu**(-T_b)*1.0/(&
+             & -log(nu)) + 12*1.0/Ds_b*delta_b2*nu*nu**(-T_b)*1.0/(-log(nu)) +&
+             & 12*sqrt(pi)*Ds_b**(-0.5d0)*delta_b2*nu*nu**(-T_b)*(-log(nu))**(&
+             & -1.5d0)*log(nu)*erf(sqrt(Ds_b)*sqrt(-log(nu))) - 6*sqrt(pi)*Ds_b&
+             & **(-0.5d0)*delta_b*hi*nu*nu**(-T_b)*(-log(nu))**(-1.5d0)*log(nu)*&
+             & erf(sqrt(Ds_b)*sqrt(-log(nu))) - 6*sqrt(pi)*Ds_b**(-0.5d0)*&
+             & delta_b*hib*nu*nu**(-T_b)*(-log(nu))**(-1.5d0)*log(nu)*erf(sqrt(&
+             & Ds_b)*sqrt(-log(nu))) - 12*delta_b2*nu*nu**(-T_b)*1.0/(-log(nu&
+             & ))*log(nu) + 12*delta_b*hi*nu*nu**(-T_b)*1.0/(-log(nu))*log(nu) +&
+             & 12*delta_b*hib*nu*nu**(-T_b)*1.0/(-log(nu))*log(nu) - 3*hi**2*nu*&
+             & nu**(-T_b)*1.0/(-log(nu))*log(nu) - 6*hi*hib*nu*nu**(-T_b)*1.0/(&
+             & -log(nu))*log(nu) - 3*hib**2*nu*nu**(-T_b)*1.0/(-log(nu))*log(nu)
+          ELSEIF (nu .EQ. 1D0) THEN
+             phi_b = h_b**3
+             dphib_dhi1 = 3*hi**2 + 6*hi*hib + 3*hib**2
+             dphib_dhi = 3*hi**2 + 6*hi*hib + 3*hib**2
+          ENDIF
 
-          dphib_dhi=(3.d0/2.d0)*(nu+(1-nu)*T_b)*H(i,col)**2-(1-nu)*Delta_T_b*(-delta_b2+delta_b*H(i,col))     ! d(phi_i-1/2)/d(h_i)
-          dphib_dhi1=(3.d0/2.d0)*(nu+(1-nu)*T_b)*H(i-1,col)**2-(1-nu)*Delta_T_b*(-delta_b2+delta_b*H(i-1,col)) ! d(phi_i-1/2)/d(h_i-1)
           P2=P(i,2)-P(i-1,2)
           H2=H(i,2)-H(i-1,2)
        ENDIF IF2

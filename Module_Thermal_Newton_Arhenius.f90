@@ -90,7 +90,7 @@ CONTAINS
     DO i=1,N,1
        Xi(i,3)=Xi_m(i)+Xi(i,2)
        IF (Xi(i,3) >H(i,3)/2D0) THEN
-          Xi(i:,3) = H(i:,3)/2D0
+          Xi(i:,3) = 0.9999999*H(i:,3)/2D0
           EXIT
        ENDIF
     END DO
@@ -404,57 +404,32 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
           delta_b3=0.5d0*(BL(i,col)**3+BL(i-1,col)**3)
           T_b = 0.5d0*(T(i,col)+T(i-1,col))
           Ts_b = 0.5d0*(Ts(i,col)+Ts(i-1,col))
+          Ds_b = T_b-Ts_b
 
-          omega_b = 6.0d0*sqrt(pi)*T_b*delta_b2*eta_b*exp(1.0d0*T_b/nu)*&
-          & erf(1.0d0*sqrt(T_b - Ts_b)*sqrt(1.0/nu))/(T_b*exp(1.0d0/nu) -&
-          & Ts_b*exp(1.0d0/nu)) - 3.0d0*sqrt(pi)*T_b*delta_b*eta_b*h_b*exp(&
-          & 1.0d0*T_b/nu)*erf(1.0d0*sqrt(T_b - Ts_b)*sqrt(1.0/nu))/(T_b*exp(&
-          & 1.0d0/nu) - Ts_b*exp(1.0d0/nu)) - 6.0d0*sqrt(pi)*Ts_b*delta_b2*&
-          & eta_b*exp(1.0d0*T_b/nu)*erf(1.0d0*sqrt(T_b - Ts_b)*sqrt(1.0/nu))/&
-          & (T_b*exp(1.0d0/nu) - Ts_b*exp(1.0d0/nu)) + 3.0d0*sqrt(pi)*Ts_b*&
-          & delta_b*eta_b*h_b*exp(1.0d0*T_b/nu)*erf(1.0d0*sqrt(T_b - Ts_b)*&
-          & sqrt(1.0/nu))/(T_b*exp(1.0d0/nu) - Ts_b*exp(1.0d0/nu)) + 3.0d0*&
-          & sqrt(pi)*delta_b2*eta_b*nu*exp(1.0d0*T_b/nu)*erf(1.0d0*sqrt(T_b&
-          & - Ts_b)*sqrt(1.0/nu))/(T_b*exp(1.0d0/nu) - Ts_b*exp(1.0d0/nu)) +&
-          & 6.0d0*delta_b2*eta_b*nu*exp(1.0d0*T_b/nu)/(T_b*exp(1.0d0/nu) -&
-          & Ts_b*exp(1.0d0/nu)) - 6.0d0*delta_b2*eta_b*nu*exp(1.0d0*Ts_b/nu&
-          & )/(T_b*exp(1.0d0/nu) - Ts_b*exp(1.0d0/nu)) - 6.0d0*sqrt(pi)*&
-          & delta_b2*eta_b*nu*sqrt(1.0/nu)*exp(-1.0d0/nu)*exp(1.0d0*T_b/nu)&
-          & *erf(1.0d0*sqrt(T_b - Ts_b)*sqrt(1.0/nu))/sqrt(T_b - Ts_b) +&
-          & 6.0d0*delta_b2*eta_b*nu*sqrt(1.0/nu)*exp(-1.0d0/nu)*exp(1.0d0*&
-          & Ts_b/nu)/sqrt(T_b - Ts_b) - 12.0d0*delta_b2*eta_b*exp(-1.0d0/nu&
-          & )*exp(1.0d0*T_b/nu)/(sqrt(T_b - Ts_b)*sqrt(1.0/nu)) + 3.0d0*sqrt(&
-          & pi)*delta_b*eta_b*h_b*nu*sqrt(1.0/nu)*exp(-1.0d0/nu)*exp(1.0d0*&
-          & T_b/nu)*erf(1.0d0*sqrt(T_b - Ts_b)*sqrt(1.0/nu))/sqrt(T_b - Ts_b&
-          & ) - 3.0d0*delta_b*eta_b*h_b*nu*sqrt(1.0/nu)*exp(-1.0d0/nu)*exp(&
-          & 1.0d0*Ts_b/nu)/sqrt(T_b - Ts_b) + 3.0d0*delta_b*eta_b*h_b*exp(&
-          & -1.0d0/nu)*exp(1.0d0*T_b/nu)/(sqrt(T_b - Ts_b)*sqrt(1.0/nu))
+          IF (nu < 1D0) THEN
+              omega_b = 3*sqrt(pi)*Ds_b**(-1.5d0)*delta_b2*eta_b*nu*nu**(-T_b)&
+             & *(-log(nu))**(-1.5d0)*erf(sqrt(Ds_b)*sqrt(-log(nu))) - 6*1.0/Ds_b&
+             & *delta_b2*eta_b*nu*nu**(-T_b)*1.0/(-log(nu)) - 3*1.0/Ds_b*&
+             & delta_b*eta_b*h_b*nu*nu**Ds_b*nu**(-T_b)*1.0/(-log(nu)) + 3*1.0/&
+             & Ds_b*delta_b*eta_b*h_b*nu*nu**(-T_b)*1.0/(-log(nu))
 
-          sigma_b = -1.0d0*sqrt(pi)*T_b*delta_b3*eta_b*nu*exp(1.0d0*T_b/nu&
-          & )*erf(1.0d0*sqrt(T_b - Ts_b)*sqrt(1.0/nu))/(T_b*exp(1.0d0/nu) -&
-          & Ts_b*exp(1.0d0/nu)) - 8.0d0*T_b*delta_b3*eta_b*exp(-1.0d0/nu)*&
-          & exp(1.0d0*T_b/nu)/(sqrt(T_b - Ts_b)*sqrt(1.0/nu)) + 10.0d0*T_b*&
-          & delta_b3*eta_b*exp(-1.0d0/nu)*exp(1.0d0*T_b/nu)/(nu*sqrt(T_b -&
-          & Ts_b)*(1.0/nu)**(3.0d0/2.0d0)) + 2.0d0*T_b*delta_b2*eta_b*h_b*&
-          & exp(-1.0d0/nu)*exp(1.0d0*T_b/nu)/(sqrt(T_b - Ts_b)*sqrt(1.0/nu))&
-          & - 3.0d0*T_b*delta_b2*eta_b*h_b*exp(-1.0d0/nu)*exp(1.0d0*T_b/nu)&
-          & /(nu*sqrt(T_b - Ts_b)*(1.0/nu)**(3.0d0/2.0d0)) + 1.0d0*sqrt(pi)*&
-          & Ts_b*delta_b3*eta_b*nu*exp(1.0d0*T_b/nu)*erf(1.0d0*sqrt(T_b -&
-          & Ts_b)*sqrt(1.0/nu))/(T_b*exp(1.0d0/nu) - Ts_b*exp(1.0d0/nu)) -&
-          & 4.0d0*Ts_b*delta_b3*eta_b*exp(-1.0d0/nu)*exp(1.0d0*T_b/nu)/(&
-          & sqrt(T_b - Ts_b)*sqrt(1.0/nu)) + 2.0d0*Ts_b*delta_b3*eta_b*exp(&
-          & -1.0d0/nu)*exp(1.0d0*T_b/nu)/(nu*sqrt(T_b - Ts_b)*(1.0/nu)**(&
-          & 3.0d0/2.0d0)) + 1.0d0*Ts_b*delta_b2*eta_b*h_b*exp(-1.0d0/nu)*&
-          & exp(1.0d0*T_b/nu)/(sqrt(T_b - Ts_b)*sqrt(1.0/nu)) + 1.5d0*sqrt(pi&
-          & )*delta_b3*eta_b*nu**2*exp(1.0d0*T_b/nu)*erf(1.0d0*sqrt(T_b -&
-          & Ts_b)*sqrt(1.0/nu))/(T_b*exp(1.0d0/nu) - Ts_b*exp(1.0d0/nu)) -&
-          & 1.0d0*delta_b3*eta_b*nu**2*sqrt(1.0/nu)*exp(-1.0d0/nu)*exp(&
-          & 1.0d0*Ts_b/nu)/sqrt(T_b - Ts_b) - 2.0d0*delta_b3*eta_b*exp(&
-          & -1.0d0/nu)*exp(1.0d0*T_b/nu)/(sqrt(T_b - Ts_b)*(1.0/nu)**(3.0d0/&
-          & 2.0d0)) - 1.0d0*delta_b2*eta_b*h_b*nu**2*sqrt(1.0/nu)*exp(&
-          & -1.0d0/nu)*exp(1.0d0*Ts_b/nu)/sqrt(T_b - Ts_b) + 1.0d0*delta_b2&
-          & *eta_b*h_b*exp(-1.0d0/nu)*exp(1.0d0*T_b/nu)/(sqrt(T_b - Ts_b)*(&
-          & 1.0/nu)**(3.0d0/2.0d0))
+             sigma_b = (3.0d0/2.0d0)*sqrt(pi)*Ds_b**(-1.5d0)*delta_b3*eta_b*&
+             & nu*nu**(-T_b)*(-log(nu))**(-2.5d0)*erf(sqrt(Ds_b)*sqrt(-log(nu&
+             & ))) - 1.0/Ds_b*delta_b3*eta_b*nu*nu**Ds_b*nu**(-T_b)*(-log(nu))&
+             & **(-2.0d0) - 2*1.0/Ds_b*delta_b3*eta_b*nu*nu**(-T_b)*(-log(nu))&
+             & **(-2.0d0) - 1.0/Ds_b*delta_b2*eta_b*h_b*nu*nu**Ds_b*nu**(-T_b)&
+             & *(-log(nu))**(-2.0d0) + 1.0/Ds_b*delta_b2*eta_b*h_b*nu*nu**(&
+             & -T_b)*(-log(nu))**(-2.0d0) + sqrt(pi)*Ds_b**(-0.5d0)*delta_b3*&
+             & eta_b*nu*nu**(-T_b)*(-log(nu))**(-2.5d0)*log(nu)*erf(sqrt(Ds_b)*&
+             & sqrt(-log(nu))) - 2*delta_b3*eta_b*nu*nu**(-T_b)*(-log(nu))**(&
+             & -2.0d0)*log(nu) + delta_b2*eta_b*h_b*nu*nu**(-T_b)*(-log(nu))**&
+             & (-2.0d0)*log(nu)
+          ELSEIF (nu .EQ. 1D0) THEN
+             omega_b = -2*delta_b**2*eta_b + 3*delta_b*eta_b*h_b
+             sigma_b = (7.0d0/15.0d0)*Ds_b*delta_b**3*eta_b - 1.0d0/2.0d0*Ds_b*&
+                  & delta_b**2*eta_b*h_b
+          ENDIF
+          
 
        ENDIF IF1
 
@@ -467,73 +442,48 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
           delta_a3 = 0.5d0*(BL(i+1,col)**3+BL(i,col)**3)
           T_a = 0.5d0*(T(i,col)+T(i+1,col))
           Ts_a = 0.5d0*(Ts(i,col)+Ts(i+1,col))
+          Ds_a = T_a-Ts_a
+          
+          IF (nu < 1D0) THEN
+             omega_a = 3*sqrt(pi)*Ds_a**(-1.5d0)*delta_a2*eta_a*nu*nu**(-T_a)&
+             & *(-log(nu))**(-1.5d0)*erf(sqrt(Ds_a)*sqrt(-log(nu))) - 6*1.0/Ds_a&
+             & *delta_a2*eta_a*nu*nu**(-T_a)*1.0/(-log(nu)) - 3*1.0/Ds_a*&
+             & delta_a*eta_a*h_a*nu*nu**Ds_a*nu**(-T_a)*1.0/(-log(nu)) + 3*1.0/&
+             & Ds_a*delta_a*eta_a*h_a*nu*nu**(-T_a)*1.0/(-log(nu))
 
-         omega_a = 6.0d0*sqrt(pi)*T_a*delta_a2*eta_a*exp(1.0d0*T_a/nu)*&
-          & erf(1.0d0*sqrt(T_a - Ts_a)*sqrt(1.0/nu))/(T_a*exp(1.0d0/nu) -&
-          & Ts_a*exp(1.0d0/nu)) - 3.0d0*sqrt(pi)*T_a*delta_a*eta_a*h_a*exp(&
-          & 1.0d0*T_a/nu)*erf(1.0d0*sqrt(T_a - Ts_a)*sqrt(1.0/nu))/(T_a*exp(&
-          & 1.0d0/nu) - Ts_a*exp(1.0d0/nu)) - 6.0d0*sqrt(pi)*Ts_a*delta_a2*&
-          & eta_a*exp(1.0d0*T_a/nu)*erf(1.0d0*sqrt(T_a - Ts_a)*sqrt(1.0/nu))/&
-          & (T_a*exp(1.0d0/nu) - Ts_a*exp(1.0d0/nu)) + 3.0d0*sqrt(pi)*Ts_a*&
-          & delta_a*eta_a*h_a*exp(1.0d0*T_a/nu)*erf(1.0d0*sqrt(T_a - Ts_a)*&
-          & sqrt(1.0/nu))/(T_a*exp(1.0d0/nu) - Ts_a*exp(1.0d0/nu)) + 3.0d0*&
-          & sqrt(pi)*delta_a2*eta_a*nu*exp(1.0d0*T_a/nu)*erf(1.0d0*sqrt(T_a&
-          & - Ts_a)*sqrt(1.0/nu))/(T_a*exp(1.0d0/nu) - Ts_a*exp(1.0d0/nu)) +&
-          & 6.0d0*delta_a2*eta_a*nu*exp(1.0d0*T_a/nu)/(T_a*exp(1.0d0/nu) -&
-          & Ts_a*exp(1.0d0/nu)) - 6.0d0*delta_a2*eta_a*nu*exp(1.0d0*Ts_a/nu&
-          & )/(T_a*exp(1.0d0/nu) - Ts_a*exp(1.0d0/nu)) - 6.0d0*sqrt(pi)*&
-          & delta_a2*eta_a*nu*sqrt(1.0/nu)*exp(-1.0d0/nu)*exp(1.0d0*T_a/nu)&
-          & *erf(1.0d0*sqrt(T_a - Ts_a)*sqrt(1.0/nu))/sqrt(T_a - Ts_a) +&
-          & 6.0d0*delta_a2*eta_a*nu*sqrt(1.0/nu)*exp(-1.0d0/nu)*exp(1.0d0*&
-          & Ts_a/nu)/sqrt(T_a - Ts_a) - 12.0d0*delta_a2*eta_a*exp(-1.0d0/nu&
-          & )*exp(1.0d0*T_a/nu)/(sqrt(T_a - Ts_a)*sqrt(1.0/nu)) + 3.0d0*sqrt(&
-          & pi)*delta_a*eta_a*h_a*nu*sqrt(1.0/nu)*exp(-1.0d0/nu)*exp(1.0d0*&
-          & T_a/nu)*erf(1.0d0*sqrt(T_a - Ts_a)*sqrt(1.0/nu))/sqrt(T_a - Ts_a&
-          & ) - 3.0d0*delta_a*eta_a*h_a*nu*sqrt(1.0/nu)*exp(-1.0d0/nu)*exp(&
-          & 1.0d0*Ts_a/nu)/sqrt(T_a - Ts_a) + 3.0d0*delta_a*eta_a*h_a*exp(&
-          & -1.0d0/nu)*exp(1.0d0*T_a/nu)/(sqrt(T_a - Ts_a)*sqrt(1.0/nu))
-
-          sigma_a = -1.0d0*sqrt(pi)*T_a*delta_a3*eta_a*nu*exp(1.0d0*T_a/nu&
-          & )*erf(1.0d0*sqrt(T_a - Ts_a)*sqrt(1.0/nu))/(T_a*exp(1.0d0/nu) -&
-          & Ts_a*exp(1.0d0/nu)) - 8.0d0*T_a*delta_a3*eta_a*exp(-1.0d0/nu)*&
-          & exp(1.0d0*T_a/nu)/(sqrt(T_a - Ts_a)*sqrt(1.0/nu)) + 10.0d0*T_a*&
-          & delta_a3*eta_a*exp(-1.0d0/nu)*exp(1.0d0*T_a/nu)/(nu*sqrt(T_a -&
-          & Ts_a)*(1.0/nu)**(3.0d0/2.0d0)) + 2.0d0*T_a*delta_a2*eta_a*h_a*&
-          & exp(-1.0d0/nu)*exp(1.0d0*T_a/nu)/(sqrt(T_a - Ts_a)*sqrt(1.0/nu))&
-          & - 3.0d0*T_a*delta_a2*eta_a*h_a*exp(-1.0d0/nu)*exp(1.0d0*T_a/nu)&
-          & /(nu*sqrt(T_a - Ts_a)*(1.0/nu)**(3.0d0/2.0d0)) + 1.0d0*sqrt(pi)*&
-          & Ts_a*delta_a3*eta_a*nu*exp(1.0d0*T_a/nu)*erf(1.0d0*sqrt(T_a -&
-          & Ts_a)*sqrt(1.0/nu))/(T_a*exp(1.0d0/nu) - Ts_a*exp(1.0d0/nu)) -&
-          & 4.0d0*Ts_a*delta_a3*eta_a*exp(-1.0d0/nu)*exp(1.0d0*T_a/nu)/(&
-          & sqrt(T_a - Ts_a)*sqrt(1.0/nu)) + 2.0d0*Ts_a*delta_a3*eta_a*exp(&
-          & -1.0d0/nu)*exp(1.0d0*T_a/nu)/(nu*sqrt(T_a - Ts_a)*(1.0/nu)**(&
-          & 3.0d0/2.0d0)) + 1.0d0*Ts_a*delta_a2*eta_a*h_a*exp(-1.0d0/nu)*&
-          & exp(1.0d0*T_a/nu)/(sqrt(T_a - Ts_a)*sqrt(1.0/nu)) + 1.5d0*sqrt(pi&
-          & )*delta_a3*eta_a*nu**2*exp(1.0d0*T_a/nu)*erf(1.0d0*sqrt(T_a -&
-          & Ts_a)*sqrt(1.0/nu))/(T_a*exp(1.0d0/nu) - Ts_a*exp(1.0d0/nu)) -&
-          & 1.0d0*delta_a3*eta_a*nu**2*sqrt(1.0/nu)*exp(-1.0d0/nu)*exp(&
-          & 1.0d0*Ts_a/nu)/sqrt(T_a - Ts_a) - 2.0d0*delta_a3*eta_a*exp(&
-          & -1.0d0/nu)*exp(1.0d0*T_a/nu)/(sqrt(T_a - Ts_a)*(1.0/nu)**(3.0d0/&
-          & 2.0d0)) - 1.0d0*delta_a2*eta_a*h_a*nu**2*sqrt(1.0/nu)*exp(&
-          & -1.0d0/nu)*exp(1.0d0*Ts_a/nu)/sqrt(T_a - Ts_a) + 1.0d0*delta_a2&
-          & *eta_a*h_a*exp(-1.0d0/nu)*exp(1.0d0*T_a/nu)/(sqrt(T_a - Ts_a)*(&
-          & 1.0/nu)**(3.0d0/2.0d0))
+             sigma_a = (3.0d0/2.0d0)*sqrt(pi)*Ds_a**(-1.5d0)*delta_a3*eta_a*&
+             & nu*nu**(-T_a)*(-log(nu))**(-2.5d0)*erf(sqrt(Ds_a)*sqrt(-log(nu&
+             & ))) - 1.0/Ds_a*delta_a3*eta_a*nu*nu**Ds_a*nu**(-T_a)*(-log(nu))&
+             & **(-2.0d0) - 2*1.0/Ds_a*delta_a3*eta_a*nu*nu**(-T_a)*(-log(nu))&
+             & **(-2.0d0) - 1.0/Ds_a*delta_a2*eta_a*h_a*nu*nu**Ds_a*nu**(-T_a)&
+             & *(-log(nu))**(-2.0d0) + 1.0/Ds_a*delta_a2*eta_a*h_a*nu*nu**(&
+             & -T_a)*(-log(nu))**(-2.0d0) + sqrt(pi)*Ds_a**(-0.5d0)*delta_a3*&
+             & eta_a*nu*nu**(-T_a)*(-log(nu))**(-2.5d0)*log(nu)*erf(sqrt(Ds_a)*&
+             & sqrt(-log(nu))) - 2*delta_a3*eta_a*nu*nu**(-T_a)*(-log(nu))**(&
+             & -2.0d0)*log(nu) + delta_a2*eta_a*h_a*nu*nu**(-T_a)*(-log(nu))**&
+             & (-2.0d0)*log(nu)
+          ELSEIF (nu .EQ. 1D0) THEN
+             omega_a = -2*delta_a2*eta_a + 3*delta_a*eta_a*h_a
+             sigma_a = (7.0d0/15.0d0)*Ds_a*delta_a3*eta_a - 1.0d0/2.0d0*Ds_a*&
+                  & delta_a2*eta_a*h_a
+          ENDIF
          
       END IF IF2
 
       beta = N1*Pe**(-0.5d0)/(sqrt(pi*tmps))
       loss = Pe*beta*Ts(i,col)/(1+psi)
-       IF4: IF (i==1) THEN
-          f(i)=Ai*Omega_a*Xi(i,col)+Ai*Sigma_a+loss
-       ELSEIF (i==N) THEN
-          f(i)=Bi*Omega_b*Xi(i-1,col)-Bi*Sigma_b+loss
-       ELSE
-          f(i)=Ai*Omega_a*Xi(i,col)&
-               &-Bi*Omega_b*Xi(i-1,col)&
-               &+Ai*Sigma_a-Bi*Sigma_b &
-               &+loss
-       END IF IF4
-
+      ! loss = 2D0*Pe**(-1D0)*(1D0/(1D0+psi))*T(i,col)/BL(i,col)
+      IF4: IF (i==1) THEN
+         f(i)=Ai*Omega_a*Xi(i,col)+Ai*Sigma_a+loss
+      ELSEIF (i==N) THEN
+         f(i)=-Bi*Omega_b*Xi(i-1,col)-Bi*Sigma_b+loss
+      ELSE
+         f(i)=Ai*Omega_a*Xi(i,col)&
+              &-Bi*Omega_b*Xi(i-1,col)&
+              &+Ai*Sigma_a-Bi*Sigma_b &
+              &+loss
+      END IF IF4
+      
     END DO
 
   END SUBROUTINE TEMPERATURE_BALMFORTH
@@ -589,31 +539,17 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
           delta_b3=0.5d0*(BL(i,col)**3+BL(i-1,col)**3)
           T_b = 0.5d0*(T(i,col)+T(i-1,col))
           Ts_b = 0.5d0*(Ts(i,col)+Ts(i-1,col))
+          Ds_b = T_b-Ts_b
 
-          omega_b = 6.0d0*sqrt(pi)*T_b*delta_b2*eta_b*exp(1.0d0*T_b/nu)*&
-          & erf(1.0d0*sqrt(T_b - Ts_b)*sqrt(1.0/nu))/(T_b*exp(1.0d0/nu) -&
-          & Ts_b*exp(1.0d0/nu)) - 3.0d0*sqrt(pi)*T_b*delta_b*eta_b*h_b*exp(&
-          & 1.0d0*T_b/nu)*erf(1.0d0*sqrt(T_b - Ts_b)*sqrt(1.0/nu))/(T_b*exp(&
-          & 1.0d0/nu) - Ts_b*exp(1.0d0/nu)) - 6.0d0*sqrt(pi)*Ts_b*delta_b2*&
-          & eta_b*exp(1.0d0*T_b/nu)*erf(1.0d0*sqrt(T_b - Ts_b)*sqrt(1.0/nu))/&
-          & (T_b*exp(1.0d0/nu) - Ts_b*exp(1.0d0/nu)) + 3.0d0*sqrt(pi)*Ts_b*&
-          & delta_b*eta_b*h_b*exp(1.0d0*T_b/nu)*erf(1.0d0*sqrt(T_b - Ts_b)*&
-          & sqrt(1.0/nu))/(T_b*exp(1.0d0/nu) - Ts_b*exp(1.0d0/nu)) + 3.0d0*&
-          & sqrt(pi)*delta_b2*eta_b*nu*exp(1.0d0*T_b/nu)*erf(1.0d0*sqrt(T_b&
-          & - Ts_b)*sqrt(1.0/nu))/(T_b*exp(1.0d0/nu) - Ts_b*exp(1.0d0/nu)) +&
-          & 6.0d0*delta_b2*eta_b*nu*exp(1.0d0*T_b/nu)/(T_b*exp(1.0d0/nu) -&
-          & Ts_b*exp(1.0d0/nu)) - 6.0d0*delta_b2*eta_b*nu*exp(1.0d0*Ts_b/nu&
-          & )/(T_b*exp(1.0d0/nu) - Ts_b*exp(1.0d0/nu)) - 6.0d0*sqrt(pi)*&
-          & delta_b2*eta_b*nu*sqrt(1.0/nu)*exp(-1.0d0/nu)*exp(1.0d0*T_b/nu)&
-          & *erf(1.0d0*sqrt(T_b - Ts_b)*sqrt(1.0/nu))/sqrt(T_b - Ts_b) +&
-          & 6.0d0*delta_b2*eta_b*nu*sqrt(1.0/nu)*exp(-1.0d0/nu)*exp(1.0d0*&
-          & Ts_b/nu)/sqrt(T_b - Ts_b) - 12.0d0*delta_b2*eta_b*exp(-1.0d0/nu&
-          & )*exp(1.0d0*T_b/nu)/(sqrt(T_b - Ts_b)*sqrt(1.0/nu)) + 3.0d0*sqrt(&
-          & pi)*delta_b*eta_b*h_b*nu*sqrt(1.0/nu)*exp(-1.0d0/nu)*exp(1.0d0*&
-          & T_b/nu)*erf(1.0d0*sqrt(T_b - Ts_b)*sqrt(1.0/nu))/sqrt(T_b - Ts_b&
-          & ) - 3.0d0*delta_b*eta_b*h_b*nu*sqrt(1.0/nu)*exp(-1.0d0/nu)*exp(&
-          & 1.0d0*Ts_b/nu)/sqrt(T_b - Ts_b) + 3.0d0*delta_b*eta_b*h_b*exp(&
-          & -1.0d0/nu)*exp(1.0d0*T_b/nu)/(sqrt(T_b - Ts_b)*sqrt(1.0/nu))
+          IF (nu < 1D0) THEN
+              omega_b = 3*sqrt(pi)*Ds_b**(-1.5d0)*delta_b2*eta_b*nu*nu**(-T_b)&
+                   & *(-log(nu))**(-1.5d0)*erf(sqrt(Ds_b)*sqrt(-log(nu))) - 6*1.0/Ds_b&
+                   & *delta_b2*eta_b*nu*nu**(-T_b)*1.0/(-log(nu)) - 3*1.0/Ds_b*&
+                   & delta_b*eta_b*h_b*nu*nu**Ds_b*nu**(-T_b)*1.0/(-log(nu)) + 3*1.0/&
+                   & Ds_b*delta_b*eta_b*h_b*nu*nu**(-T_b)*1.0/(-log(nu))
+           ELSEIF (nu .EQ. 1D0) THEN
+              omega_b = -2*delta_b**2*eta_b + 3*delta_b*eta_b*h_b
+          ENDIF
 
        ENDIF IF1
 
@@ -626,31 +562,18 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
           delta_a3 = 0.5d0*(BL(i+1,col)**3+BL(i,col)**3)
           T_a = 0.5d0*(T(i,col)+T(i+1,col))
           Ts_a = 0.5d0*(Ts(i,col)+Ts(i+1,col))
+          Ds_a = T_a-Ts_a
 
-         omega_a = 6.0d0*sqrt(pi)*T_a*delta_a2*eta_a*exp(1.0d0*T_a/nu)*&
-          & erf(1.0d0*sqrt(T_a - Ts_a)*sqrt(1.0/nu))/(T_a*exp(1.0d0/nu) -&
-          & Ts_a*exp(1.0d0/nu)) - 3.0d0*sqrt(pi)*T_a*delta_a*eta_a*h_a*exp(&
-          & 1.0d0*T_a/nu)*erf(1.0d0*sqrt(T_a - Ts_a)*sqrt(1.0/nu))/(T_a*exp(&
-          & 1.0d0/nu) - Ts_a*exp(1.0d0/nu)) - 6.0d0*sqrt(pi)*Ts_a*delta_a2*&
-          & eta_a*exp(1.0d0*T_a/nu)*erf(1.0d0*sqrt(T_a - Ts_a)*sqrt(1.0/nu))/&
-          & (T_a*exp(1.0d0/nu) - Ts_a*exp(1.0d0/nu)) + 3.0d0*sqrt(pi)*Ts_a*&
-          & delta_a*eta_a*h_a*exp(1.0d0*T_a/nu)*erf(1.0d0*sqrt(T_a - Ts_a)*&
-          & sqrt(1.0/nu))/(T_a*exp(1.0d0/nu) - Ts_a*exp(1.0d0/nu)) + 3.0d0*&
-          & sqrt(pi)*delta_a2*eta_a*nu*exp(1.0d0*T_a/nu)*erf(1.0d0*sqrt(T_a&
-          & - Ts_a)*sqrt(1.0/nu))/(T_a*exp(1.0d0/nu) - Ts_a*exp(1.0d0/nu)) +&
-          & 6.0d0*delta_a2*eta_a*nu*exp(1.0d0*T_a/nu)/(T_a*exp(1.0d0/nu) -&
-          & Ts_a*exp(1.0d0/nu)) - 6.0d0*delta_a2*eta_a*nu*exp(1.0d0*Ts_a/nu&
-          & )/(T_a*exp(1.0d0/nu) - Ts_a*exp(1.0d0/nu)) - 6.0d0*sqrt(pi)*&
-          & delta_a2*eta_a*nu*sqrt(1.0/nu)*exp(-1.0d0/nu)*exp(1.0d0*T_a/nu)&
-          & *erf(1.0d0*sqrt(T_a - Ts_a)*sqrt(1.0/nu))/sqrt(T_a - Ts_a) +&
-          & 6.0d0*delta_a2*eta_a*nu*sqrt(1.0/nu)*exp(-1.0d0/nu)*exp(1.0d0*&
-          & Ts_a/nu)/sqrt(T_a - Ts_a) - 12.0d0*delta_a2*eta_a*exp(-1.0d0/nu&
-          & )*exp(1.0d0*T_a/nu)/(sqrt(T_a - Ts_a)*sqrt(1.0/nu)) + 3.0d0*sqrt(&
-          & pi)*delta_a*eta_a*h_a*nu*sqrt(1.0/nu)*exp(-1.0d0/nu)*exp(1.0d0*&
-          & T_a/nu)*erf(1.0d0*sqrt(T_a - Ts_a)*sqrt(1.0/nu))/sqrt(T_a - Ts_a&
-          & ) - 3.0d0*delta_a*eta_a*h_a*nu*sqrt(1.0/nu)*exp(-1.0d0/nu)*exp(&
-          & 1.0d0*Ts_a/nu)/sqrt(T_a - Ts_a) + 3.0d0*delta_a*eta_a*h_a*exp(&
-          & -1.0d0/nu)*exp(1.0d0*T_a/nu)/(sqrt(T_a - Ts_a)*sqrt(1.0/nu))
+          IF (nu < 1D0) THEN
+             omega_a = 3*sqrt(pi)*Ds_a**(-1.5d0)*delta_a2*eta_a*nu*nu**(-T_a)&
+             & *(-log(nu))**(-1.5d0)*erf(sqrt(Ds_a)*sqrt(-log(nu))) - 6*1.0/Ds_a&
+             & *delta_a2*eta_a*nu*nu**(-T_a)*1.0/(-log(nu)) - 3*1.0/Ds_a*&
+             & delta_a*eta_a*h_a*nu*nu**Ds_a*nu**(-T_a)*1.0/(-log(nu)) + 3*1.0/&
+             & Ds_a*delta_a*eta_a*h_a*nu*nu**(-T_a)*1.0/(-log(nu))
+          ELSEIF (nu .EQ. 1D0) THEN
+             omega_a = -2*delta_a2*eta_a + 3*delta_a*eta_a*h_a
+          ENDIF
+     
          
       END IF IF2
 
