@@ -45,17 +45,16 @@ elif _platform == "darwin":
 # ! Schema :{0: Newton_Rhaspod, 1: Finite difference}
 # ! Rheology: {0: Bercovici, 1: Roscoe, 2: Arrhenius}
 Model = 1
-T_Schema = 0
-H_Schema = 0
+T_Schema = 0;H_Schema = 0
 Rheology = 2
-Dict_Param = {'Sigma': ['5D-2'],
+Dict_Param = {'Sigma': ['2D-2','5D-2'],
               'Delta0': ['5D-3'],
               'Grav': ['0D0'],
               'El': ['1D0'],
               'Nu': ['1D0','1D-3','1D-6'],
-              'Pe': ['1D0','1D-2'],
+              'Pe': ['1D0','1D-3'],
               'Psi': ['0D0','1D0','5D0'],
-              'N1' : ['1D5'],
+              'N1' : ['1D5','1D0'],
               'Dr' : ['1D-2'],
               'Ep': ['1D-4'],
               'Dt' : ['1D-7']}
@@ -81,6 +80,8 @@ Root_Run = Root_ELAS +\
            'TSc_'+Dict_Schema[T_Schema]+'_'\
            'HSc_'+Dict_Schema[H_Schema]+'_'\
            'R'+Dict_Rheology[Rheology]+'/'
+if not os.path.isdir(Root_Run):
+    os.mkdir(Root_Run)
 if Init == 0:
     if Name_Folder_Run == '':
         print datetime.date.today()
@@ -137,6 +138,11 @@ if Init == 0 :
             f.write('\n'+'-----------------------------'+'\n')
             f.write('Short Description of the runs you are aiming to run ?\n')
             f.write(str(raw_input('Short descriptin of '+Name_Folder_Run+' ?\n'+'\n')))
+            f.write('\n'+'-----------------------------'+'\n')
+            f.write('Model = '+Dict_Model[Model]+'\n')
+            f.write('T_Schema = '+Dict_Schema[T_Schema]+'\n')
+            f.write('H_Schema = '+Dict_Schema[H_Schema]+'\n')
+            f.write('Rheology = '+Dict_Rheology[Rheology]+'\n')
             f.write('\n'+'-----------------------------'+'\n')
             f.write('Liste des parametres, i.e. Nombre de Runs'+'\n')
             for key,item in Dict_Param.iteritems():
