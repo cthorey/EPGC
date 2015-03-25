@@ -13,9 +13,10 @@ import seaborn as sns
 import pandas as pd
 
 reset = 0
-Folder = ['2015-03-05_'+str(i) for i in [0]]
+# Folder = ['2015-03-05_'+str(i) for i in [0]]
+Folder = ['2015-02-25_0']
 for Folder in Folder:
-    REGIME = 'ELAS_GRAV'
+    REGIME = 'ELAS'
     Folder_malbec = 'Run_'+Folder+'/'
     Folder_laptop = 'Run_'+Folder+'/'
     Workspace_laptop = 'Workspace_'+Folder+'/'
