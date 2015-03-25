@@ -106,14 +106,12 @@ CONTAINS
           Format_Data='(54(D30.24,2X))'
           
           R = 0.d0
-          DO i=1,M,1
-             IF (H(i,3)-delta0>0.d0 .OR. R /= 0.d0) THEN
-                CYCLE
-             ELSE
-                R = dist(i)
-             END IF
+          DO i =1,M,1
+             IF (H(i,3)<delta0) THEN
+                R = dist(i-1);EXIT
+             ENDIF
           ENDDO
-
+          
           ! Header
           WRITE(2,'(54(A,2X))')'tm', 'dist', 'H',&
                &'Te','BL','Xi','Ts','P','Srr','Stt',&
