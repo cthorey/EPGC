@@ -5,7 +5,8 @@ CONTAINS
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!  SUBROUTINE THICKNESS_NEWTON_SOLVER
 
-  SUBROUTINE  THICKNESS_SKIN_NEWTON_ARRHENIUS(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,gam,z,F_err,theta)
+  SUBROUTINE  THICKNESS_SKIN_NEWTON_ARRHENIUS(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,&
+       &gam,Inter_Q,z,F_err,theta,tmps)
 
     !*****************************************************************
     !Solve for the thickness in the thickenss evolution equation using the Newton
@@ -20,9 +21,10 @@ CONTAINS
 
     !Parametre du model
     DOUBLE PRECISION , INTENT(IN) :: Dt,Dr,theta
-
+    DOUBLE PRECISION, INTENT(IN) :: tmps
+    
     !Nombre sans dimensions
-    DOUBLE PRECISION , INTENT(IN) :: el,grav,sigma,nu,delta0,gam
+    DOUBLE PRECISION , INTENT(IN) :: el,grav,sigma,nu,delta0,gam,Inter_Q
     INTEGER, INTENT(IN) :: M, z
     DOUBLE PRECISION , INTENT(INOUT) :: F_err
 
@@ -54,14 +56,18 @@ CONTAINS
        PRINT*, 'Erreur alloc flux';STOP
     END IF
 
-    DO i = 1,N,1
-       U = 2.d0/(sigma)**4.
-       IF (i<ndyke+1) THEN
-          qa(i) = U*(1-gam*H(i,2))*(sigma**2.-dist(i)**2.)
-       ELSE 
-          qa(i) = 0.d0
-       END IF
-    END DO
+    InterInjectionRate:IF (mod(tmps,Inter_Q)<Inter_Q/2D0) THEN
+       DO i = 1,N,1
+          U = 2.d0/(sigma)**4.
+          Flux:IF (i<ndyke+1) THEN
+             qa(i) = U*(1-gam*H(i,2))*(sigma**2.-dist(i)**2.)
+          ELSE 
+             qa(i) = 0.d0
+          END IF Flux
+       END DO
+    ELSE
+       qa(:)=0D0
+    ENDIF InterInjectionRate
 
 
     ! Calcule coefficient pression elastique

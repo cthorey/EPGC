@@ -57,6 +57,7 @@ Dict_Param = {'Sigma': ['5D-2'],
               'Psi': ['0D0'],
               'N1' : ['1D5'],
               'gam':['0D0'],
+              'Inter_Q':['1D20'],
               'Dr' : ['1D-2'],
               'Ep': ['1D-4'],
               'Dt' : ['1D-7']}
@@ -180,6 +181,7 @@ for run in Dict_Run:
                + '_C' + run['Psi']
                + '_R' + run['N1']
                + '_G' + run['gam']
+               + '_I' + run['Inter_Q']
                + '_S' + run['Sigma']
                + '_Dr' + run['Dr']
                + '_Ep' + run['Ep']
@@ -265,6 +267,8 @@ for run in Dict_Run:
                         to_write = l.replace('Null',run['N1'])
                     elif l == '    gam = Null\n':
                         to_write = l.replace('Null',run['gam'])
+                    elif l == '    Inter_Q = Null\n':
+                        to_write = l.replace('Null',run['Inter_Q'])
                     elif l == '    Dr = Null\n':
                         to_write = l.replace('Null',run['Dr'])
                     elif l == '    eps_1 = Null\n':
@@ -347,6 +351,7 @@ if _platform == "linux" or _platform == "linux2":
                    + '_C' + run['Psi']
                    + '_R' + run['N1']
                    + '_G' + run['gam']
+                   + '_I' + run['Inter_Q']
                    + '_S' + run['Sigma']
                    + '_Dr' + run['Dr']
                    + '_Ep' + run['Ep']
