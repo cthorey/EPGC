@@ -111,10 +111,12 @@ PROGRAM MAIN
   ERROR_CODE = 0
   TEMPS: DO WHILE (tmps<tmps_m)
      
-     IF (tmps>1D-1) THEN !Attention a l'ordre, il faut pas qu'il sort de la boucle avant d'avoir pu changer !
-        Dt = 1D-6
-     ELSEIF (tmps >10D0) THEN
+     IF (tmps>50D0) THEN
+        Dt = 1D-4
+     ELSEIF (tmps>3D0) THEN
         Dt = 1D-5
+     ELSEIF (tmps> 1D-5) THEN
+        Dt = 1D-6
      ENDIF
 
      OPEN(unit=3,file='Output.txt')
