@@ -113,7 +113,7 @@ PROGRAM MAIN
      
      IF (tmps>50D0) THEN
         Dt = 1D-4
-     ELSEIF (tmps>3D0) THEN
+     ELSEIF (tmps>5D0) THEN
         Dt = 1D-5
      ELSEIF (tmps> 1D-5) THEN
         Dt = 1D-6
