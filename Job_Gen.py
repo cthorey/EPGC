@@ -52,10 +52,11 @@ Dict_Param = {'Sigma': ['5D-2'],
               'Delta0': ['5D-3'],
               'Grav': ['0D0'],
               'El': ['1D0'],
-              'Nu': ['1D0','1D-3','1D-6'],
-              'Pe': ['1D0','1D-2'],
-              'Psi': ['0D0','1D0','5D0'],
+              'Nu': ['1D0'],
+              'Pe': ['1D0'],
+              'Psi': ['0D0'],
               'N1' : ['1D5'],
+              'gam':['0D0'],
               'Dr' : ['1D-2'],
               'Ep': ['1D-4'],
               'Dt' : ['1D-7']}
@@ -81,6 +82,9 @@ Root_Run = Root_ELAS +\
            'TSc_'+Dict_Schema[T_Schema]+'_'\
            'HSc_'+Dict_Schema[H_Schema]+'_'\
            'R'+Dict_Rheology[Rheology]+'/'
+
+if not os.path.isdir(Root_Run):
+    os.mkdir(Root_Run)
 if Init == 0:
     if Name_Folder_Run == '':
         print datetime.date.today()
@@ -175,6 +179,7 @@ for run in Dict_Run:
                + '_D' + run['Delta0']
                + '_C' + run['Psi']
                + '_R' + run['N1']
+               + '_G' + run['gam']
                + '_S' + run['Sigma']
                + '_Dr' + run['Dr']
                + '_Ep' + run['Ep']
@@ -258,6 +263,8 @@ for run in Dict_Run:
                         to_write = l.replace('Null',run['Psi'])
                     elif l == '    N1 = Null\n':
                         to_write = l.replace('Null',run['N1'])
+                    elif l == '    gam = Null\n':
+                        to_write = l.replace('Null',run['gam'])
                     elif l == '    Dr = Null\n':
                         to_write = l.replace('Null',run['Dr'])
                     elif l == '    eps_1 = Null\n':
@@ -339,6 +346,7 @@ if _platform == "linux" or _platform == "linux2":
                    + '_D' + run['Delta0']
                    + '_C' + run['Psi']
                    + '_R' + run['N1']
+                   + '_G' + run['gam']
                    + '_S' + run['Sigma']
                    + '_Dr' + run['Dr']
                    + '_Ep' + run['Ep']

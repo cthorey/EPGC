@@ -217,6 +217,7 @@ PROGRAM MAIN
 
      tmps_n = tmps
      tmps = tmps+Dt
+     print*,tmps
 
   END DO TEMPS
 

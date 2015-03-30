@@ -65,7 +65,7 @@ CONTAINS
     DO i = 1,N,1
        U = 2.d0/(sigma)**4.
        IF (i<ndyke+1) THEN
-          qa(i) = U*(sigma**2.-dist(i)**2.)
+          qa(i) = U*(1-gam*H(i,2))*(sigma**2.-dist(i)**2.)
        ELSE 
           qa(i) = 0.d0
        END IF
