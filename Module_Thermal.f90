@@ -13,7 +13,7 @@ USE MODULE_THERMAL_SKIN_NEWTON_ARRHENIUS
 !!!!!!!!  SUBROUTINES
 CONTAINS
 
-  SUBROUTINE THERMAL_SOLVER(Xi,H,T,Ts,BL,P,M,dist,ray,sigma,nu,Pe,psi,delta0,el,grav,Dr,Dt,eps_1,k,N1,tmps,&
+  SUBROUTINE THERMAL_SOLVER(Xi,H,T,Ts,BL,P,M,dist,ray,sigma,nu,Pe,psi,delta0,el,grav,gam,Dr,Dt,eps_1,k,N1,tmps,&
        &ERROR_CODE,Model,Schema,Rheology)
 
     IMPLICIT NONE
@@ -29,7 +29,7 @@ CONTAINS
     INTEGER, INTENT(IN) :: Model,Schema,Rheology
     
     ! Nombre sans dimension
-    DOUBLE PRECISION ,INTENT(IN) :: sigma,nu,Pe,psi,delta0,el,grav
+    DOUBLE PRECISION ,INTENT(IN) :: sigma,nu,Pe,psi,delta0,el,grav,gam
  
     ! Parametre du sous programme
     INTEGER :: z,N,ndyke,i,Size
@@ -52,7 +52,8 @@ CONTAINS
        ELSEIF (Model == 1 .AND. Schema == 1 .AND. Rheology == 0) THEN
           CALL  THERMAL_SKIN_GFD_BERCOVICI(Xi,H,P,T,Ts,BL,Dt,Dr,theta,dist,ray,M,sigma,nu,Pe,psi,delta0,el,grav,N1,F_err,z,tmps)
        ELSEIF (Model == 0 .AND. Schema == 1 .AND. Rheology == 0) THEN
-          CALL  THERMAL_INTE_NEWTON_BERCOVICI(Xi,H,P,T,Ts,BL,Dt,Dr,theta,dist,ray,M,sigma,nu,Pe,psi,delta0,el,grav,N1,F_err,z,tmps)
+          CALL  THERMAL_INTE_NEWTON_BERCOVICI(Xi,H,P,T,Ts,BL,Dt,Dr,theta,dist,ray,M,sigma,nu,Pe,psi,&
+               &delta0,el,grav,N1,gam,F_err,z,tmps)
        ELSE
           PRINT*,'PAS DE MODULE THICKNESS  CORRESPONDANT IMPLEMENTE ENCORE'
           ERROR_CODE = 1

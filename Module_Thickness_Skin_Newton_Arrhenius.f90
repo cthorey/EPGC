@@ -5,7 +5,7 @@ CONTAINS
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!  SUBROUTINE THICKNESS_NEWTON_SOLVER
 
-  SUBROUTINE  THICKNESS_SKIN_NEWTON_ARRHENIUS(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,z,F_err,theta)
+  SUBROUTINE  THICKNESS_SKIN_NEWTON_ARRHENIUS(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,gam,z,F_err,theta)
 
     !*****************************************************************
     !Solve for the thickness in the thickenss evolution equation using the Newton
@@ -22,7 +22,7 @@ CONTAINS
     DOUBLE PRECISION , INTENT(IN) :: Dt,Dr,theta
 
     !Nombre sans dimensions
-    DOUBLE PRECISION , INTENT(IN) :: el,grav,sigma,nu,delta0
+    DOUBLE PRECISION , INTENT(IN) :: el,grav,sigma,nu,delta0,gam
     INTEGER, INTENT(IN) :: M, z
     DOUBLE PRECISION , INTENT(INOUT) :: F_err
 
@@ -57,7 +57,7 @@ CONTAINS
     DO i = 1,N,1
        U = 2.d0/(sigma)**4.
        IF (i<ndyke+1) THEN
-          qa(i) = U*(sigma**2.-dist(i)**2.)
+          qa(i) = U*(1-H(i,2)/gam)*(sigma**2.-dist(i)**2.)
        ELSE 
           qa(i) = 0.d0
        END IF

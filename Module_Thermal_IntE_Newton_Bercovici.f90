@@ -11,7 +11,8 @@ CONTAINS
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!  SUBROUTINE THICKNESS_NEWTON_SOLVER
 
-  SUBROUTINE THERMAL_INTE_NEWTON_BERCOVICI(Xi,H,P,T,Ts,BL,Dt,Dr,theta,dist,ray,M,sigma,nu,Pe,psi,delta0,el,grav,N1,F_err,z,tmps)
+  SUBROUTINE THERMAL_INTE_NEWTON_BERCOVICI(Xi,H,P,T,Ts,BL,Dt,Dr,theta,dist,ray,M,sigma,nu,Pe,psi,&
+       &delta0,el,grav,N1,gam,F_err,z,tmps)
 
     !*****************************************************************
     ! Solve for the parameter Xi, and split in Temperature and thermal layer
@@ -29,7 +30,7 @@ CONTAINS
     DOUBLE PRECISION , INTENT(IN) :: Dt,Dr,theta,tmps
 
     !Nombre sans dimensions
-    DOUBLE PRECISION , INTENT(IN) :: sigma,nu,Pe,psi,delta0,el,grav,N1
+    DOUBLE PRECISION , INTENT(IN) :: sigma,nu,Pe,psi,delta0,el,grav,N1,gam
     INTEGER, INTENT(IN) :: M, z
     DOUBLE PRECISION , INTENT(INOUT) :: F_err
 

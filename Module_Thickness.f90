@@ -12,7 +12,7 @@ MODULE MODULE_THICKNESS
 
 CONTAINS
 
-  SUBROUTINE  THICKNESS_SOLVER(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,eps_1,ERROR_CODE,Model,Schema,Rheology)
+  SUBROUTINE  THICKNESS_SOLVER(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,gam,eps_1,ERROR_CODE,Model,Schema,Rheology)
 
     IMPLICIT NONE
     ! Tableaux
@@ -27,7 +27,7 @@ CONTAINS
     INTEGER, INTENT(IN) :: Model,Schema,Rheology
     
     ! Nombre sans dimension
-    DOUBLE PRECISION ,INTENT(IN) :: el,grav,sigma,nu,delta0
+    DOUBLE PRECISION ,INTENT(IN) :: el,grav,sigma,nu,delta0,gam
  
     ! Parametre du sous programme
     INTEGER                                                                            :: z
@@ -40,13 +40,13 @@ CONTAINS
     THICKNESS_ITERATION: DO
        ! CALL SUBROUTINE
        IF (Model == 1 .AND. Schema == 0 .AND. Rheology == 0) THEN
-          CALL  THICKNESS_SKIN_NEWTON_BERCOVICI(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,z,F_err,theta)
+          CALL  THICKNESS_SKIN_NEWTON_BERCOVICI(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,gam,z,F_err,theta)
        ELSEIF (Model == 1 .AND. Schema == 0 .AND. Rheology == 1) THEN
-          CALL  THICKNESS_SKIN_NEWTON_ROSCOE(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,z,F_err,theta)
+          CALL  THICKNESS_SKIN_NEWTON_ROSCOE(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,gam,z,F_err,theta)
        ELSEIF (Model == 1 .AND. Schema == 0 .AND. Rheology == 2) THEN
-          CALL  THICKNESS_SKIN_NEWTON_ARRHENIUS(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,z,F_err,theta)
+          CALL  THICKNESS_SKIN_NEWTON_ARRHENIUS(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,gam,z,F_err,theta)
        ELSEIF (Model == 0 .AND. Schema == 1 .AND. Rheology == 0) THEN
-          CALL  THICKNESS_INTE_GFD_BERCOVICI(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,z,F_err,theta)
+          CALL  THICKNESS_INTE_GFD_BERCOVICI(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,gam,z,F_err,theta)
        ELSE
           PRINT*,'PAS DE MODULE CORRESPONDANT IMPLEMENTE ENCORE THICKNESS'
           PRINT*,'MODEL =',Model,'SCHEMA =',Schema,'Rheology =',Rheology

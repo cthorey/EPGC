@@ -2,7 +2,7 @@ MODULE MODULE_INITIALISATION
 
 CONTAINS
 
-  SUBROUTINE  CONSTANTE(M,tmps_m,Dt,Dr,sample,el,grav,delta0,sigma,nu,Pe,psi,N1,&
+  SUBROUTINE  CONSTANTE(M,tmps_m,Dt,Dr,sample,el,grav,delta0,sigma,nu,Pe,psi,N1,gam,&
        &eps_1,Format_O,Format_NSD,Init,Input_Racine,Output_Racine,Input_Data_Name&
        &,Format_NSD_Init_0,Format_NSD_Init_1,Format_Input_Data,Format_RV,Format_Backup,&
        &NF,Format_NF,Root_Code,Model,T_Schema,H_Schema,Rheology)
@@ -18,7 +18,7 @@ CONTAINS
     DOUBLE PRECISION, INTENT(INOUT) :: Dt,Dr,tmps_m
 
     ! Nombre sans dimension
-    DOUBLE PRECISION , INTENT(OUT) :: el,grav,delta0,sigma,nu,Pe,Psi,N1
+    DOUBLE PRECISION , INTENT(OUT) :: el,grav,delta0,sigma,nu,Pe,Psi,N1,gam
 
     ! Seuil de confiance
     DOUBLE PRECISION, INTENT(INOUT) :: eps_1
@@ -62,6 +62,7 @@ CONTAINS
     Pe = 1D-1
     psi = 0D0
     N1 = 1D5
+    gam = 0D0
 
     ! Variable pour l'outxsput
     sample = (Dt)/(Dt)
@@ -99,7 +100,7 @@ CONTAINS
     ! Format d'ecriture pour le fichier ou seront ecrit les nombres
     ! sans dimensions
     Format_NSD = "(D20.14,2X,D20.14,2X,D20.14,2X,D20.14,2X,D20.14,2X&
-         &,D20.14,2X,D20.14,2X,D20.14,2X,I5,2X,D20.14,2X&
+         &,D20.14,2X,D20.14,2X,D20.14,2X,D20.14,2X,I5,2X,D20.14,2X&
          &,D20.14,2X,D20.14,2X)"
 
     IF (Init==0) THEN
@@ -107,8 +108,8 @@ CONTAINS
             &,'NbSsDim.txt'
        OPEN(unit=1,file=Output_Name_NSD,status='replace')
        WRITE(1,'(24(A,2X))')'el', 'grav', 'delta0', 'sigma', 'nu', 'Pe','Psi',&
-            &'N1','M','Dt','Dr','eps'
-       WRITE(1,Format_NSD),el,grav,delta0,sigma,nu,Pe,Psi,N1,M,Dt,Dr&
+            &'N1','gam','M','Dt','Dr','eps'
+       WRITE(1,Format_NSD),el,grav,delta0,sigma,nu,Pe,Psi,N1,gam,M,Dt,Dr&
             &,eps_1
        CLOSE(1)
     END IF
@@ -116,7 +117,7 @@ CONTAINS
   END SUBROUTINE CONSTANTE
 
   SUBROUTINE INITIALISATION(Format_O,Format_NSD,M,H,T,Ts,Xi,BL,P,dist,ray,k,k1,k2,z,tmps,&
-       &Dt,Dr,eps_1,el,grav,delta0,sigma,nu,Pe,Psi,N1,sample,Init,compteur,tmps_m,&
+       &Dt,Dr,eps_1,el,grav,delta0,sigma,nu,Pe,Psi,N1,gam,sample,Init,compteur,tmps_m,&
        &Input_Data_Name,Input_racine,Output_Racine,NF,Format_NF,Root_Code&
        &,Format_NSD_Init_0,Format_NSD_Init_1,Format_Input_Data,Format_RV,Format_Backup&
        &,Model,T_Schema,H_Schema,Rheology)
@@ -136,7 +137,7 @@ CONTAINS
 
     ! Nombre sans dimension
     DOUBLE PRECISION , INTENT(INOUT) :: el,grav,delta0,sigma,nu,Pe&
-         &,Psi,N1
+         &,Psi,N1,gam
 
     ! Parameter du model
     DOUBLE PRECISION , INTENT(INOUT) :: Dt,Dr,eps_1,tmps_m
@@ -159,7 +160,7 @@ CONTAINS
     SELECT CASE (Init)
 
     CASE(0)
-       CALL  CONSTANTE(M,tmps_m,Dt,Dr,sample,el,grav,delta0,sigma,nu,Pe,psi,N1,&
+       CALL  CONSTANTE(M,tmps_m,Dt,Dr,sample,el,grav,delta0,sigma,nu,Pe,psi,N1,gam,&
        &eps_1,Format_O,Format_NSD,Init,Input_Racine,Output_Racine,Input_Data_Name&
        &,Format_NSD_Init_0,Format_NSD_Init_1,Format_Input_Data,Format_RV,Format_Backup,&
        &NF,Format_NF,Root_Code,Model,T_Schema,H_Schema,Rheology)
@@ -187,7 +188,7 @@ CONTAINS
        IF (FILE_EXISTS) THEN
           OPEN(1,file = Input_Name_NSD)
           READ(1,*) ! Read the header but don't do nothing with it
-          READ(1,Format_NSD),el,grav,delta0,sigma,nu,Pe,Psi,N1,M,Dt,Dr,eps_1
+          READ(1,Format_NSD),el,grav,delta0,sigma,nu,Pe,Psi,N1,gam,M,Dt,Dr,eps_1
           CLOSE(1)
        ELSEIF( .NOT. FILE_EXISTS) THEN
           PRINT*,'ERREUR: PAS DE FICHIER AVEC LES NOMBRES SANS DIMENSIONS. RECOMMENCER LA SIMU DEPUIS LE DEPART'
