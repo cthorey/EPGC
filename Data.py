@@ -14,9 +14,10 @@ import pandas as pd
 
 reset = 0
 # Folder = ['2015-03-05_'+str(i) for i in [0]]
-Folder = ['2015-02-25_0']
+REGIME = 'ELAS_GRAV'
+Folder = ['2015-03-05_0']
+# REGIME = 'ELAS/MSkin_TSc_Newton_HSc_Newton_RBercovici'
 for Folder in Folder:
-    REGIME = 'ELAS'
     Folder_malbec = 'Run_'+Folder+'/'
     Folder_laptop = 'Run_'+Folder+'/'
     Workspace_laptop = 'Workspace_'+Folder+'/'
@@ -161,7 +162,7 @@ for Folder in Folder:
         Visit_Branch(List_Run,{'E0.0':'E0.0'})
     else:
         Visit_Branch(List_Run,{'E1.0':'E1.0'})
-    graph.write_pdf(Workspace_laptop+'/GRAPH_'+REGIME+'.pdf')
+    graph.write_pdf(Workspace_laptop+'/TREE_RUNS.pdf')
 
 
     

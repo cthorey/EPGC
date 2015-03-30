@@ -33,7 +33,7 @@ PROGRAM MAIN
   INTEGER Model,T_Schema,H_Schema,Rheology
   
   ! Nombre sans dimension
-  DOUBLE PRECISION :: el,grav,delta0,sigma,nu,Pe,psi,N1
+  DOUBLE PRECISION :: el,grav,delta0,sigma,nu,Pe,psi,N1,gam
 
   ! Conservation quantityes
   ! Mass
@@ -84,7 +84,7 @@ PROGRAM MAIN
 !!!!!!!!  DEBUT DU PROGRAMME
 
   ! Call subroutine const dans le module CONSTANTE
-  CALL  CONSTANTE(M,tmps_m,Dt,Dr,sample,el,grav,delta0,sigma,nu,Pe,psi,N1,&
+  CALL  CONSTANTE(M,tmps_m,Dt,Dr,sample,el,grav,delta0,sigma,nu,Pe,psi,N1,gam,&
        &eps_1,Format_O,Format_NSD,Init,Input_Racine,Output_Racine,Input_Data_Name&
        &,Format_NSD_Init_0,Format_NSD_Init_1,Format_Input_Data,Format_RV,Format_Backup,&
        &NF,Format_NF,Root_Code,Model,T_Schema,H_Schema,Rheology)
@@ -101,7 +101,7 @@ PROGRAM MAIN
 
   ! Calll initialisation dans le cmodule Module_Initialisation
   CALL INITIALISATION(Format_O,Format_NSD,M,H,T,Ts,Xi,BL,P,dist,ray,k,k1,k2,z,tmps,&
-       &Dt,Dr,eps_1,el,grav,delta0,sigma,nu,Pe,Psi,N1,sample,Init,compteur,tmps_m,&
+       &Dt,Dr,eps_1,el,grav,delta0,sigma,nu,Pe,Psi,N1,gam,sample,Init,compteur,tmps_m,&
        &Input_Data_Name,Input_racine,Output_Racine,NF,Format_NF,Root_Code&
        &,Format_NSD_Init_0,Format_NSD_Init_1,Format_Input_Data,Format_RV,Format_Backup&
        &,Model,T_Schema,H_Schema,Rheology)
@@ -148,7 +148,7 @@ PROGRAM MAIN
         H(:,2) = H(:,3); Xi(:,2) = Xi(:,3); T(:,2) = T(:,3); BL(:,2) = BL(:,3); Ts(:,2)= Ts(:,3)
         
         ! Module Epaisseur
-        CALL THICKNESS_SOLVER(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,eps_1,&
+        CALL THICKNESS_SOLVER(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,gam,eps_1,&
              &ERROR_CODE,Model,H_Schema,Rheology)
         IF (ERROR_CODE == 1) THEN
            WRITE(NF_Name,Format_NF),Root_Code,NF,'_BUG'
@@ -161,7 +161,7 @@ PROGRAM MAIN
         F1 = ABS(MAXVAL((H(:,4)-H(:,3))/(H(:,3))))
 
         ! Module heat transport
-        CALL  THERMAL_SOLVER(Xi,H,T,Ts,BL,P,M,dist,ray,sigma,nu,Pe,psi,delta0,el,grav,Dr,Dt,eps_1,k,N1,tmps,&
+        CALL  THERMAL_SOLVER(Xi,H,T,Ts,BL,P,M,dist,ray,sigma,nu,Pe,psi,delta0,el,grav,gam,Dr,Dt,eps_1,k,N1,tmps,&
              &ERROR_CODE,Model,T_Schema,Rheology)
         IF (ERROR_CODE == 1) THEN
            WRITE(NF_Name,Format_NF),Root_Code,NF,'_BUG'
