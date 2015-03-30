@@ -12,7 +12,7 @@ CONTAINS
 !!!!!!!!  SUBROUTINE THICKNESS_NEWTON_SOLVER
 
   SUBROUTINE THERMAL_INTE_NEWTON_BERCOVICI(Xi,H,P,T,Ts,BL,Dt,Dr,theta,dist,ray,M,sigma,nu,Pe,psi,&
-       &delta0,el,grav,N1,gam,F_err,z,tmps)
+       &delta0,el,grav,N1,gam,Inter_Q,F_err,z,tmps)
 
     !*****************************************************************
     ! Solve for the parameter Xi, and split in Temperature and thermal layer
@@ -30,7 +30,7 @@ CONTAINS
     DOUBLE PRECISION , INTENT(IN) :: Dt,Dr,theta,tmps
 
     !Nombre sans dimensions
-    DOUBLE PRECISION , INTENT(IN) :: sigma,nu,Pe,psi,delta0,el,grav,N1,gam
+    DOUBLE PRECISION , INTENT(IN) :: sigma,nu,Pe,psi,delta0,el,grav,N1,gam,Inter_Q
     INTEGER, INTENT(IN) :: M, z
     DOUBLE PRECISION , INTENT(INOUT) :: F_err
 
@@ -62,14 +62,18 @@ CONTAINS
        PRINT*, 'Erreur alloc flux';STOP
     END IF
 
-    DO i = 1,N,1
-       U = 2.d0/(sigma)**4.
-       IF (i<ndyke+1) THEN
-          qa(i) = U*(1-gam*H(i,2))*(sigma**2.-dist(i)**2.)
-       ELSE 
-          qa(i) = 0.d0
-       END IF
-    END DO
+    InterInjectionRate:IF (mod(tmps,Inter_Q)<Inter_Q/2D0) THEN
+       DO i = 1,N,1
+          U = 2.d0/(sigma)**4.
+          Flux:IF (i<ndyke+1) THEN
+             qa(i) = U*(1-gam*H(i,2))*(sigma**2.-dist(i)**2.)
+          ELSE 
+             qa(i) = 0.d0
+          END IF Flux
+       END DO
+    ELSE
+       qa(:)=0D0
+    ENDIF InterInjectionRate
 
     ! Calcule de f tmps n et n+
     ALLOCATE(Xi_tmps(1:N),Xi_guess(1:N),stat=err1)
