@@ -9,14 +9,17 @@ import shutil
 import pydot
 from struct import pack
 import numpy as np
-import seaborn as sns
 import pandas as pd
 
+############
+# Fonction
+    
 reset = 0
 # Folder = ['2015-03-05_'+str(i) for i in [0]]
 REGIME = 'ELAS_GRAV'
-Folder = ['2015-03-05_0']
-# REGIME = 'ELAS/MSkin_TSc_Newton_HSc_Newton_RBercovici'
+Folder = ['2015-04-02_0']
+REGIME = 'ELAS_GRAV/MSkin_TSc_Newton_HSc_Newton_RBercovici'
+
 for Folder in Folder:
     Folder_malbec = 'Run_'+Folder+'/'
     Folder_laptop = 'Run_'+Folder+'/'
