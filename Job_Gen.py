@@ -26,11 +26,11 @@ import datetime
 # 1) Parametre a creer :
 
 if _platform == "linux" or _platform == "linux2":
-    Root_ELAS = '/gpfs/users/thorey/ELAS_GRAV/'
+    Root_ELAS = '/gpfs/users/thorey/ELAS/'
     Root_Code = '/home/thorey/Code_ELAS/'
     Name_Folder_Run = '' # Remplir si on veut faire un test dans un dossier specific
     Bactrace_Run = 'Bactrack.txt'
-    Journal_ELAS = 'Journal_ELAS-GRAV.txt'
+    Journal_ELAS = 'Journal_ELAS.txt'
     Compilateur = 'ifort'
 elif _platform == "darwin":
     Root_ELAS = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/Code/TEST/ELAS/'
@@ -47,15 +47,14 @@ elif _platform == "darwin":
 Model = 1
 T_Schema = 0;H_Schema = 0
 Rheology = 0
-Dict_Param = {'Sigma': ['3D-2'],
+Dict_Param = {'Sigma': ['2D-2'],
               'Delta0': ['5D-3'],
               'Grav': ['1D0'],
               'El': ['1D0'],
-              'Nu': ['1D0','1D-3'],
-              'Pe': ['1D0','1D-2'],
-              'Psi': ['0D0'],
-              'N1' : ['1D5'],
-              'gam':['0D0','5D-1','1D-1','5D-2','1D-2'],
+              'Nu': ['1D0','1D-1','1D-2','1D-3','1D-4','1D-5','1D-6'],
+              'Pe': ['1D0','1D-1','1D-2','1D-3','1D-4','1D-5','1D-6'],
+              'Psi': ['0D0','5D0'],
+              'N1' : ['1D0'],
               'gam':['0D0'],
               'Inter_Q':['1D20'],
               'Dr' : ['1D-2'],
