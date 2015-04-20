@@ -10,15 +10,15 @@ from itertools import groupby
 ##############
 # Fonction
 
-def set_path_input(Root,Regime,Folder):
-    run =  Root+Regime+'Run_'+Folder+'/'
+def set_path_input(Root,Run):
+    run = Root+Run
     if not os.path.exists(run):
         print 'Erreur, pas de run en question',run
         sys.exit()
     return run
         
-def set_path_output(Root,Regime,Folder):
-    workspace = Root+Regime+'Workspace_'+Folder+'/'
+def set_path_output(Root,Run):
+    workspace = (Root+Run).replace('Run','Workspace')
     if not os.path.exists(workspace):
         os.mkdir(workspace)
     return workspace
@@ -46,7 +46,7 @@ def m_Test_Size_pickle(input_file):
                 data_pickle = pd.DataFrame(pd.read_pickle(input_file)['Max'])
         return len(data_pickle.tm)
         
-def Tcheque_Workspace(key,Workspace,c_output):
+def Tcheque_Workspace(key,Workspace,c_input,c_output):
     filee = c_output+Workspace
     boole= None
     if not os.path.isfile(filee):
@@ -119,7 +119,7 @@ def convert_to_worskpace(c_input,c_output):
             print key
             Racine = c_input+key+'/'
             test,Workspace,Nsd = Load_Nsd(Racine)
-            Already_Same_Workspace = Tcheque_Workspace(key,Workspace,c_output)
+            Already_Same_Workspace = Tcheque_Workspace(key,Workspace,c_input,c_output)
             if Already_Same_Workspace:
                 print 'Pas de changement dans: '+key
                 continue
@@ -158,11 +158,11 @@ def convert_to_worskpace(c_input,c_output):
 # Program
 
 root_path = Who_is_Root()
-regime = 'SCAPAD/ELAS_GRAV/MSkin_TSc_Newton_HSc_Newton_RBercovici/'
-folder = '2015-03-30_0'
-    
-run_path = set_path_input(root_path,regime,folder)
-workspace_path = set_path_output(root_path,regime,folder)
+runs = []            
+runs = runs.append('SCAPAD/ELAS_GRAV/MSkin_TSc_Newton_HSc_Newton_RBercovici/Run_2015-03-30_0/')
 
-convert_to_worskpace(run_path,workspace_path)
+for run in runs:
+    run_path = set_path_input(root_path,run)
+    workspace_path = set_path_output(root_path,run)
+    convert_to_worskpace(run_path,workspace_path)
 
