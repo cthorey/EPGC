@@ -119,7 +119,7 @@ PROGRAM MAIN
         Dt = 1D-4
      ELSEIF (tmps>5D0) THEN
         Dt = 1D-5
-     ELSEIF (tmps> 1D-5) THEN
+     ELSEIF (tmps> 1D-4) THEN
         Dt = 1D-6
      ENDIF
 
@@ -158,7 +158,7 @@ PROGRAM MAIN
            WRITE(NF_Name,Format_NF),Root_Code,NF,'_BUG'
            OPEN(unit =1,file=NF_Name, action ="write",status ="replace")
            WRITE(1,*)'Le CODE A PLANTE DANS LE SOLVER THICKNESS',tmps
-           PRINT*,'Le CODE A PLANTE DANS LE SOLVER THICKNESS',tmps
+           PRINT*,'Le CODE A PLANTE DANS LE THICKNESS SOLVER',tmps
            CLOSE(1)
            STOP
         END IF
@@ -171,7 +171,7 @@ PROGRAM MAIN
            WRITE(NF_Name,Format_NF),Root_Code,NF,'_BUG'
            OPEN(unit =1,file=NF_Name, action ="write",status ="replace")
            WRITE(1,*)'Le CODE A PLANTE DANS LE THERMAL SOLVER',tmps
-           PRINT*,'Le CODE A PLANTE DANS LE THERMAL THICKNESS',tmps
+           PRINT*,'Le CODE A PLANTE DANS LE THERMAL SOLVER',tmps
            CLOSE(1)
            STOP
         END IF
@@ -220,7 +220,7 @@ PROGRAM MAIN
 
      ! On incremente les compteurs et le temps
      k = k+1
-
+     ! print*,tmps,H(1,3),T(1,3)
      tmps_n = tmps
      tmps = tmps+Dt
 

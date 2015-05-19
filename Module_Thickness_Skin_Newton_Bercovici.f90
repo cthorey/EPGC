@@ -300,7 +300,14 @@ CONTAINS
           Ts_a = 0.5d0*(Ts(i,3)+Ts(i+1,3))
           Delta_T_a = T_a -Ts_a
 
-          phi_a=(nu+(1.d0-nu)*T_a)*h_a3-(2.d0/5.d0)*(1.d0-nu)*Delta_T_a*(2.d0*delta_a3-5.d0*delta_a2*h_a+5.d0*delta_a*h_a2)
+          phi_a = (4.0d0/5.0d0)*T_a*delta_a**3*nu - 4.0d0/5.0d0*T_a*delta_a&
+          & **3 - 2*T_a*delta_a**2*h_a*nu + 2*T_a*delta_a**2*h_a + 2*T_a*&
+          & delta_a*h_a**2*nu - 2*T_a*delta_a*h_a**2 - T_a*h_a**3*nu + T_a*&
+          & h_a**3 - 4.0d0/5.0d0*Ts_a*delta_a**3*nu + (4.0d0/5.0d0)*Ts_a*&
+          & delta_a**3 + 2*Ts_a*delta_a**2*h_a*nu - 2*Ts_a*delta_a**2*h_a - 2&
+          & *Ts_a*delta_a*h_a**2*nu + 2*Ts_a*delta_a*h_a**2 + h_a**3*nu
+          
+          ! phi_a=(nu+(1.d0-nu)*T_a)*h_a3-(2.d0/5.d0)*(1.d0-nu)*Delta_T_a*(2.d0*delta_a3-5.d0*delta_a2*h_a+5.d0*delta_a*h_a2)
        ENDIF
 
        IF (i .NE. 1) THEN
@@ -316,7 +323,14 @@ CONTAINS
           Ts_b = 0.5d0*(Ts(i,3)+Ts(i-1,3))
           Delta_T_b = T_b - Ts_b
 
-          phi_b=(nu+(1.d0-nu)*T_b)*h_b3-(2.d0/5.d0)*(1.d0-nu)*Delta_T_b*(2.d0*delta_b3-5.d0*delta_b2*h_b+5.d0*delta_b*h_b2)
+          phi_b = (4.0d0/5.0d0)*T_b*delta_b**3*nu - 4.0d0/5.0d0*T_b*delta_b&
+          & **3 - 2*T_b*delta_b**2*h_b*nu + 2*T_b*delta_b**2*h_b + 2*T_b*&
+          & delta_b*h_b**2*nu - 2*T_b*delta_b*h_b**2 - T_b*h_b**3*nu + T_b*&
+          & h_b**3 - 4.0d0/5.0d0*Ts_b*delta_b**3*nu + (4.0d0/5.0d0)*Ts_b*&
+          & delta_b**3 + 2*Ts_b*delta_b**2*h_b*nu - 2*Ts_b*delta_b**2*h_b - 2&
+          & *Ts_b*delta_b*h_b**2*nu + 2*Ts_b*delta_b*h_b**2 + h_b**3*nu
+
+          ! phi_b=(nu+(1.d0-nu)*T_b)*h_b3-(2.d0/5.d0)*(1.d0-nu)*Delta_T_b*(2.d0*delta_b3-5.d0*delta_b2*h_b+5.d0*delta_b*h_b2)
 
        ENDIF
 
@@ -369,7 +383,7 @@ CONTAINS
     DOUBLE PRECISION ::delta_a,delta_b,delta_a2,delta_b2,delta_a3,delta_b3
     DOUBLE PRECISION :: Ts_a,Ts_b,Delta_T_b,Delta_T_a
     DOUBLE PRECISION :: phi_a,phi_b,dphib_dhi,dphib_dhi1,dphia_dhi,dphia_dhi1
-    DOUBLE PRECISION :: H1,H2,P1,P2
+    DOUBLE PRECISION :: H1,H2,P1,P2,hi,hi2,hia,hib,hia2,hib2
     INTEGER :: i,col,algo1,err1
 
     ! Allocation + remplissage pression
@@ -405,11 +419,38 @@ CONTAINS
           T_a=0.5d0*(T(i,3)+T(i+1,3))
           Ts_a = 0.5d0*(Ts(i,3)+Ts(i+1,3))
           Delta_T_a = T_a -Ts_a
+          hia = H(i+1,col); hia2 = H(i+1,col)**2
+          hi = H(i,col);hi2 = H(i,col)**2
 
-          phi_a=(nu+(1-nu)*T_a)*h_a3-(2.d0/5.d0)*(1-nu)*Delta_T_a*(2*delta_a3-5*delta_a2*h_a+5*delta_a*h_a2)
+          phi_a = (4.0d0/5.0d0)*T_a*delta_a**3*nu - 4.0d0/5.0d0*T_a*delta_a&
+               & **3 - 2*T_a*delta_a**2*h_a*nu + 2*T_a*delta_a**2*h_a + 2*T_a*&
+               & delta_a*h_a**2*nu - 2*T_a*delta_a*h_a**2 - T_a*h_a**3*nu + T_a*&
+               & h_a**3 - 4.0d0/5.0d0*Ts_a*delta_a**3*nu + (4.0d0/5.0d0)*Ts_a*&
+               & delta_a**3 + 2*Ts_a*delta_a**2*h_a*nu - 2*Ts_a*delta_a**2*h_a - 2&
+               & *Ts_a*delta_a*h_a**2*nu + 2*Ts_a*delta_a*h_a**2 + h_a**3*nu
+          dphia_dhi1 = -T_a*delta_a**2*nu + T_a*delta_a**2 + T_a*delta_a*hi*&
+               & nu - T_a*delta_a*hi + T_a*delta_a*hia*nu - T_a*delta_a*hia -&
+               & 3.0d0/8.0d0*T_a*hi**2*nu + (3.0d0/8.0d0)*T_a*hi**2 - 3.0d0/4.0d0*&
+               & T_a*hi*hia*nu + (3.0d0/4.0d0)*T_a*hi*hia - 3.0d0/8.0d0*T_a*hia**2&
+               & *nu + (3.0d0/8.0d0)*T_a*hia**2 + Ts_a*delta_a**2*nu - Ts_a*&
+               & delta_a**2 - Ts_a*delta_a*hi*nu + Ts_a*delta_a*hi - Ts_a*delta_a*&
+               & hia*nu + Ts_a*delta_a*hia + (3.0d0/8.0d0)*hi**2*nu + (3.0d0/4.0d0&
+               & )*hi*hia*nu + (3.0d0/8.0d0)*hia**2*nu
+          dphia_dhi = -T_a*delta_a**2*nu + T_a*delta_a**2 + T_a*delta_a*hi*&
+               & nu - T_a*delta_a*hi + T_a*delta_a*hia*nu - T_a*delta_a*hia -&
+               & 3.0d0/8.0d0*T_a*hi**2*nu + (3.0d0/8.0d0)*T_a*hi**2 - 3.0d0/4.0d0*&
+               & T_a*hi*hia*nu + (3.0d0/4.0d0)*T_a*hi*hia - 3.0d0/8.0d0*T_a*hia**2&
+               & *nu + (3.0d0/8.0d0)*T_a*hia**2 + Ts_a*delta_a**2*nu - Ts_a*&
+               & delta_a**2 - Ts_a*delta_a*hi*nu + Ts_a*delta_a*hi - Ts_a*delta_a*&
+               & hia*nu + Ts_a*delta_a*hia + (3.0d0/8.0d0)*hi**2*nu + (3.0d0/4.0d0&
+               & )*hi*hia*nu + (3.0d0/8.0d0)*hia**2*nu
 
-          dphia_dhi1=(3.d0/2.d0)*(nu+(1-nu)*T_a)*H(i+1,col)**2-(1-nu)*Delta_T_a*(-delta_a2+delta_a*H(i+1,col)) ! d(phi_i+1/2)/d(h_i+1)
-          dphia_dhi=(3.d0/2.d0)*(nu+(1-nu)*T_a)*H(i,col)**2-(1-nu)*Delta_T_a*(-delta_a2+delta_a*H(i,col))     ! d(phi_i+1/2)/d(h_i)
+          ! print*,'new',dphia_dhi,dphia_dhi1,phi_a
+          ! phi_a=(nu+(1-nu)*T_a)*h_a3-(2.d0/5.d0)*(1-nu)*Delta_T_a*(2*delta_a3-5*delta_a2*h_a+5*delta_a*h_a2)
+
+          ! dphia_dhi1=(3.d0/2.d0)*(nu+(1-nu)*T_a)*H(i+1,col)**2-(1-nu)*Delta_T_a*(-delta_a2+delta_a*H(i+1,col)) ! d(phi_i+1/2)/d(h_i+1)
+          ! dphia_dhi=(3.d0/2.d0)*(nu+(1-nu)*T_a)*H(i,col)**2-(1-nu)*Delta_T_a*(-delta_a2+delta_a*H(i,col))     ! d(phi_i+1/2)/d(h_i)
+          ! print*,'old',dphia_dhi,dphia_dhi1,phi_a
           P1=P(i+1,2)-P(i,2); P2=P(i,2)-P(i-1,2)
           H1=H(i+1,2)-H(i,2); H2=H(i,2)-H(i-1,2)
        ENDIF IF1
@@ -426,11 +467,38 @@ CONTAINS
           T_b=0.5d0*(T(i,3)+T(i-1,3))
           Ts_b = 0.5d0*(Ts(i,3)+Ts(i-1,3))
           Delta_T_b = T_b - Ts_b
+          hib = H(i-1,col); hib2 = H(i-1,col)**2
+          hi = H(i,col);hi2 = H(i,col)**2
 
-          phi_b=(nu+(1-nu)*T_b)*h_b3-(2.d0/5.d0)*(1-nu)*Delta_T_b*(2*delta_b3-5*delta_b2*h_b+5*delta_b*h_b2)
+          phi_b = (4.0d0/5.0d0)*T_b*delta_b**3*nu - 4.0d0/5.0d0*T_b*delta_b&
+               & **3 - 2*T_b*delta_b**2*h_b*nu + 2*T_b*delta_b**2*h_b + 2*T_b*&
+               & delta_b*h_b**2*nu - 2*T_b*delta_b*h_b**2 - T_b*h_b**3*nu + T_b*&
+               & h_b**3 - 4.0d0/5.0d0*Ts_b*delta_b**3*nu + (4.0d0/5.0d0)*Ts_b*&
+               & delta_b**3 + 2*Ts_b*delta_b**2*h_b*nu - 2*Ts_b*delta_b**2*h_b - 2&
+               & *Ts_b*delta_b*h_b**2*nu + 2*Ts_b*delta_b*h_b**2 + h_b**3*nu
+          
+          dphib_dhi = -T_b*delta_b**2*nu + T_b*delta_b**2 + T_b*delta_b*hi*&
+               & nu - T_b*delta_b*hi + T_b*delta_b*hib*nu - T_b*delta_b*hib -&
+               & 3.0d0/8.0d0*T_b*hi**2*nu + (3.0d0/8.0d0)*T_b*hi**2 - 3.0d0/4.0d0*&
+               & T_b*hi*hib*nu + (3.0d0/4.0d0)*T_b*hi*hib - 3.0d0/8.0d0*T_b*hib**2&
+               & *nu + (3.0d0/8.0d0)*T_b*hib**2 + Ts_b*delta_b**2*nu - Ts_b*&
+               & delta_b**2 - Ts_b*delta_b*hi*nu + Ts_b*delta_b*hi - Ts_b*delta_b*&
+               & hib*nu + Ts_b*delta_b*hib + (3.0d0/8.0d0)*hi**2*nu + (3.0d0/4.0d0&
+               & )*hi*hib*nu + (3.0d0/8.0d0)*hib**2*nu
+          dphib_dhi1 = -T_b*delta_b**2*nu + T_b*delta_b**2 + T_b*delta_b*hi*&
+               & nu - T_b*delta_b*hi + T_b*delta_b*hib*nu - T_b*delta_b*hib -&
+               & 3.0d0/8.0d0*T_b*hi**2*nu + (3.0d0/8.0d0)*T_b*hi**2 - 3.0d0/4.0d0*&
+               & T_b*hi*hib*nu + (3.0d0/4.0d0)*T_b*hi*hib - 3.0d0/8.0d0*T_b*hib**2&
+               & *nu + (3.0d0/8.0d0)*T_b*hib**2 + Ts_b*delta_b**2*nu - Ts_b*&
+               & delta_b**2 - Ts_b*delta_b*hi*nu + Ts_b*delta_b*hi - Ts_b*delta_b*&
+               & hib*nu + Ts_b*delta_b*hib + (3.0d0/8.0d0)*hi**2*nu + (3.0d0/4.0d0&
+               & )*hi*hib*nu + (3.0d0/8.0d0)*hib**2*nu
+     
+     
+          ! phi_b=(nu+(1-nu)*T_b)*h_b3-(2.d0/5.d0)*(1-nu)*Delta_T_b*(2*delta_b3-5*delta_b2*h_b+5*delta_b*h_b2)
 
-          dphib_dhi=(3.d0/2.d0)*(nu+(1-nu)*T_b)*H(i,col)**2-(1-nu)*Delta_T_b*(-delta_b2+delta_b*H(i,col))     ! d(phi_i-1/2)/d(h_i)
-          dphib_dhi1=(3.d0/2.d0)*(nu+(1-nu)*T_b)*H(i-1,col)**2-(1-nu)*Delta_T_b*(-delta_b2+delta_b*H(i-1,col)) ! d(phi_i-1/2)/d(h_i-1)
+          ! dphib_dhi=(3.d0/2.d0)*(nu+(1-nu)*T_b)*H(i,col)**2-(1-nu)*Delta_T_b*(-delta_b2+delta_b*H(i,col))     ! d(phi_i-1/2)/d(h_i)
+          ! dphib_dhi1=(3.d0/2.d0)*(nu+(1-nu)*T_b)*H(i-1,col)**2-(1-nu)*Delta_T_b*(-delta_b2+delta_b*H(i-1,col)) ! d(phi_i-1/2)/d(h_i-1)
           P2=P(i,2)-P(i-1,2)
           H2=H(i,2)-H(i-1,2)
        ENDIF IF2
