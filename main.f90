@@ -10,6 +10,7 @@ PROGRAM MAIN
   USE MODULE_CONSERVATION
   USE MODULE_COMPLEMENTAIRE
   USE MODULE_INTEGRATION
+  USE lib_array
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!  DECLARATION DES VARIABLES
@@ -18,7 +19,8 @@ PROGRAM MAIN
   ! Tableau pour stocker les donne
   DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: H,T,Xi,BL,Ts,P
   DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: Srr,Stt
-  DOUBLE PRECISION , DIMENSION(:),ALLOCATABLE  :: hmubar,hthetabar,ubar
+  DOUBLE PRECISION, DIMENSION(:),ALLOCATABLE  :: hmubar,hthetabar,ubar
+  DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: time_frame
 
   ! Tableux pour definir la grille
   DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: dist,ray
@@ -109,6 +111,11 @@ PROGRAM MAIN
   ! Debut de la boucle sur le temps
   tmps_n = 0D0
   ERROR_CODE = 0
+
+  ! Temps auquelle on imprime un fichier
+  ALLOCATE(time_frame(300))
+  CALL logspace(Dt,1D5,time_frame)
+
   TEMPS: DO WHILE (tmps<tmps_m)
 
      IF (tmps >1000D0) THEN
@@ -126,7 +133,7 @@ PROGRAM MAIN
      OPEN(unit=3,file='Output.txt')
 
      Cas=0
-     CALL OUTPUT(Format_O,Dt,M,H,T,Xi,BL,Ts,P,dist,ray,k,k1,k2,z,compteur,tmps,&
+     CALL OUTPUT(Format_O,time_frame,Dt,M,H,T,Xi,BL,Ts,P,dist,ray,k,k1,k2,z,compteur,tmps,&
           &Output_Racine,delta0,Cas,sample,Format_RV,Format_Backup,&
           &NF,Format_NF,Root_Code,&
           &Phim,Vm,Tm,Mum,Srr,Stt,&
@@ -207,7 +214,7 @@ PROGRAM MAIN
        &Fr_005_R,Fr_005_T,Fr_005_Mu)
 
      Cas = 1
-     CALL OUTPUT(Format_O,Dt,M,H,T,Xi,BL,Ts,P,dist,ray,k,k1,k2,z,compteur,tmps,&
+     CALL OUTPUT(Format_O,time_frame,Dt,M,H,T,Xi,BL,Ts,P,dist,ray,k,k1,k2,z,compteur,tmps,&
           &Output_Racine,delta0,Cas,sample,Format_RV,Format_Backup,&
           &NF,Format_NF,Root_Code,&
           &Phim,Vm,Tm,Mum,Srr,Stt,&

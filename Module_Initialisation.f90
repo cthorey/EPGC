@@ -166,7 +166,7 @@ CONTAINS
        &,Format_NSD_Init_0,Format_NSD_Init_1,Format_Input_Data,Format_RV,Format_Backup,&
        &NF,Format_NF,Root_Code,Model,T_Schema,H_Schema,Rheology)
 
-       compteur = 0 
+       compteur = 1
        dist = 0;ray = 0
        DO i = 1,M,1
           dist(i) = (i-0.5d0)*Dr
@@ -180,7 +180,7 @@ CONTAINS
        Xi = BL/3D0*(3D0-2D0*T)
        ! Xi = T/3D0*(3D0*H-2D0*BL)
        !Xi = T*H-2.d0/3.d0*T*BL
-       k = 0;k1 = 1;k2 = 1;z = 0;tmps = 0
+       k = 0;k1 = 2;k2 = 2;z = 0;tmps = 0
 
     CASE(1)
        WRITE(Input_Name_NSD,Format_NSD_Init_1)Input_Racine,'NbSsDim.txt'

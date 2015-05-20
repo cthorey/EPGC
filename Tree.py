@@ -33,7 +33,6 @@ def Map_Old_New_Name(run):
         return f[0:1]+str(1./float(f[1:].replace('D','e')))    
     bug = run.split('_')[:-1]
     bug_n = []
-    print bug
     if len([f for f in bug if f[0]=='G']) == 1:
         bug_n.append(mapping_1(bug[0]).replace('E','el'))
         bug_n.append(mapping_1(bug[1]).replace('G','gr'))

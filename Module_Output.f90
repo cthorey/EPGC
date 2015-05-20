@@ -2,7 +2,7 @@ MODULE MODULE_OUTPUT
 
 CONTAINS
 
-  SUBROUTINE OUTPUT(Format,Dt,M,H,T,Xi,BL,Ts,P,dist,ray,k,k1,k2,z,compteur,tmps,&
+  SUBROUTINE OUTPUT(Format,time_frame,Dt,M,H,T,Xi,BL,Ts,P,dist,ray,k,k1,k2,z,compteur,tmps,&
           &Output_Racine,delta0,Cas,sample,Format_RV,Format_Backup,&
           &NF,Format_NF,Root_Code,&
           &Phim,Vm,Tm,Mum,Srr,Stt,&
@@ -18,6 +18,7 @@ CONTAINS
     ! Tableaux
     DOUBLE PRECISION ,DIMENSION(:,:), INTENT(INOUT) :: H,T,Ts,Xi,BL,P
     DOUBLE PRECISION ,DIMENSION(:) , INTENT(INOUT) :: dist,ray,Srr,Stt,hmubar,hthetabar,ubar
+    DOUBLE PRECISION ,DIMENSION(:) ,INTENT(IN) :: time_frame
 
     ! Parametre du model
     DOUBLE PRECISION , INTENT(INOUT) :: tmps,delta0,Dt,tmps_n
@@ -54,22 +55,7 @@ CONTAINS
     CASE(0)
 
 !!!Compteur
-
-       IF (tmps == 0D0) THEN
-          samp = 1
-          tmps_Avant = 0
-       ELSE
-          power = FLOOR(LOG10(tmps))
-          IF (power >= 1D0) THEN
-             power = 1D0
-          ENDIF
-          samp = 10**power/Dt
-       ENDIF
-       
-       comp_o = k/samp
-       comp_n = (k+1)/samp
-
-       IF (comp_o /= comp_n ) THEN
+       IF (tmps >= time_frame(compteur)) THEN
           compteur = compteur +1
        ENDIF
 
@@ -100,6 +86,7 @@ CONTAINS
 !!! DATA FILE
     CASE(1)
        IF (compteur==k2) THEN
+          print*,'Write data',tmps,k
           ! Data pour chaque point de la grille
           WRITE(Data_File,Format_RV)Output_Racine,'RV_',compteur,'.dat'
           OPEN(unit=2,file=Data_File,status='replace')

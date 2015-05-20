@@ -96,6 +96,7 @@ CONTAINS
        Xi(i,3)=Xi_m(i)+Xi(i,2)
        IF (Xi(i,3) >H(i,3)/2D0) THEN
           Xi(i:,3) = H(i:,3)/2D0
+          PRINT*,'Xi trop grand'
           EXIT
        ENDIF
     END DO
