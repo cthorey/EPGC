@@ -126,7 +126,7 @@ PROGRAM MAIN
         Dt = 1D-4
      ELSEIF (tmps>5D0) THEN
         Dt = 1D-5
-     ELSEIF (tmps> 1D-4) THEN
+     ELSEIF (tmps> 1D-1) THEN
         Dt = 1D-6
      ENDIF
 

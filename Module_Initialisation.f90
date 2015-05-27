@@ -177,7 +177,7 @@ CONTAINS
        BL = 1D-4
        Ts = 0d0
        P = 0d0
-       Xi = BL/3D0*(3D0-2D0*T)
+       Xi = BL*(1-2D0*T/3D0-Ts/3D0)
        ! Xi = T/3D0*(3D0*H-2D0*BL)
        !Xi = T*H-2.d0/3.d0*T*BL
        k = 0;k1 = 2;k2 = 2;z = 0;tmps = 0
