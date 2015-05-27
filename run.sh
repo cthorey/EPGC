@@ -4,7 +4,7 @@ Compilateur -o lib_array.o -c lib_array.f90
 Compilateur -o Module_Numerical_Integration.o -c Module_Numerical_Integration.f90
 Compilateur -o Module_Complementaire.o -c Module_Complementaire.f90
 Compilateur -o Module_Conservation.o -c Module_Conservation.f90
-Compilateur -o Module_Initialisation.o -c Module_Init_tmp.f90
+Compilateur -o Module_Init_tmp.o -c Module_Init_tmp.f90
 Compilateur -o Module_Output.o -c Module_Output.f90
 Compilateur -o Module_Thermal_IntE_Newton_Bercovici.o -c Module_Thermal_IntE_Newton_Bercovici.f90
 Compilateur -o Module_Thermal_Skin_GFD_Bercovici.o -c Module_Thermal_Skin_GFD_Bercovici.f90

@@ -48,7 +48,7 @@ Model = 1
 T_Schema = 0;H_Schema = 0
 Rheology = 2
 Dict_Param = {'Sigma': ['2D-2'],
-              'Delta0': ['1D-2','5D-3'],
+              'Delta0': ['5D-3','1D-2'],
               'Grav': ['0D0'],
               'El': ['1D0'],
               'Nu': ['1D0','1D-2','1D-3'],
