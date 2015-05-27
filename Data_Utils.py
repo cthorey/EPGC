@@ -172,7 +172,7 @@ def copy_folder(src,dest):
 
 root_path = Who_is_Root()
 runs = []
-runs.append('ELAS/MSkin_TSc_Newton_HSc_Newton_RBercovici/Run_2015-05-19_0/')
+runs.append('ELAS/MSkin_TSc_Newton_HSc_Newton_RBercovici/Run_2015-05-21_1/')
 # runs.append('GRAV/Run_2015-04-21_0/')# Pas obulier / a la fin
 for run in runs:
     tracker = '/home/thorey/Code_ELAS/Tracker_'+'_'.join(run.split('_')[-2:])[:-1]+'.txt'
