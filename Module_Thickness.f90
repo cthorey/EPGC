@@ -6,7 +6,8 @@ MODULE MODULE_THICKNESS
   USE MODULE_THICKNESS_SKIN_NEWTON_ROSCOE
   USE MODULE_THICKNESS_SKIN_NEWTON_BERCOVICI
   USE MODULE_THICKNESS_INTE_GFD_BERCOVICI
-
+  USE MODULE_THICKNESS_SKIN_NEWTON
+  
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!  SUBROUTINES
 
@@ -41,15 +42,9 @@ CONTAINS
     F_err=20; F_errt=20; z=0
     THICKNESS_ITERATION: DO
        ! CALL SUBROUTINE
-       IF (Model == 1 .AND. Schema == 0 .AND. Rheology == 0) THEN
-          CALL  THICKNESS_SKIN_NEWTON_BERCOVICI(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,&
-               &gam,Inter_Q,z,F_err,theta,tmps)
-       ELSEIF (Model == 1 .AND. Schema == 0 .AND. Rheology == 1) THEN
-          CALL  THICKNESS_SKIN_NEWTON_ROSCOE(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,&
-               &gam,Inter_Q,z,F_err,theta,tmps)
-       ELSEIF (Model == 1 .AND. Schema == 0 .AND. Rheology == 2) THEN
-          CALL  THICKNESS_SKIN_NEWTON_ARRHENIUS(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,&
-               &gam,Inter_Q,z,F_err,theta,tmps)
+       IF (Model == 1 .AND. Schema == 0) THEN
+          CALL  THICKNESS_SKIN_NEWTON(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,&
+               &gam,Inter_Q,z,F_err,theta,tmps,Rheology,ERROR_CODE)
        ELSEIF (Model == 0 .AND. Schema == 1 .AND. Rheology == 0) THEN
           CALL  THICKNESS_INTE_GFD_BERCOVICI(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,&
                &gam,Inter_Q,z,F_err,theta,tmps)
@@ -64,11 +59,12 @@ CONTAINS
        IF ( F_err>F_errt) THEN
           PRINT*,'Erreur_Ite_Epais',F_err,F_errt
        END IF
-       IF (z>50000) THEN
+       IF (z>50000 .OR. ERROR_CODE == 1) THEN
           ERROR_CODE = 1
           PRINT*,z
           EXIT
        ENDIF
+
        IF (F_err<eps_1) EXIT
        H(:,2) = H(:,3); H(:,3) = delta0
        F_errt = F_err

@@ -44,11 +44,11 @@ CONTAINS
     Model = 1
     T_Schema = 0
     H_Schema = 0
-    Rheology = 0
+    Rheology = 2
     
     ! Parametre du model
     tmps_m = 1D32  
-    M = 4000    
+    M = 2000    
     Dt = 1D-7
     Dr = 1D-2
     eps_1 = 1D-4
@@ -58,7 +58,7 @@ CONTAINS
     grav = 0D0
     delta0 = 5D-3
     sigma = 2D-2
-    nu = 1D-3
+    nu = 1D-2
     Pe = 1D-2
     psi = 1D0
     N1 = 1D0
@@ -177,7 +177,7 @@ CONTAINS
        BL = 1D-4
        Ts = 0d0
        P = 0d0
-       Xi = BL/3D0*(3D0-2D0*T)
+       Xi = BL*(1-2D0*T/3D0-Ts/3D0)
        ! Xi = T/3D0*(3D0*H-2D0*BL)
        !Xi = T*H-2.d0/3.d0*T*BL
        k = 0;k1 = 2;k2 = 2;z = 0;tmps = 0
