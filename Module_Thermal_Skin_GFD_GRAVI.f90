@@ -265,7 +265,7 @@ SUBROUTINE XI_SPLIT(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
        END IF IF2
 
        beta = N1*Pe**(-0.5d0)/(sqrt(pi*(tmps+Dt)))
-       loss = Pe*beta*Ts(i,col)*Dt/(1+psi)
+       loss = Pe*beta*Ts(i,col)*Dt*psi
        IF (ABS(N-i)<2) THEN
           loss = loss/2.0
        ENDIF
