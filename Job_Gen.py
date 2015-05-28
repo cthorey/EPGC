@@ -27,13 +27,13 @@ import datetime
 
 if _platform == "linux" or _platform == "linux2":
     Root= '/gpfs/users/thorey/'
-    Root_Code = '/home/thorey/Code_ELAS/'
+    Root_Code = '/home/thorey/EPGC/'
     Name_Folder_Run = '' # Remplir si on veut faire un test dans un dossier specific
     Bactrace_Run = 'Bactrack.txt'
     Compilateur = 'ifort'
 elif _platform == "darwin":
     Root = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/Code/TEST/'
-    Root_Code = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/Code/Code_ELAS/'
+    Root_Code = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/Code/EPGC/'
     Name_Folder_Run = '' # Remplir si on veut faire un test dans un dossier specific
     Bactrace_Run = 'Bactrack.txt'
     Compilateur = 'gfortran'
@@ -51,7 +51,7 @@ Dict_Param = {'Sigma': ['2D-2'],
               'Grav': ['0D0'],
               'El': ['1D0'],
               'Nu': ['1D0'],
-              'Pe': ['1D0'],
+              'Pe': ['1D0','1D-2'],
               'Psi': ['1D0'],
               'N1' : ['1D0'],
               'gam':['0D0'],
@@ -288,9 +288,9 @@ for run in Dict_Run:
                     elif l == '    Init = Null\n':
                         to_write = l.replace('Null',Backup[0])
                     elif l == '    Root = Null\n':
-                        to_write = l.replace('Null', "'" + Root_Run + "'")
+                        to_write = l.replace('Null', "'" + Root_Run + "/'")
                     elif l == '    Root_Code = Null\n':
-                        to_write = l.replace('Null', "'" + Root_Code + "'")
+                        to_write = l.replace('Null', "'" + Root_Code + "/'")
                         
                     elif l == '    Input_Data_Name = Null\n':
                         to_write = l.replace('Null', "'" + Backup[1] + "'")
