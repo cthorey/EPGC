@@ -43,13 +43,13 @@ elif _platform == "darwin":
 # ! Schema :{0: Newton_Rhaspod, 1: Finite difference}
 # ! Rheology: {0: Bercovici, 1: Roscoe, 2: Arrhenius}
 Model = 1
-T_Schema = 1;H_Schema = 0
-Rheology = 2
+T_Schema = 0;H_Schema = 0
+Rheology = 0
 
 Dict_Param = {'Sigma': ['2D-2'],
               'Delta0': ['5D-3'],
-              'Grav': ['1D0'],
-              'El': ['0D0'],
+              'Grav': ['0D0'],
+              'El': ['1D0'],
               'Nu': ['1D0','1D-3'],
               'Pe': ['1D0','1D-2'],
               'Psi': ['1D0','1D-1'],
@@ -67,7 +67,7 @@ def copy_folder(src,dest):
     os.mkdir(dest)
     print dest
     for filee in [f for f in os.listdir(src) if f[0]!='.']:
-        if not os.path.isdir(src+filee):
+        if not os.path.isdir(os.path.join(src,filee)):
             shutil.copy(filee,dest+'/')
 
 def Destination_Folder(el,grav,Root):
@@ -123,13 +123,14 @@ if Name_Folder_Run == '':
     else:
         Nombre_Folder = max([int(version.split('_')[2]) for version in List_Folder_Existant])
         Name_Folder_Run = 'Run_'+str(datetime.date.today())+'_'+str(Nombre_Folder+1)
-    print Name_Folder_Run
-    print Root_Code
+    print 'Name_Folder_Run',Name_Folder_Run
+    print 'Root_Code',Root_Code
     print os.path.join(Root_Run,Name_Folder_Run,'Run_Code')
     os.mkdir(os.path.join(Root_Run,Name_Folder_Run))
     copy_folder(Root_Code,os.path.join(Root_Run,Name_Folder_Run,'Run_Code'))
 else :
     if not os.path.isdir(os.path.join(Root_Run,Name_Folder_Run)):
+        print os.path.join(Root_Run,Name_Folder_Run)
         os.mkdir(os.path.join(Root_Run,Name_Folder_Run))
         copy_folder(os.path.join(Root_Code,Root_Run,Name_Folder_Run,'Run_Code'))
         # shutil.copytree(Root_Code,Root_Run+Name_Folder_Run+'/Run_Code')
