@@ -2,7 +2,7 @@ MODULE MOBILITY_THERMAL_SKIN_RHEOLOGY
 
 CONTAINS
 
-  SUBROUTINE fomega_a(Ai,h_a,delta_a,T_a,Ts_a,eta_a,omega_a,nu,Rheology,ERROR_CODE)
+  SUBROUTINE fomega_a(Ai,h_a,delta_a,T_a,Ts_a,eta_a,Ds_a,omega_a,nu,Rheology,ERROR_CODE)
 
     IMPLICIT NONE
 
@@ -10,7 +10,7 @@ CONTAINS
     DOUBLE PRECISION , INTENT(IN) :: nu
     DOUBLE PRECISION, PARAMETER :: pi = 3.14159265358979d0
 
-    DOUBLE PRECISION, INTENT(IN) :: Ai,h_a,delta_a,T_a,Ts_a,eta_a
+    DOUBLE PRECISION, INTENT(IN) :: Ai,h_a,delta_a,T_a,Ts_a,eta_a,Ds_a
 
     DOUBLE PRECISION, INTENT(INOUT) :: omega_a
     INTEGER, INTENT(INOUT) :: ERROR_CODE
@@ -22,6 +22,9 @@ CONTAINS
             & eta_a*nu - 3.0d0/5.0d0*Ts_a*delta_a**2*eta_a - 3.0d0/2.0d0*Ts_a*&
             & delta_a*eta_a*h_a*nu + (3.0d0/2.0d0)*Ts_a*delta_a*eta_a*h_a - 2*&
             & delta_a**2*eta_a*nu + 3*delta_a*eta_a*h_a*nu
+
+       omega_a = (eta_a*delta_a)/10.d0*(nu*(-20.d0*delta_a+30.d0*h_a)+&
+            &(1.d0-nu)*(6.d0*Ds_a*delta_a-15.d0*Ds_a*h_a-20.d0*T_a*delta_a+30.d0*T_a*h_a))
 
     ELSEIF (Rheology == 1) THEN
        ERROR_CODE = 1
@@ -73,14 +76,15 @@ CONTAINS
     ENDIF
   END SUBROUTINE Fomega_A
 
-  SUBROUTINE fsigma_a(Ai,h_a,delta_a,T_a,Ts_a,eta_a,sigma_a,nu,Rheology,ERROR_CODE)
+  SUBROUTINE fsigma_a(Ai,h_a,delta_a,T_a,Ts_a,eta_a,Ds_a,delta_a2,&
+    &sigma_a,nu,Rheology,ERROR_CODE)
 
     IMPLICIT NONE
 
     INTEGER, INTENT(IN) :: Rheology
     DOUBLE PRECISION , INTENT(IN) :: nu
     DOUBLE PRECISION, PARAMETER :: pi = 3.14159265358979d0
-    DOUBLE PRECISION, INTENT(IN) :: Ai,h_a,delta_a,T_a,Ts_a,eta_a
+    DOUBLE PRECISION, INTENT(IN) :: Ai,h_a,delta_a,T_a,Ts_a,eta_a,Ds_a,delta_a2
 
     DOUBLE PRECISION, INTENT(INOUT) :: sigma_a
     INTEGER, INTENT(INOUT) :: ERROR_CODE
@@ -98,6 +102,9 @@ CONTAINS
             & nu + (1.0d0/6.0d0)*Ts_a**2*delta_a**2*eta_a*h_a - 7.0d0/15.0d0*&
             & Ts_a*delta_a**3*eta_a*nu + (1.0d0/2.0d0)*Ts_a*delta_a**2*eta_a*&
             & h_a*nu
+
+       sigma_a = (-1.d0/210.d0)*Ds_a*delta_a2*eta_a*(nu*(-98.d0*delta_a+105.d0*h_a)+&
+            &(1-nu)*(22.d0*Ds_a*delta_a-35.d0*Ds_a*h_a-98.d0*T_a*delta_a+105.d0*T_a*h_a))
     ELSEIF (Rheology == 1) THEN
        ERROR_CODE = 1
     ELSEIF (Rheology == 2) THEN
@@ -214,7 +221,7 @@ CONTAINS
   END SUBROUTINE Fsigma_A
 
 
-  SUBROUTINE fOmega_b(Bi,h_b,delta_b,T_b,Ts_b,eta_b,omega_b,nu,Rheology,ERROR_CODE)
+  SUBROUTINE fOmega_b(Bi,h_b,delta_b,T_b,Ts_b,eta_b,Ds_b,omega_b,nu,Rheology,ERROR_CODE)
 
     IMPLICIT NONE
 
@@ -222,7 +229,8 @@ CONTAINS
     DOUBLE PRECISION , INTENT(IN) :: nu
     DOUBLE PRECISION, PARAMETER :: pi = 3.14159265358979d0
     DOUBLE PRECISION, INTENT(IN) :: Bi,h_b,delta_b,T_b,Ts_b,eta_b
-
+    DOUBLE PRECISION, INTENT(IN) :: Ds_b
+    
     DOUBLE PRECISION, INTENT(INOUT) :: omega_b
     INTEGER, INTENT(INOUT) :: ERROR_CODE
 
@@ -233,7 +241,9 @@ CONTAINS
             & eta_b*nu - 3.0d0/5.0d0*Ts_b*delta_b**2*eta_b - 3.0d0/2.0d0*Ts_b*&
             & delta_b*eta_b*h_b*nu + (3.0d0/2.0d0)*Ts_b*delta_b*eta_b*h_b - 2*&
             & delta_b**2*eta_b*nu + 3*delta_b*eta_b*h_b*nu
-
+       
+       omega_b = (eta_b*delta_b)/10.d0*(nu*(-20.d0*delta_b+30.d0*h_b)+&
+            &(1.d0-nu)*(6.d0*Ds_b*delta_b-15.d0*Ds_b*h_b-20.d0*T_b*delta_b+30.d0*T_b*h_b))
     ELSEIF (Rheology == 1) THEN
        ERROR_CODE = 1
     ELSEIF (Rheology == 2) THEN
@@ -284,14 +294,15 @@ CONTAINS
   END SUBROUTINE FOmega_B
 
 
-  SUBROUTINE fsigma_b(Bi,h_b,delta_b,T_b,Ts_b,sigma_b,eta_b,nu,Rheology,ERROR_CODE)
+  SUBROUTINE fsigma_b(Bi,h_b,delta_b,T_b,Ts_b,sigma_b,Ds_b,delta_b2,&
+       &eta_b,nu,Rheology,ERROR_CODE)
 
     IMPLICIT NONE
 
     INTEGER, INTENT(IN) :: Rheology
     DOUBLE PRECISION , INTENT(IN) :: nu
     DOUBLE PRECISION, PARAMETER :: pi = 3.14159265358979d0
-    DOUBLE PRECISION, INTENT(IN) :: Bi,h_b,delta_b,T_b,Ts_b,eta_b
+    DOUBLE PRECISION, INTENT(IN) :: Bi,h_b,delta_b,T_b,Ts_b,eta_b,Ds_b,delta_b2
 
     DOUBLE PRECISION, INTENT(INOUT) :: sigma_b
     INTEGER, INTENT(INOUT) :: ERROR_CODE
@@ -310,6 +321,8 @@ CONTAINS
             & Ts_b*delta_b**3*eta_b*nu + (1.0d0/2.0d0)*Ts_b*delta_b**2*eta_b*&
             & h_b*nu
 
+       sigma_b = (-1.d0/210.d0)*Ds_b*delta_b2*eta_b*(nu*(-98.d0*delta_b+105.d0*h_b)+&
+            &(1-nu)*(22.d0*Ds_b*delta_b-35.d0*Ds_b*h_b-98.d0*T_b*delta_b+105.d0*T_b*h_b))
     ELSEIF (Rheology == 1) THEN
        ERROR_CODE = 1
     ELSEIF (Rheology == 2) THEN

@@ -1,6 +1,6 @@
 import os
 
-Root = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/Code/Code_ELAS/'
+Root = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/Code/EPGC/'
 Racine = Root
 env = Environment(CC = 'gfortran',CCFLAGS = '-O0')
 # env.Append(CCFLAGS = ['-g','-O0','ftz','-ftree-vectorizer-verbose=5'])

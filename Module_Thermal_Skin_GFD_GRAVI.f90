@@ -245,8 +245,9 @@ SUBROUTINE XI_SPLIT(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
           eta_b = (H(i,3)-H(i-1,3))/Dr
           Ds_b = T_b-Ts_b
 
-          CALL fsigma_b(Bi,h_b,delta_b,T_b,Ts_b,sigma_b,eta_b,nu,Rheology,ERROR_CODE)
-          CALL fOmega_b(Bi,h_b,delta_b,T_b,Ts_b,eta_b,omega_b,nu,Rheology,ERROR_CODE)
+          CALL fOmega_b(Bi,h_b,delta_b,T_b,Ts_b,eta_b,Ds_b,omega_b,nu,Rheology,ERROR_CODE)
+          CALL fsigma_b(Bi,h_b,delta_b,T_b,Ts_b,sigma_b,Ds_b,delta_b2,&
+               &eta_b,nu,Rheology,ERROR_CODE)
 
        ENDIF IF1
 
@@ -259,8 +260,9 @@ SUBROUTINE XI_SPLIT(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
           Ts_a = 0.5d0*(Ts(i,col)+Ts(i+1,col))
           eta_a = (H(i+1,3)-H(i,3))/Dr
           Ds_a = T_a-Ts_a
-          CALL fomega_a(Ai,h_a,delta_a,T_a,Ts_a,eta_a,omega_a,nu,Rheology,ERROR_CODE)
-          CALL fsigma_a(Ai,h_a,delta_a,T_a,Ts_a,eta_a,sigma_a,nu,Rheology,ERROR_CODE)
+          CALL fomega_a(Ai,h_a,delta_a,T_a,Ts_a,eta_a,Ds_a,omega_a,nu,Rheology,ERROR_CODE)
+          CALL fsigma_a(Ai,h_a,delta_a,T_a,Ts_a,eta_a,Ds_a,delta_a2,&
+               &sigma_a,nu,Rheology,ERROR_CODE)
 
        END IF IF2
 

@@ -215,7 +215,8 @@ CONTAINS
           Delta_T_a = T_a -Ts_a
 
           ! phi_a=(nu+(1.d0-nu)*T_a)*h_a3-(2.d0/5.d0)*(1.d0-nu)*Delta_T_a*(2.d0*delta_a3-5.d0*delta_a2*h_a+5.d0*delta_a*h_a2)
-          CALL fPhi_A(Ael,Agrav,h_a,delta_a,T_a,Ts_a,phi_a,nu,Rheology,ERROR_CODE)
+          CALL fPhi_A(Ael,Agrav,h_a,delta_a,T_a,Ts_a,delta_a2,delta_a3,h_a2,h_a3,Delta_T_a,&
+               &phi_a,nu,Rheology,ERROR_CODE)
        ENDIF
 
        IF (i .NE. 1) THEN
@@ -232,7 +233,8 @@ CONTAINS
           Delta_T_b = T_b - Ts_b
 
           ! phi_b=(nu+(1.d0-nu)*T_b)*h_b3-(2.d0/5.d0)*(1.d0-nu)*Delta_T_b*(2.d0*delta_b3-5.d0*delta_b2*h_b+5.d0*delta_b*h_b2)
-           CALL fPhi_B(Bel,Bgrav,h_b,delta_b,T_b,Ts_b,phi_b,nu,Rheology,ERROR_CODE)
+          CALL fPhi_B(Bel,Bgrav,h_b,delta_b,T_b,Ts_b,delta_b2,delta_b3,h_b2,h_b3,Delta_T_b,&
+               &phi_b,nu,Rheology,ERROR_CODE)
        ENDIF
 
        IF (i==1) THEN
@@ -325,8 +327,9 @@ CONTAINS
           Delta_T_a = T_a -Ts_a
           hia = H(i+1,col)
           hi = H(i,col)
-          CALL fPhi_A(Ael,Agrav,h_a,delta_a,T_a,Ts_a,phi_a,nu,Rheology,ERROR_CODE)
-          CALL fdPhi_A(Ael,Agrav,h_a,delta_a,T_a,Ts_a,hi,hia,&
+          CALL fPhi_A(Ael,Agrav,h_a,delta_a,T_a,Ts_a,delta_a2,delta_a3,h_a2,h_a3,Delta_T_a,&
+               &phi_a,nu,Rheology,ERROR_CODE)
+          CALL fdPhi_A(Ael,Agrav,h_a,delta_a,T_a,Ts_a,hi,hia,Delta_T_a,delta_a2,&
                &dphia_dhi1,dphia_dhi,nu,Rheology,ERROR_CODE)
           ! phi_a=(nu+(1-nu)*T_a)*h_a3-(2.d0/5.d0)*(1-nu)*Delta_T_a*(2*delta_a3-5*delta_a2*h_a+5*delta_a*h_a2)
 
@@ -351,8 +354,9 @@ CONTAINS
           hib = H(i-1,col); hib2 = H(i-1,col)**2
           hi = H(i,col);hi2 = H(i,col)**2
 
-          CALL fPhi_B(Bel,Bgrav,h_b,delta_b,T_b,Ts_b,phi_b,nu,Rheology,ERROR_CODE)
-          CALL fDPhi_B(Bel,Bgrav,h_b,delta_b,T_b,Ts_b,hib,hi,&
+          CALL fPhi_B(Bel,Bgrav,h_b,delta_b,T_b,Ts_b,delta_b2,delta_b3,h_b2,h_b3,Delta_T_b,&
+               &phi_b,nu,Rheology,ERROR_CODE)
+          CALL fDPhi_B(Bel,Bgrav,h_b,delta_b,T_b,Ts_b,hib,hi,Delta_T_b,delta_b2,&
                &dphib_dhi,dphib_dhi1,nu,Rheology,ERROR_CODE)
           ! phi_b=(nu+(1-nu)*T_b)*h_b3-(2.d0/5.d0)*(1-nu)*Delta_T_b*(2*delta_b3-5*delta_b2*h_b+5*delta_b*h_b2)
 

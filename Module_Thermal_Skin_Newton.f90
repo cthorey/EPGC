@@ -425,8 +425,9 @@ CONTAINS
           Ts_b = 0.5d0*(Ts(i,col)+Ts(i-1,col))
           Ds_b = T_b-Ts_b
 
-          CALL fomega_b(Bi,h_b,delta_b,T_b,Ts_b,omega_b,eta_b,nu,Rheology,ERROR_CODE)
-          CALL fsigma_b(Bi,h_b,delta_b,T_b,Ts_b,sigma_b,eta_b,nu,Rheology,ERROR_CODE)
+          CALL fOmega_b(Bi,h_b,delta_b,T_b,Ts_b,eta_b,Ds_b,omega_b,nu,Rheology,ERROR_CODE)
+          CALL fsigma_b(Bi,h_b,delta_b,T_b,Ts_b,sigma_b,Ds_b,delta_b2,&
+               &eta_b,nu,Rheology,ERROR_CODE)
 
           ! omega_b = (eta_b*delta_b)/10.d0*(nu*(-20.d0*delta_b+30.d0*h_b)+&
           !      &(1.d0-nu)*(6.d0*Ds_b*delta_b-15.d0*Ds_b*h_b-20.d0*T_b*delta_b+30.d0*T_b*h_b))
@@ -444,8 +445,9 @@ CONTAINS
           Ts_a = 0.5d0*(Ts(i,col)+Ts(i+1,col))
           Ds_a = T_a-Ts_a
 
-          CALL fomega_a(Ai,h_a,delta_a,T_a,Ts_a,eta_a,omega_a,nu,Rheology,ERROR_CODE)
-          CALL fsigma_a(Ai,h_a,delta_a,T_a,Ts_a,eta_a,sigma_a,nu,Rheology,ERROR_CODE)
+          CALL fomega_a(Ai,h_a,delta_a,T_a,Ts_a,eta_a,Ds_a,omega_a,nu,Rheology,ERROR_CODE)
+          CALL fsigma_a(Ai,h_a,delta_a,T_a,Ts_a,eta_a,Ds_a,delta_a2,&
+               &sigma_a,nu,Rheology,ERROR_CODE)
 
        END IF IF2
 
@@ -523,7 +525,7 @@ CONTAINS
           Ts_b = 0.5d0*(Ts(i,col)+Ts(i-1,col))
           Ds_b = T_b-Ts_b
 
-          CALL fomega_b(Bi,h_b,delta_b,T_b,Ts_b,omega_b,eta_b,nu,Rheology,ERROR_CODE)
+          CALL fOmega_b(Bi,h_b,delta_b,T_b,Ts_b,eta_b,Ds_b,omega_b,nu,Rheology,ERROR_CODE)
        ENDIF IF1
        IF2: IF (i .NE. N) THEN
           eta_a=(grav*(H(i+1,3)-H(i,3))+el*(P(i+1,3)-P(i,3)))/Dr
@@ -535,7 +537,7 @@ CONTAINS
           Ts_a = 0.5d0*(Ts(i,col)+Ts(i+1,col))
           Ds_a = T_a-Ts_a
 
-          CALL fomega_a(Ai,h_a,delta_a,T_a,Ts_a,eta_a,omega_a,nu,Rheology,ERROR_CODE)
+          CALL fomega_a(Ai,h_a,delta_a,T_a,Ts_a,eta_a,Ds_a,omega_a,nu,Rheology,ERROR_CODE)
 
        END IF IF2
 
