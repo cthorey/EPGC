@@ -43,21 +43,21 @@ elif _platform == "darwin":
 # ! Schema :{0: Newton_Rhaspod, 1: Finite difference}
 # ! Rheology: {0: Bercovici, 1: Roscoe, 2: Arrhenius}
 Model = 1
-T_Schema = 0;H_Schema = 0
+T_Schema = 1;H_Schema = 0
 Rheology = 2
 
 Dict_Param = {'Sigma': ['2D-2'],
               'Delta0': ['5D-3'],
-              'Grav': ['0D0'],
-              'El': ['1D0'],
-              'Nu': ['1D0'],
+              'Grav': ['1D0'],
+              'El': ['0D0'],
+              'Nu': ['1D0','1D-3'],
               'Pe': ['1D0','1D-2'],
-              'Psi': ['1D0'],
-              'N1' : ['1D0'],
+              'Psi': ['1D0','1D-1'],
+              'N1' : ['1D0','1D5'],
               'gam':['0D0'],
               'Inter_Q':['1D20'],
               'Dr' : ['1D-2'],
-              'Ep': ['1D-4'],
+              'Ep': ['1D-3'],
               'Dt' : ['1D-7']}
 M_grid = 4000
 Init = 0 # 1 If you want to begin for the last backup
