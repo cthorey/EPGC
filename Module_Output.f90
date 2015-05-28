@@ -11,7 +11,7 @@ CONTAINS
           &Tm01,Tm02,Tm05,Tm005,&
           &Fr_d_R,Fr_d_T,Fr_d_Mu,Fr_001_R,Fr_001_T,Fr_001_Mu,Mu_e,&
           &Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H,hmubar,hthetabar,ubar,&
-          &Fr_005_R,Fr_005_T,Fr_005_Mu,tmps_n)
+          &Fr_005_R,Fr_005_T,Fr_005_Mu,tmps_n,R_Intrusion)
 
     IMPLICIT NONE
 
@@ -33,7 +33,7 @@ CONTAINS
     DOUBLE PRECISION ,INTENT(INOUT) :: BV_a,BV_b
     DOUBLE PRECISION ,INTENT(INOUT) :: V_t1,V_t2
 
-    INTEGER , INTENT(INOUT) :: k,k1,k2,z,M,compteur
+    INTEGER , INTENT(INOUT) :: k,k1,k2,z,M,compteur,R_Intrusion
 
     ! Format files
     CHARACTER(LEN=300) , INTENT(IN) :: Format,Output_Racine
@@ -77,7 +77,7 @@ CONTAINS
           DO i=1,M,1
              WRITE(1,Format)k,k1,k2,z,compteur,M,tmps,dist(i),ray(i)&
                   &,H(i,1),H(i,2),H(i,3),Xi(i,1),Xi(i,2),Xi(i,3),T(i,1),T(i,2),T(i,3)&
-                  &,BL(i,1),BL(i,2),BL(i,3),Ts(i,1),Ts(i,2),Ts(i,3),P(i,1),P(i,2),P(i,3)
+                  &,BL(i,1),BL(i,2),BL(i,3),Ts(i,1),Ts(i,2),Ts(i,3),P(i,1),P(i,2),P(i,3),R_Intrusion
           END DO
           CLOSE(1)
           k1=k1+1

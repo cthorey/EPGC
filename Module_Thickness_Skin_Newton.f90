@@ -35,6 +35,7 @@ CONTAINS
     DOUBLE PRECISION , INTENT(INOUT) :: F_err
 
     !Variable du sous programmes
+    DOUBLE PRECISION :: Test_Eta,Test_Eta2
     DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: Coeff
     DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: fguess,ftmps
     DOUBLE PRECISION, DIMENSION(:),ALLOCATABLE :: a,b,c,d,e,f,g,k,l,S
@@ -48,14 +49,28 @@ CONTAINS
 
     ! Taille de la grille sur laquelle on fait l'inversion
     ndyke=sigma/Dr
-    CHO=COUNT(H(:,1)>0.D0)<ndyke
-    SELECT CASE (CHO)
-    CASE(.TRUE.)
-       N = ndyke+3
-    CASE(.FALSE.)
-       N = COUNT(H(:,1)>0.d0)
-    END SELECT
-
+    CHO=COUNT(H(:,2)>0.D0)<ndyke
+    CURRENT:IF (el == 1D0) THEN
+       SELECT CASE (CHO)
+       CASE(.TRUE.)
+          N = ndyke+3
+       CASE(.FALSE.)
+          N = COUNT(H(:,1)>0.d0)
+       END SELECT
+    ELSEIF (el == 0D0) THEN
+       SELECT CASE (CHO)
+       CASE(.TRUE.)
+          N = ndyke+1
+       CASE(.FALSE.)
+          N = COUNT(H(:,2)>1D-10)
+          Test_Eta = ABS((H(N,2)-H(N-1,2))/Dr)
+          Test_Eta2 =H(N,2)/Dr
+          IF (Test_Eta2 >Test_Eta) THEN
+             N = N+1
+          ENDIF
+       END SELECT
+    ENDIF CURRENT
+    
     ! Caracterisation du flux
     ALLOCATE(qa(1:N),stat=err1)
     IF (err1>1) THEN
@@ -77,7 +92,7 @@ CONTAINS
     
     ! Calcule coefficient pression elastique
 
-    ALLOCATE(Coeff(1:N,7),stat=err1)
+    ALLOCATE(Coeff(1:M,7),stat=err1)
     IF (err1>1) THEN
        PRINT*, 'Erreur alloc dans coeff du systeme'; STOP
     END IF
@@ -205,7 +220,7 @@ CONTAINS
     SELECT CASE(algo1)
     CASE(1)
 
-       DO i=1,N,1
+       DO i=1,M,1
           p1=1.d0/dist(i)**3
           p2=-1.d0/(dist(i)**2)
           p3=2.d0/dist(i)

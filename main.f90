@@ -62,7 +62,7 @@ PROGRAM MAIN
   DOUBLE PRECISION :: Mu_e
 
   !Necessaire au bon fonctionnement
-  INTEGER :: cas,size
+  INTEGER :: cas,size,R_Intrusion
   INTEGER :: ERROR_CODE
   INTEGER :: Naa
 
@@ -104,14 +104,16 @@ PROGRAM MAIN
   ! Calll initialisation dans le cmodule Module_Initialisation
   CALL INITIALISATION(Format_O,Format_NSD,M,H,T,Ts,Xi,BL,P,dist,ray,k,k1,k2,z,tmps,&
        &Dt,Dr,eps_1,el,grav,delta0,sigma,nu,Pe,Psi,N1,gam,Inter_Q,sample,Init,compteur,tmps_m,&
-       &Input_Data_Name,Input_racine,Output_Racine,NF,Format_NF,Root_Code&
+       &R_Intrusion,Input_Data_Name,Input_racine,Output_Racine,NF,Format_NF,Root_Code&
        &,Format_NSD_Init_0,Format_NSD_Init_1,Format_Input_Data,Format_RV,Format_Backup&
        &,Model,T_Schema,H_Schema,Rheology)
 
   ! Debut de la boucle sur le temps
   tmps_n = 0D0
   ERROR_CODE = 0
+  R_Intrusion = 0
 
+  
   ! Temps auquelle on imprime un fichier
   ALLOCATE(time_frame(300))
   CALL logspace(Dt,1D5,time_frame)
@@ -142,7 +144,7 @@ PROGRAM MAIN
           &Tm01,Tm02,Tm05,Tm005,&
           &Fr_d_R,Fr_d_T,Fr_d_Mu,Fr_001_R,Fr_001_T,Fr_001_Mu,Mu_e,&
           &Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H,hmubar,hthetabar,ubar,&
-          &Fr_005_R,Fr_005_T,Fr_005_Mu,tmps_n)
+          &Fr_005_R,Fr_005_T,Fr_005_Mu,tmps_n,R_Intrusion)
 
 
      H(:,1) = H(:,3); H(:,4) = H(:,1)
@@ -161,6 +163,7 @@ PROGRAM MAIN
         ! Module Epaisseur
         CALL THICKNESS_SOLVER(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,gam,Inter_Q,eps_1,&
              &ERROR_CODE,Model,H_Schema,Rheology,tmps)
+
         IF (ERROR_CODE == 1) THEN
            WRITE(NF_Name,Format_NF),Root_Code,NF,'_BUG'
            OPEN(unit =1,file=NF_Name, action ="write",status ="replace")
@@ -169,7 +172,16 @@ PROGRAM MAIN
            CLOSE(1)
            STOP
         END IF
-        F1 = ABS(MAXVAL((H(:,4)-H(:,3))/(H(:,3))))
+        Size = COUNT(H(:,3)>0.D0)
+        IF (Size==0) THEN
+           F1 = 1D-4
+        ELSE
+           F1 = ABS(MAXVAL((H(:Size,4)-H(:Size,3))/(H(:Size,3))))
+        ENDIF
+        
+        IF (grav == 1 .AND. el == 0) THEN
+           CALL ADVANCE_RADIUS_TEST(H,P,T,BL,Ts,Xi,R_Intrusion)
+        ENDIF
 
         ! Module heat transport
         CALL  THERMAL_SOLVER(Xi,H,T,Ts,BL,P,M,dist,ray,sigma,nu,Pe,psi,delta0,el,grav,gam,Inter_Q,Dr,Dt,eps_1,k,N1,tmps,&
@@ -182,8 +194,13 @@ PROGRAM MAIN
            CLOSE(1)
            STOP
         END IF
-        Size = COUNT(Xi(:,3)>1D-10)
-        F2 = ABS(MAXVAL((Xi(:Size,4)-Xi(:Size,3))/(Xi(:Size,3))))
+
+        Size = COUNT(Xi(:,3)>0D0)
+        IF (Size == 0) THEN
+           F2 =0
+        ELSE
+           F2 = ABS(MAXVAL((Xi(:Size,4)-Xi(:Size,3))/(Xi(:Size,3))))
+        ENDIF
 
 
         !Condition d'arret  ou de sorti de boucle
@@ -223,13 +240,13 @@ PROGRAM MAIN
           &Tm01,Tm02,Tm05,Tm005,&
           &Fr_d_R,Fr_d_T,Fr_d_Mu,Fr_001_R,Fr_001_T,Fr_001_Mu,Mu_e,&
           &Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H,hmubar,hthetabar,ubar,&
-          &Fr_005_R,Fr_005_T,Fr_005_Mu,tmps_n)
+          &Fr_005_R,Fr_005_T,Fr_005_Mu,tmps_n,R_Intrusion)
 
      ! On incremente les compteurs et le temps
      k = k+1
      tmps_n = tmps
      tmps = tmps+Dt
-
+     PRINT*,k,tmps,H(1,3),T(1,3),Ts(1,3)
   END DO TEMPS
 
   DEALLOCATE(H,T,Xi,BL,Ts)

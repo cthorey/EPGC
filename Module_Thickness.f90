@@ -2,11 +2,9 @@ MODULE MODULE_THICKNESS
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!  IMPORTATIONS DES MODULES
 
-  USE MODULE_THICKNESS_SKIN_NEWTON_ARRHENIUS
-  USE MODULE_THICKNESS_SKIN_NEWTON_ROSCOE
-  USE MODULE_THICKNESS_SKIN_NEWTON_BERCOVICI
   USE MODULE_THICKNESS_INTE_GFD_BERCOVICI
   USE MODULE_THICKNESS_SKIN_NEWTON
+  USE MODULE_THICKNESS_SKIN_NEWTON_GRAVI
   
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!  SUBROUTINES
@@ -41,13 +39,15 @@ CONTAINS
 
     F_err=20; F_errt=20; z=0
     THICKNESS_ITERATION: DO
-       ! CALL SUBROUTINE
-       IF (Model == 1 .AND. Schema == 0) THEN
+       
+       IF (Model == 1 .AND. Schema == 0 .AND. el == 1D0) THEN
           CALL  THICKNESS_SKIN_NEWTON(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,&
                &gam,Inter_Q,z,F_err,theta,tmps,Rheology,ERROR_CODE)
-       ELSEIF (Model == 0 .AND. Schema == 1 .AND. Rheology == 0) THEN
-          CALL  THICKNESS_INTE_GFD_BERCOVICI(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,&
-               &gam,Inter_Q,z,F_err,theta,tmps)
+          
+       ELSEIF (Model == 1 .AND. Schema ==0 .AND. el == 0D0) THEN
+          CALL THICKNESS_SKIN_NEWTON_GRAVI(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma&
+               &,nu,delta0,z,F_err,theta,Rheology,ERROR_CODE)
+          
        ELSE
           PRINT*,'PAS DE MODULE CORRESPONDANT IMPLEMENTE ENCORE THICKNESS'
           PRINT*,'MODEL =',Model,'SCHEMA =',Schema,'Rheology =',Rheology
@@ -71,5 +71,35 @@ CONTAINS
     END DO THICKNESS_ITERATION
 
   END SUBROUTINE THICKNESS_SOLVER
+
+  SUBROUTINE ADVANCE_RADIUS_TEST(H,P,T,BL,Ts,Xi,R_Intrusion)
+    
+    ! Thcheuqe is lintrusion avant dans le regime gravi
+    IMPLICIT NONE
+    ! Tableaux
+    
+    DOUBLE PRECISION, DIMENSION(:,:), INTENT(INOUT) :: H,P,T,Ts,BL,Xi
+    INTEGER, INTENT(INOUT) :: R_Intrusion
+
+    IF (R_Intrusion /= COUNT(H(:,3)>0.d0)) THEN
+       IF (COUNT(H(:,3)-R_Intrusion>0.d0)>1) THEN
+          BL(R_Intrusion:COUNT(H(:,3)>0.d0),1) = 1D-4
+          BL(R_Intrusion:COUNT(H(:,3)>0.d0),2) = 1D-4
+          T(R_Intrusion:COUNT(H(:,3)>0.d0),1) = 1D0
+          T(R_Intrusion:COUNT(H(:,3)>0.d0),2) = 1D0
+          Xi(R_Intrusion:COUNT(H(:,3)>0.d0),1) = 1D-4/3D0
+          Xi(R_Intrusion:COUNT(H(:,3)>0.d0),2) = 1D-4/3D0
+       ELSE
+          BL(COUNT(H(:,3)>0.d0),1) = BL(COUNT(H(:,3)>0.d0)-1,1)
+          BL(COUNT(H(:,3)>0.d0),2) = BL(COUNT(H(:,3)>0.d0)-1,2)
+          T(COUNT(H(:,3)>0.d0),1) = T(COUNT(H(:,3)>0.d0)-1,1)
+          T(COUNT(H(:,3)>0.d0),2) = T(COUNT(H(:,3)>0.d0)-1,2)
+          Xi(COUNT(H(:,3)>0.d0),1) = Xi(COUNT(H(:,3)>0.d0)-1,1)
+          Xi(COUNT(H(:,3)>0.d0),2) = Xi(COUNT(H(:,3)>0.d0)-1,2)
+       ENDIF
+       R_Intrusion = COUNT(H(:,3)>0.d0)
+    ENDIF
+  END SUBROUTINE ADVANCE_RADIUS_TEST
+
   
 END MODULE MODULE_THICKNESS

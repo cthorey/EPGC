@@ -69,6 +69,14 @@ CONTAINS
     PRINT*,'E',el,'G',grav,'D',delta0,'S',sigma,'N',nu,'Pe',Pe,'Psi',Psi,'N1',N1,'gam',gam
     PRINT*,'M',M,'Dt',Dt,'Dr',Dr,'Epsilon',eps_1,'Inter_Q',Inter_Q
 
+    ! TEST VALEUR OBLIGATORIE
+
+    ! ON rappelle delta to zero
+    IF (el == 0D0) THEN
+       delta0 =0D0
+    ENDIF
+    
+    
     ! Variable pour l'outxsput
     sample = (Dt)/(Dt)
     Init = Null
@@ -96,7 +104,7 @@ CONTAINS
 
     ! Format d'ecritur du fichier de sorti
 
-    Format_O = "(I10,2X,I10,2X,I10,2X,I10,2X,I5,2X,I10,2X,20(D20.14,2X))"
+    Format_O = "(I10,2X,I10,2X,I10,2X,I10,2X,I5,2X,I10,2X,21(D20.14,2X),I10,2X)"
 
     ! Format d'ecriture pour le fichier ou seront ecrit les nombres sans dimensions
     Format_NSD = "(D20.14,2X,D20.14,2X,D20.14,2X,D20.14,2X,D20.14,2X,D20.14,&
@@ -115,7 +123,7 @@ CONTAINS
 
   SUBROUTINE INITIALISATION(Format_O,Format_NSD,M,H,T,Ts,Xi,BL,P,dist,ray,k,k1,k2,z,tmps,&
        &Dt,Dr,eps_1,el,grav,delta0,sigma,nu,Pe,Psi,N1,gam,Inter_Q,sample,Init,compteur,tmps_m,&
-       &Input_Data_Name,Input_racine,Output_Racine,NF,Format_NF,Root_Code&
+       &R_Intrusion,Input_Data_Name,Input_racine,Output_Racine,NF,Format_NF,Root_Code&
        &,Format_NSD_Init_0,Format_NSD_Init_1,Format_Input_Data,Format_RV,Format_Backup&
        &,Model,T_Schema,H_Schema,Rheology)
 
@@ -126,7 +134,7 @@ CONTAINS
     DOUBLE PRECISION ,DIMENSION(:) , INTENT(INOUT) :: dist,ray
 
     ! Parametre necessaire au bon deroulement des operation
-    INTEGER , INTENT(INOUT) :: k,k1,k2,z,compteur,Init
+    INTEGER , INTENT(INOUT) :: k,k1,k2,z,compteur,Init,R_Intrusion
     INTEGER , INTENT(INOUT) :: sample
     DOUBLE PRECISION, INTENT(INOUT) :: tmps
 
@@ -169,7 +177,6 @@ CONTAINS
        BL = 1D-4
        Ts = 0D0
        P = 0d0
-       ! Xi = BL/3D0*(3D0-2D0*T)
        Xi = BL*(1-2D0*T/3D0-Ts/3D0)
        k = 0;k1 = 2;k2 = 2;z = 0;tmps = 0
 
@@ -195,7 +202,7 @@ CONTAINS
           DO i = 1,M,1
              READ(1,Format_O)k,k1,k2,z,compteur,M,tmps,dist(i),ray(i)&
                   &,H(i,1),H(i,2),H(i,3),Xi(i,1),Xi(i,2),Xi(i,3),T(i,1),T(i,2),T(i,3)&
-                  &,BL(i,1),BL(i,2),BL(i,3),Ts(i,1),Ts(i,2),Ts(i,3),P(i,1),P(i,2),P(i,3)
+                  &,BL(i,1),BL(i,2),BL(i,3),Ts(i,1),Ts(i,2),Ts(i,3),P(i,1),P(i,2),P(i,3),R_Intrusion
           END DO
           CLOSE(1)
           
