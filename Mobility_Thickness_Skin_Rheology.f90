@@ -2,7 +2,8 @@ MODULE MOBILITY_THICKNESS_SKIN_RHEOLOGY
 
 CONTAINS
   
-  SUBROUTINE fPhi_A(Ael,Agrav,h_a,delta_a,T_a,Ts_a,phi_a,nu,Rheology,ERROR_CODE)
+  SUBROUTINE fPhi_A(Ael,Agrav,h_a,delta_a,T_a,Ts_a,delta_a2,delta_a3,h_a2,h_a3,Delta_T_a,&
+       &phi_a,nu,Rheology,ERROR_CODE)
 
     IMPLICIT NONE
 
@@ -10,7 +11,7 @@ CONTAINS
     DOUBLE PRECISION , INTENT(IN) :: nu
     
     DOUBLE PRECISION, INTENT(IN) :: Ael,Agrav,h_a,delta_a,T_a,Ts_a
-
+    DOUBLE PRECISION, INTENT(IN) :: delta_a2,delta_a3,h_a2,h_a3,Delta_T_a
     DOUBLE PRECISION, INTENT(INOUT) :: phi_a
     INTEGER, INTENT(INOUT) :: ERROR_CODE
     DOUBLE PRECISION, PARAMETER :: pi = 3.14159265358979d0
@@ -21,7 +22,11 @@ CONTAINS
             & delta_a*h_a**2*nu - 2*T_a*delta_a*h_a**2 - T_a*h_a**3*nu + T_a*&
             & h_a**3 - 4.0d0/5.0d0*Ts_a*delta_a**3*nu + (4.0d0/5.0d0)*Ts_a*&
             & delta_a**3 + 2*Ts_a*delta_a**2*h_a*nu - 2*Ts_a*delta_a**2*h_a - 2&
-            & *Ts_a*delta_a*h_a**2*nu + 2*Ts_a*delta_a*h_a**2 + h_a**3*nu       
+            & *Ts_a*delta_a*h_a**2*nu + 2*Ts_a*delta_a*h_a**2 + h_a**3*nu
+
+       phi_a = (nu+(1.d0-nu)*T_a)*h_a3-(2.d0/5.d0)*(1.d0-nu)*&
+            &Delta_T_a*(2.d0*delta_a3-5.d0*delta_a2*h_a+5.d0*delta_a*h_a2)
+       
     ELSEIF (Rheology == 1) THEN
        ERROR_CODE = 1
     ELSEIF (Rheology == 2) THEN
@@ -66,7 +71,7 @@ CONTAINS
     ENDIF
   END SUBROUTINE FPhi_A
 
-  SUBROUTINE  fdPhi_A(Ael,Agrav,h_a,delta_a,T_a,Ts_a,hi,hia,&
+  SUBROUTINE  fdPhi_A(Ael,Agrav,h_a,delta_a,T_a,Ts_a,hi,hia,Delta_T_a,delta_a2,&
        &dphia_dhi1,dphia_dhi,nu,Rheology,ERROR_CODE)
     
     IMPLICIT NONE
@@ -74,8 +79,8 @@ CONTAINS
     INTEGER, INTENT(IN) :: Rheology
     DOUBLE PRECISION , INTENT(IN) :: nu
     
-    DOUBLE PRECISION, INTENT(IN) :: Ael,Agrav,h_a,T_a,delta_a,Ts_a
-    DOUBLE PRECISION, INTENT(IN) :: hi,hia
+    DOUBLE PRECISION, INTENT(IN) :: Ael,Agrav,h_a,T_a,delta_a,Ts_a,Delta_T_a
+    DOUBLE PRECISION, INTENT(IN) :: hi,hia,delta_a2
 
     DOUBLE PRECISION, INTENT(INOUT) :: dphia_dhi,dphia_dhi1
     INTEGER, INTENT(INOUT) :: ERROR_CODE
@@ -98,6 +103,10 @@ CONTAINS
               & delta_a**2 - Ts_a*delta_a*hi*nu + Ts_a*delta_a*hi - Ts_a*delta_a*&
               & hia*nu + Ts_a*delta_a*hia + (3.0d0/8.0d0)*hi**2*nu + (3.0d0/4.0d0&
               & )*hi*hia*nu + (3.0d0/8.0d0)*hia**2*nu
+
+         dphia_dhi1=(3.d0/2.d0)*(nu+(1-nu)*T_a)*hia**2-(1-nu)*Delta_T_a*(-delta_a2+delta_a*hia) ! d(phi_i+1/2)/d(h_i+1)
+         dphia_dhi=(3.d0/2.d0)*(nu+(1-nu)*T_a)*hi**2-(1-nu)*Delta_T_a*(-delta_a2+delta_a*hi)     ! d(phi_i+1/2)/d(h_i)
+         
     ELSEIF (Rheology == 1) THEN
        ERROR_CODE = 1
     ELSEIF (Rheology == 2) THEN
@@ -175,7 +184,8 @@ CONTAINS
     ENDIF
   END SUBROUTINE FdPhi_A
 
-  SUBROUTINE  fPhi_B(Bel,Bgrav,h_b,delta_b,T_b,Ts_b,phi_b,nu,Rheology,ERROR_CODE)
+  SUBROUTINE  fPhi_B(Bel,Bgrav,h_b,delta_b,T_b,Ts_b,delta_b2,delta_b3,h_b2,h_b3,Delta_T_b,&
+       &phi_b,nu,Rheology,ERROR_CODE)
 
 
     IMPLICIT NONE
@@ -184,7 +194,8 @@ CONTAINS
     DOUBLE PRECISION , INTENT(IN) :: nu
     
     DOUBLE PRECISION, INTENT(IN) :: Bel,Bgrav,h_b,delta_b,T_b,Ts_b
-
+    DOUBLE PRECISION, INTENT(IN) :: delta_b2,delta_b3,h_b2,h_b3,Delta_T_b
+    
     DOUBLE PRECISION, INTENT(INOUT) :: phi_b
     INTEGER, INTENT(INOUT) :: ERROR_CODE
     DOUBLE PRECISION, PARAMETER :: pi = 3.14159265358979d0
@@ -197,7 +208,9 @@ CONTAINS
           & h_b**3 - 4.0d0/5.0d0*Ts_b*delta_b**3*nu + (4.0d0/5.0d0)*Ts_b*&
           & delta_b**3 + 2*Ts_b*delta_b**2*h_b*nu - 2*Ts_b*delta_b**2*h_b - 2&
           & *Ts_b*delta_b*h_b**2*nu + 2*Ts_b*delta_b*h_b**2 + h_b**3*nu
-      
+       
+       phi_b=(nu+(1.d0-nu)*T_b)*h_b3-(2.d0/5.d0)*(1.d0-nu)*&
+            &Delta_T_b*(2.d0*delta_b3-5.d0*delta_b2*h_b+5.d0*delta_b*h_b2)
     ELSEIF (Rheology == 1) THEN
        ERROR_CODE = 1
     ELSEIF (Rheology == 2) THEN
@@ -242,7 +255,7 @@ CONTAINS
     ENDIF
   END SUBROUTINE FPhi_B
   
-  SUBROUTINE  fDPhi_B(Bel,Bgrav,h_b,delta_b,T_b,Ts_b,hib,hi,&
+  SUBROUTINE  fDPhi_B(Bel,Bgrav,h_b,delta_b,T_b,Ts_b,hib,hi,Delta_T_b,delta_b2,&
        &dphib_dhi,dphib_dhi1,nu,Rheology,ERROR_CODE)
 
     IMPLICIT NONE
@@ -250,8 +263,8 @@ CONTAINS
     INTEGER, INTENT(IN) :: Rheology
     DOUBLE PRECISION , INTENT(IN) :: nu
     
-    DOUBLE PRECISION, INTENT(IN) :: Bel,Bgrav,h_b,T_b,delta_b
-    DOUBLE PRECISION, INTENT(IN) :: Ts_b,hi,hib
+    DOUBLE PRECISION, INTENT(IN) :: Bel,Bgrav,h_b,T_b,delta_b,Delta_T_b
+    DOUBLE PRECISION, INTENT(IN) :: Ts_b,hi,hib,delta_b2
 
     DOUBLE PRECISION, INTENT(INOUT) :: dphib_dhi,dphib_dhi1
     INTEGER, INTENT(INOUT) :: ERROR_CODE
@@ -275,7 +288,10 @@ CONTAINS
             & delta_b**2 - Ts_b*delta_b*hi*nu + Ts_b*delta_b*hi - Ts_b*delta_b*&
             & hib*nu + Ts_b*delta_b*hib + (3.0d0/8.0d0)*hi**2*nu + (3.0d0/4.0d0&
             & )*hi*hib*nu + (3.0d0/8.0d0)*hib**2*nu
-      
+       
+       dphib_dhi=(3.d0/2.d0)*(nu+(1-nu)*T_b)*hi**2-(1-nu)*Delta_T_b*(-delta_b2+delta_b*hi)     ! d(phi_i-1/2)/d(h_i)
+       dphib_dhi1=(3.d0/2.d0)*(nu+(1-nu)*T_b)*hib**2-(1-nu)*Delta_T_b*(-delta_b2+delta_b*hib) ! d(phi_i-1/2)/d(h_i-1)
+       
     ELSEIF (Rheology == 1) THEN
        ERROR_CODE = 1
     ELSEIF (Rheology == 2) THEN

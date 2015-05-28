@@ -330,7 +330,8 @@ CONTAINS
           Ts_a = 0.5d0*(Ts(i,3)+Ts(i+1,3))
           Delta_T_a = T_a -Ts_a
 
-          CALL fPhi_A(Ael,Agrav,h_a,delta_a,T_a,Ts_a,phi_a,nu,Rheology,ERROR_CODE)
+          CALL fPhi_A(Ael,Agrav,h_a,delta_a,T_a,Ts_a,delta_a2,delta_a3,h_a2,h_a3,Delta_T_a,&
+               &phi_a,nu,Rheology,ERROR_CODE)
        ENDIF
 
        IF (i .NE. 1) THEN
@@ -346,7 +347,8 @@ CONTAINS
           Ts_b = 0.5d0*(Ts(i,3)+Ts(i-1,3))
           Delta_T_b = T_b - Ts_b
 
-          CALL fPhi_B(Bel,Bgrav,h_b,delta_b,T_b,Ts_b,phi_b,nu,Rheology,ERROR_CODE)
+          CALL fPhi_B(Bel,Bgrav,h_b,delta_b,T_b,Ts_b,delta_b2,delta_b3,h_b2,h_b3,Delta_T_b,&
+               &phi_b,nu,Rheology,ERROR_CODE)
 
        ENDIF
 
@@ -444,10 +446,12 @@ CONTAINS
           hia = H(i+1,col)
           hi = H(i,col)
 
-          CALL fPhi_A(Ael,Agrav,h_a,delta_a,T_a,Ts_a,phi_a,nu,Rheology,ERROR_CODE)
-          CALL fdPhi_A(Ael,Agrav,h_a,delta_a,T_a,Ts_a,hi,hia,&
+          CALL fPhi_A(Ael,Agrav,h_a,delta_a,T_a,Ts_a,delta_a2,delta_a3,h_a2,h_a3,Delta_T_a,&
+               &phi_a,nu,Rheology,ERROR_CODE)
+          CALL fdPhi_A(Ael,Agrav,h_a,delta_a,T_a,Ts_a,hi,hia,Delta_T_a,delta_a2,&
                &dphia_dhi1,dphia_dhi,nu,Rheology,ERROR_CODE)
-          
+
+                   
           P1=P(i+1,2)-P(i,2); P2=P(i,2)-P(i-1,2)
           H1=H(i+1,2)-H(i,2); H2=H(i,2)-H(i-1,2)
        ENDIF IF1
@@ -467,8 +471,9 @@ CONTAINS
           hib = H(i-1,col); hib2 = H(i-1,col)**2
           hi = H(i,col);hi2 = H(i,col)**2
 
-          CALL fPhi_B(Bel,Bgrav,h_b,delta_b,T_b,Ts_b,phi_b,nu,Rheology,ERROR_CODE)
-          CALL fDPhi_B(Bel,Bgrav,h_b,delta_b,T_b,Ts_b,hib,hi,&
+          CALL fPhi_B(Bel,Bgrav,h_b,delta_b,T_b,Ts_b,delta_b2,delta_b3,h_b2,h_b3,Delta_T_b,&
+               &phi_b,nu,Rheology,ERROR_CODE)
+          CALL fDPhi_B(Bel,Bgrav,h_b,delta_b,T_b,Ts_b,hib,hi,Delta_T_b,delta_b2,&
                &dphib_dhi,dphib_dhi1,nu,Rheology,ERROR_CODE)
                     
           P2=P(i,2)-P(i-1,2)
