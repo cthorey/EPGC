@@ -6,7 +6,7 @@ env = Environment(CC = 'gfortran',CCFLAGS = '-O0')
 # env.Append(CCFLAGS = ['-g','-O0','ftz','-ftree-vectorizer-verbose=5'])
 
 List_file = [elt for elt in os.listdir(Racine) if (elt.split('.')[-1] == 'f90') and (elt != 'Module_Init.f90') and (elt != 'Module_Init_tmp.f90')]        
-env.Program(target = 'G1',source = List_file)
+env.Program(target = 'run',source = List_file)
 
 
 ##### OPTION

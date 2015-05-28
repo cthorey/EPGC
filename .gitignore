@@ -43,3 +43,4 @@ log*
 *.app
 
 *_tmp.sh
+run
