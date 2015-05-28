@@ -120,17 +120,7 @@ PROGRAM MAIN
 
   TEMPS: DO WHILE (tmps<tmps_m)
 
-     IF (tmps >1000D0) THEN
-        Dt = 1D-2
-     ELSEIF (tmps>500D0) THEN
-        Dt = 1D-3
-     ELSEIF (tmps>100D0) THEN
-        Dt = 1D-4
-     ELSEIF (tmps>5D0) THEN
-        Dt = 1D-5
-     ELSEIF (tmps> 1D-1) THEN
-        Dt = 1D-6
-     ENDIF
+     CALL Dt_Update(tmps,Dt,el,grav)
 
      OPEN(unit=3,file='Output.txt')
 

@@ -1,8 +1,41 @@
 MODULE MODULE_COMPLEMENTAIRE
 
   USE MODULE_INTEGRATION
-  
+
 CONTAINS
+
+  SUBROUTINE Dt_Update(tmps,Dt,el,grav)
+    IMPLICIT NONE
+    DOUBLE PRECISION, INTENT(IN) :: tmps,el,grav
+    DOUBLE PRECISION, INTENT(INOUT) :: Dt
+
+    IF (el == 0D0 ) THEN
+       timegrav:     IF (tmps >1250D0) THEN
+          Dt = 1D-2
+       ELSEIF (tmps>1000D0) THEN
+          Dt = 1D-3
+       ELSEIF (tmps>300D0) THEN
+          Dt = 1D-4
+       ELSEIF (tmps>5D0) THEN
+          Dt = 1D-5
+       ELSEIF (tmps> 1D-5) THEN
+          Dt = 1D-6
+       ENDIF timegrav
+    ELSEIF (el == 1D0) THEN
+       timegeneral:IF (tmps >1000D0) THEN
+          Dt = 1D-2
+       ELSEIF (tmps>500D0) THEN
+          Dt = 1D-3
+       ELSEIF (tmps>100D0) THEN
+          Dt = 1D-4
+       ELSEIF (tmps>5D0) THEN
+          Dt = 1D-5
+       ELSEIF (tmps> 1D-1) THEN
+          Dt = 1D-6
+       ENDIF timegeneral
+    ENDIF
+
+  ENDSUBROUTINE Dt_Update
 
   SUBROUTINE  STRESS_ELASTIC_FIELD(Srr,Stt,H,dist,Dr,Mtot)
 
@@ -62,10 +95,10 @@ CONTAINS
 
     DOUBLE PRECISION :: delta,Thetas,Thetab,nu_v,ho
     common /arg/ delta,Thetas,Thetab,nu_v,ho
-    
+
     N=0
     CALL SIZE_D(H,delta0,N)
-    
+
     i01 = 0; I02 = 0; I05 = 0; I005 = 0
     DO i=1,N,1
        IF (dist(i)>(1D0-0.1D0)*dist(N) .AND. i01 == 0) THEN
@@ -76,7 +109,7 @@ CONTAINS
        ENDIF
        IF (dist(i)>(1D0-0.5D0)*dist(N) .AND. i05 == 0) THEN
           I05 = i
-       ENDIF 
+       ENDIF
        IF (dist(i)>(1D0-0.05D0)*dist(N) .AND. i005 == 0) THEN
           I005 = i
        ENDIF
@@ -85,7 +118,7 @@ CONTAINS
     Vm01 = 0D0;Vm02 = 0D0;Vm05 = 0D0;Vm005 = 0D0
     Mum01 =0D0;Mum02 =0D0;Mum05 =0D0;Mum005 =0D0
     Tm01 = 0D0;Tm02 = 0D0;Tm05 = 0D0;Tm005 = 0D0
-    
+
     DO i=1,N,1
        hthetabar = -2*(T(i,3)-Ts(i,3))/3.d0*BL(i,3)+T(i,3)*H(i,3)
        beta = (1.d0-nu)
@@ -188,7 +221,7 @@ CONTAINS
     CALL SIZE_D(H,dsize,N001)
     N005 =0; dsize = 0.05
     CALL SIZE_D(H,dsize,N005)
-    
+
     DO i=1,COUNT(H(:,3)>0),1
        beta = (1.d0-nu)
        Thetas = Ts(i,3);Thetab = T(i,3);delta = BL(i,3);nu_v = nu;ho=H(i,3)
@@ -207,25 +240,25 @@ CONTAINS
     ENDDO
 
     Mu_e = 0.38*delta0**(-1D0/11D0)*(H(1,3)/(tmps**(8D0/22D0)))**(11D0/2D0)
-    
+
     ! Premier cas definit avec d =delta0
     CALL FRONT_PROPERTY(H,N,dist,ray,hmubar,hthetabar,Dr,Mu_e,nu,Fr_d_R,Fr_d_T,Fr_d_Mu)
     ! Deuxieme cas, on definit le front avec 0.01
     CALL FRONT_PROPERTY(H,N001,dist,ray,hmubar,hthetabar,Dr,Mu_e,nu,Fr_001_R,Fr_001_T,Fr_001_Mu)
     ! Troisizeme cas
     CALL FRONT_PROPERTY(H,N005,dist,ray,hmubar,hthetabar,Dr,Mu_e,nu,Fr_005_R,Fr_005_T,Fr_005_Mu)
- 
-     ! Troisieme cas: On definit le front la ou la viscosite moyenne sur l'epaisseur 
-     ! a ceux qu'on veut.
-    
-     mbar = hmubar(1)/H(1,3)
-     tbar = hthetabar(1)/H(1,3)
-     Fr_Mu_R = dist(1)
-     Fr_Mu_T = tbar
-     Fr_Mu_Mu = mbar
-     Fr_Mu_H = H(1,3)
 
-     DO i=1,N+30,1
+    ! Troisieme cas: On definit le front la ou la viscosite moyenne sur l'epaisseur 
+    ! a ceux qu'on veut.
+
+    mbar = hmubar(1)/H(1,3)
+    tbar = hthetabar(1)/H(1,3)
+    Fr_Mu_R = dist(1)
+    Fr_Mu_T = tbar
+    Fr_Mu_Mu = mbar
+    Fr_Mu_H = H(1,3)
+
+    DO i=1,N+30,1
        IF (mbar>Mu_e) THEN
           Fr_Mu_R = dist(i)
           Fr_Mu_H = H(i,3)
@@ -238,15 +271,15 @@ CONTAINS
        ENDIF
     ENDDO
     IF (mbar<Mu_e) THEN
-        Fr_Mu_R = dist(N+30)
-        Fr_Mu_T = tbar
-        Fr_Mu_Mu = mbar
-        Fr_Mu_H = H(N+30,3)
-     ENDIF
+       Fr_Mu_R = dist(N+30)
+       Fr_Mu_T = tbar
+       Fr_Mu_Mu = mbar
+       Fr_Mu_H = H(N+30,3)
+    ENDIF
 
   ENDSUBROUTINE TRACKING_FRONT
 
- SUBROUTINE SIZE_D(H,d,N)
+  SUBROUTINE SIZE_D(H,d,N)
     IMPLICIT NONE
     DOUBLE PRECISION ,DIMENSION(:,:), INTENT(IN) :: H
     DOUBLE PRECISION , INTENT(IN) :: d
@@ -267,7 +300,7 @@ CONTAINS
     ENDDO
 
   END SUBROUTINE SIZE_D
- 
+
   SUBROUTINE  FRONT_PROPERTY(H,N,dist,ray,hmubar,hthetabar,Dr,Mu_e,nu,Fr_d_R,Fr_d_T,Fr_d_Mu)
 
     IMPLICIT NONE
@@ -309,35 +342,35 @@ CONTAINS
        Fr_d_T = 0
        Fr_d_Mu = 1D0/nu
     ENDIF
-       
-   ENDSUBROUTINE FRONT_PROPERTY
+
+  ENDSUBROUTINE FRONT_PROPERTY
 
 
-  END MODULE MODULE_COMPLEMENTAIRE   
+END MODULE MODULE_COMPLEMENTAIRE
 
-  DOUBLE PRECISION FUNCTION Viscosity_1(x)
-    IMPLICIT NONE  
-    DOUBLE PRECISION :: delta,Thetas,Thetab,nu_v,ho
-    common /arg/ delta,Thetas,Thetab,nu_v,ho
-    DOUBLE PRECISION :: x
-    
-       Viscosity_1  = 1.d0/(nu_v+(1.d0-nu_v)*(Thetab-(Thetab-Thetas)*(1.d0-x/delta)**2))
-  END FUNCTION Viscosity_1
+DOUBLE PRECISION FUNCTION Viscosity_1(x)
+  IMPLICIT NONE  
+  DOUBLE PRECISION :: delta,Thetas,Thetab,nu_v,ho
+  common /arg/ delta,Thetas,Thetab,nu_v,ho
+  DOUBLE PRECISION :: x
 
-  DOUBLE PRECISION FUNCTION Viscosity_2(x)
-    IMPLICIT NONE  
-    DOUBLE PRECISION :: delta,Thetas,Thetab,nu_v,ho
-    common /arg/ delta,Thetas,Thetab,nu_v,ho
-    DOUBLE PRECISION :: x
-    
-       Viscosity_2  = 1.d0/(nu_v+(1.d0-nu_v)*Thetab)
-  END FUNCTION Viscosity_2
+  Viscosity_1  = 1.d0/(nu_v+(1.d0-nu_v)*(Thetab-(Thetab-Thetas)*(1.d0-x/delta)**2))
+END FUNCTION Viscosity_1
 
-  DOUBLE PRECISION FUNCTION Viscosity_3(x)
-    IMPLICIT NONE  
-    DOUBLE PRECISION :: delta,Thetas,Thetab,nu_v,ho
-    common /arg/ delta,Thetas,Thetab,nu_v,ho
-    DOUBLE PRECISION :: x
-    
-       Viscosity_3  = 1.d0/(nu_v+(1.d0-nu_v)*(Thetab-(Thetab-Thetas)*(1.d0-(ho-x)/delta)**2))
-  END FUNCTION Viscosity_3
+DOUBLE PRECISION FUNCTION Viscosity_2(x)
+  IMPLICIT NONE  
+  DOUBLE PRECISION :: delta,Thetas,Thetab,nu_v,ho
+  common /arg/ delta,Thetas,Thetab,nu_v,ho
+  DOUBLE PRECISION :: x
+
+  Viscosity_2  = 1.d0/(nu_v+(1.d0-nu_v)*Thetab)
+END FUNCTION Viscosity_2
+
+DOUBLE PRECISION FUNCTION Viscosity_3(x)
+  IMPLICIT NONE  
+  DOUBLE PRECISION :: delta,Thetas,Thetab,nu_v,ho
+  common /arg/ delta,Thetas,Thetab,nu_v,ho
+  DOUBLE PRECISION :: x
+
+  Viscosity_3  = 1.d0/(nu_v+(1.d0-nu_v)*(Thetab-(Thetab-Thetas)*(1.d0-(ho-x)/delta)**2))
+END FUNCTION Viscosity_3

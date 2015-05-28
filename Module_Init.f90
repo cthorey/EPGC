@@ -111,6 +111,7 @@ CONTAINS
          &2X,D20.14,2X,D20.14,2X,D20.14,2X,D20.14,2X,I5,2X,D20.14,2X,D20.14,2X,D20.14,2X)"
 
     IF (Init==0) THEN
+       PRINT*,Output_Racine,'NbSsDim.txt'
        WRITE(Output_Name_NSD,Format_NSD_Init_0),Output_Racine,'NbSsDim.txt'
        OPEN(unit=1,file=Output_Name_NSD)
        WRITE(1,'(24(A,2X))')'el', 'grav', 'delta0', 'sigma', 'nu', 'Pe','Psi',&

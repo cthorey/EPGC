@@ -44,7 +44,7 @@ CONTAINS
     z =0
 
     THERMAL_ITERATION: DO
-       ! CALL SUBROUTINE
+       
        IF (Model == 1 .AND. Schema == 0 .AND. el == 1D0) THEN
           CALL  THERMAL_SKIN_NEWTON(Xi,H,P,T,Ts,BL,Dt,Dr,theta,dist,ray,&
                &M,sigma,nu,Pe,psi,delta0,el,grav,N1,F_err,z,tmps,Rheology,ERROR_CODE)

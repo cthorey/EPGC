@@ -45,7 +45,9 @@ CONTAINS
     T_Schema = 1
     H_Schema = 0
     Rheology = 2
-    
+    el = 0D0
+    grav = 1D0
+
     ! Parametre du model
     tmps_m = 1D32  
     M = 2000    
@@ -54,8 +56,6 @@ CONTAINS
     eps_1 = 1D-4
 
     ! Nombre sans dimensions
-    el = 0D0
-    grav = 1D0
     delta0 = 5D-3
     sigma = 2D-2
     nu = 1D0
@@ -69,7 +69,7 @@ CONTAINS
 
     ! ON rappelle delta to zero
     IF (el == 0D0) THEN
-       delta0 =0D0
+       delta0 = 0D0
     ENDIF
     
     ! Variable pour l'outxsput

@@ -26,18 +26,16 @@ import datetime
 # 1) Parametre a creer :
 
 if _platform == "linux" or _platform == "linux2":
-    Root_ELAS = '/gpfs/users/thorey/ELAS/'
+    Root= '/gpfs/users/thorey/'
     Root_Code = '/home/thorey/Code_ELAS/'
     Name_Folder_Run = '' # Remplir si on veut faire un test dans un dossier specific
     Bactrace_Run = 'Bactrack.txt'
-    Journal_ELAS = 'Journal_ELAS.txt'
     Compilateur = 'ifort'
 elif _platform == "darwin":
-    Root_ELAS = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/Code/TEST/ELAS/'
+    Root = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/Code/TEST/'
     Root_Code = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/Code/Code_ELAS/'
     Name_Folder_Run = '' # Remplir si on veut faire un test dans un dossier specific
     Bactrace_Run = 'Bactrack.txt'
-    Journal_ELAS = 'Journal_ELAS.txt'
     Compilateur = 'gfortran'
 
 # !Definition
@@ -47,14 +45,15 @@ elif _platform == "darwin":
 Model = 1
 T_Schema = 0;H_Schema = 0
 Rheology = 2
+
 Dict_Param = {'Sigma': ['2D-2'],
-              'Delta0': ['5D-3','1D-2'],
+              'Delta0': ['5D-3'],
               'Grav': ['0D0'],
               'El': ['1D0'],
-              'Nu': ['1D0','1D-2','1D-3'],
-              'Pe': ['1D0','1D-1','1D-2'],
+              'Nu': ['1D0'],
+              'Pe': ['1D0'],
               'Psi': ['1D0'],
-              'N1' : ['1D0','1D5'],
+              'N1' : ['1D0'],
               'gam':['0D0'],
               'Inter_Q':['1D20'],
               'Dr' : ['1D-2'],
@@ -70,53 +69,73 @@ def copy_folder(src,dest):
     for filee in [f for f in os.listdir(src) if f[0]!='.']:
         if not os.path.isdir(src+filee):
             shutil.copy(filee,dest+'/')
-        
+
+def Destination_Folder(el,grav,Root):
+    if el == 0.0 and grav == 0.0:
+        print 'ERROR sur les parametres, el \
+        and grav ne peuvent pas etre nulle en meme temps'
+        sys.exit()
+    elif el == '1D0' and grav == '0D0':
+        return os.path.join(Root,'ELAS')
+    elif el == '1D0' and grav == '1D0':
+        return os.path.join(Root,'ELASGRAV')
+    elif el == '0D0' and grav == '1D0':
+        return os.path.join(Root,'GRAV')
+    else:
+        print 'el = %s, grav = %s'%(el,grav)
+        print 'You messed the value of grav and el, do you?'
+        sys.exit()
+
+def Journal_name(el,grav):
+    if el == '1D0' and grav == '0D0':
+        return 'Journal_ELAS.txt'
+    elif el == '1D0' and grav == '1D0':
+        return 'Journal_ELAS_GRAV.txt'
+    elif el == '0D0' and grav == '1D0':
+        return 'Journal_GRAV.txt'
+    else:
+        print 'You messed the value of grav and el, do you?'
+        sys.exit()
+    
 ################################
 # Creation d'un dossier pour acceuillier les simus
 Dict_Model = {0: 'Int_Epaisseur', 1: 'Skin'}
 Dict_Schema = {0: 'Newton', 1: 'GFD'}
-Dict_Rheology = {0: 'Bercovici', 1: 'Roscoe', 2: 'Arrhenius'}            
-Root_Run = Root_ELAS +\
-           'M'+Dict_Model[Model]+'_'\
-           'TSc_'+Dict_Schema[T_Schema]+'_'\
-           'HSc_'+Dict_Schema[H_Schema]+'_'\
-           'R'+Dict_Rheology[Rheology]+'/'
+Dict_Rheology = {0: 'Bercovici', 1: 'Roscoe', 2: 'Arrhenius'}
+Root_Run = os.path.join(Destination_Folder(Dict_Param['El'][0],Dict_Param['Grav'][0],Root),'M'+Dict_Model[Model]+'_'\
+                        'TSc_'+Dict_Schema[T_Schema]+'_'\
+                        'HSc_'+Dict_Schema[H_Schema]+'_'\
+                        'R'+Dict_Rheology[Rheology])
+Journal = Journal_name(Dict_Param['El'][0],Dict_Param['Grav'][0])
 
+if not os.path.isdir(Destination_Folder(Dict_Param['El'][0],Dict_Param['Grav'][0],Root)):
+    os.mkdir(Destination_Folder(Dict_Param['El'][0],Dict_Param['Grav'][0],Root))
 if not os.path.isdir(Root_Run):
     os.mkdir(Root_Run)
-if Init == 0:
-    if Name_Folder_Run == '':
-        print datetime.date.today()
-        print 'On cree un nouveaux dossier pour acceuillir les runs, le code et le backtrace:'
-        List_Folder_Compatible = [ f for f in os.listdir(Root_Run) if len(f.split('_')) == 3]
-        List_Folder_Existant = [ f for f in List_Folder_Compatible  if f.split('_')[1] == str(datetime.date.today()) ]
-        if len(List_Folder_Existant) == 0:
-            Name_Folder_Run = 'Run_'+str(datetime.date.today())+'_0'
-        else:
-            Nombre_Folder = max([int(version.split('_')[2]) for version in List_Folder_Existant])
-            Name_Folder_Run = 'Run_'+str(datetime.date.today())+'_'+str(Nombre_Folder+1)
-        print Name_Folder_Run
-        print Root_Code
-        print Root_Run+Name_Folder_Run+'/Run_Code'
-        os.mkdir(Root_Run+Name_Folder_Run)
-        copy_folder(Root_Code,Root_Run+Name_Folder_Run+'/Run_Code')
-    else :
-        if not os.path.isdir(Root_Run+Name_Folder_Run):
-            os.mkdir(Root_Run+Name_Folder_Run)
-            copy_folder(Root_Code,Root_Run+Name_Folder_Run+'/Run_Code')
-            # shutil.copytree(Root_Code,Root_Run+Name_Folder_Run+'/Run_Code')
-        print Root_Run+Name_Folder_Run
-elif Init == 1:
-    print Root_Run+Name_Folder_Run
-    if Name_Folder_Run == '':
-        print 'Preciser le Name_Folder_Run dans lequelle il faut travaille'
-        print 'Init =1 implique que des donner ont deja etait produite'
-        sys.exit()
-else:
-    print 'Init ne peut etre que 0 ou 1'
-    sys.exit()
-Root_Run = Root_Run+Name_Folder_Run+'/'
-Root_Code = Root_Run+'Run_Code/'
+
+if Name_Folder_Run == '':
+    print datetime.date.today()
+    print 'On cree un nouveaux dossier pour acceuillir les runs, le code et le backtrace:'
+    List_Folder_Compatible = [ f for f in os.listdir(Root_Run) if len(f.split('_')) == 3]
+    List_Folder_Existant = [ f for f in List_Folder_Compatible  if f.split('_')[1] == str(datetime.date.today()) ]
+    if len(List_Folder_Existant) == 0:
+        Name_Folder_Run = 'Run_'+str(datetime.date.today())+'_0'
+    else:
+        Nombre_Folder = max([int(version.split('_')[2]) for version in List_Folder_Existant])
+        Name_Folder_Run = 'Run_'+str(datetime.date.today())+'_'+str(Nombre_Folder+1)
+    print Name_Folder_Run
+    print Root_Code
+    print os.path.join(Root_Run,Name_Folder_Run,'Run_Code')
+    os.mkdir(os.path.join(Root_Run,Name_Folder_Run))
+    copy_folder(Root_Code,os.path.join(Root_Run,Name_Folder_Run,'Run_Code'))
+else :
+    if not os.path.isdir(os.path.join(Root_Run,Name_Folder_Run)):
+        os.mkdir(os.path.join(Root_Run,Name_Folder_Run))
+        copy_folder(os.path.join(Root_Code,Root_Run,Name_Folder_Run,'Run_Code'))
+        # shutil.copytree(Root_Code,Root_Run+Name_Folder_Run+'/Run_Code')
+
+Root_Run = os.path.join(Root_Run,Name_Folder_Run)
+Root_Code = os.path.join(Root_Run,'Run_Code')
 
 if not os.path.isdir(Root_Run) or not os.path.isdir(Root_Code):
     print 'Root_Run : ' + Root_Run
@@ -128,12 +147,12 @@ print 'Root_Run : ' + Root_Run
 print 'Root_Code : ' + Root_Code
 
 ################################
-# Journal de ELAS- Record all the version runed
+# Journal - Record all the version runed
 if Init == 0 :
     now = datetime.datetime.now()
     write = distutils.util.strtobool(input("Do you want to write in the journal ?: "))
     if write:
-        with open(Root_ELAS+Journal_ELAS, 'a') as f:
+        with open(os.path.join(Destination_Folder(Dict_Param['El'][0],Dict_Param['Grav'][0],Root),Journal), 'a') as f:
             f.write('\n'+'####################'+'\n')
             f.write('-----------------------------'+'\n')
             f.write(str(now)+' ------- '+Name_Folder_Run)
@@ -157,7 +176,7 @@ if Init == 0 :
 now = datetime.datetime.now()
 write = distutils.util.strtobool(input("Do you want to write in backtrace ? yes or no ?: "))
 if write:
-    with open(Root_Code+Bactrace_Run, 'a') as f:
+    with open(os.path.join(Root_Code,Bactrace_Run), 'a') as f:
         f.write('\n\n'+'-----------------------------'+'\n\n')
         f.write(str(now))
         f.write('\n\n'+'-----------------------------'+'\n\n')
@@ -194,50 +213,33 @@ for run in Dict_Run:
 
     print space + name + space
 
-    if Init == 0:
-        print ' Start from no backup \n'
-        Backup = [ '0' , 'Backup_000000.dat']
-        if os.path.isdir(Root_Run+name):
-            print 'Le repertoire existe deja: Voici la liste des fichiers:'
-            print [elt for elt in os.listdir(Root_Run+name) if elt.split('_')[0] == 'Backup']
-            if len([elt for elt in os.listdir(Root_Run+name) if elt.split('_')[0] == 'Backup']) < 10:
-                Bool = True
-            else:
-                Bool = False
-                # Bool =distutils.util.strtobool(input(" Directory already exist, Do you want to remove it ? yes or no ?: ")) 
-            if Bool:
-                shutil.rmtree(Root_Run+name)
-                os.mkdir(Root_Run+name)
-            else:
-                if len([elt for elt in os.listdir(Root_Run+name) if elt.split('_')[0] == 'Backup'])<2:
-                    print 'Pas de fichier backup dans le dossier '+name+' considerer. \n Consider to say do to the question before'
-                    raise SystemExit
-                else :
-                    back = [elt for elt in os.listdir(Root_Run+name) if elt.split('_')[0] == 'Backup'][-1]
-                    Backup = [ '1' , back]
-                    print 'On repart du fichier ' + back 
+    Backup = [ '0' , 'Backup_000000.dat']
+    if os.path.isdir(os.path.join(Root_Run,name)):
+        print 'Le repertoire existe deja: Voici la liste des fichiers:'
+        print [elt for elt in os.listdir(Root_Run+name) if elt.split('_')[0] == 'Backup']
+        if len([elt for elt in os.listdir(os.path.join(Root_Run,name)) if elt.split('_')[0] == 'Backup']) < 10:
+            Bool = True
         else:
-            os.mkdir(Root_Run+name)
-    elif Init == 1:
-        if os.path.isdir(Root_Run+name):
-            if len([elt for elt in os.listdir(Root_Run+name) if elt.split('_')[0] == 'Backup'])<2:
-                print 'Pas de fichier backup dans le dossier '+name+' considerer. \n Consider to use Init=0'
+            Bool = False
+            # Bool =distutils.util.strtobool(input(" Directory already exist, Do you want to remove it ? yes or no ?: ")) 
+        if Bool:
+            shutil.rmtree(os.path.join(Root_Run,name))
+            os.mkdir(os.path.join(Root_Run,name))
+        else:
+            if len([elt for elt in os.listdir(os.path.join(Root_Run,name)) if elt.split('_')[0] == 'Backup'])<2:
+                print 'Pas de fichier backup dans le dossier '+name+' considerer. \n Consider to say do to the question before'
                 raise SystemExit
             else :
-                back = [elt for elt in os.listdir(Root_Run+name) if elt.split('_')[0] == 'Backup'][-1]
+                back = [elt for elt in os.listdir(os.path.join(Root_Run,name)) if elt.split('_')[0] == 'Backup'][-1]
                 Backup = [ '1' , back]
                 print 'On repart du fichier ' + back 
-        else:
-            print 'Pas de fichie '+str(name)+' backup dans le dossier considerer, consider to use Init=0'
-            raise SystemExit
+    else:
+        os.mkdir(os.path.join(Root_Run,name))
 
-    else :
-        print 'Init can only take value between 1 ( Use of backup) and 0 ( from the beginning)'
-        raise SystemExit
             
     # Creation de constante_tmp.f90 temporaire
-    with open( str(Root_Code)+'Module_Init.f90' , 'r') as script:
-            with open(str(Root_Code)+'Module_Init'+'_tmp_1.f90', 'wr+') as script_tmp:
+    with open( os.path.join(Root_Code,'Module_Init.f90') , 'r') as script:
+            with open(os.path.join(Root_Code,'Module_Init'+'_tmp_1.f90'), 'wr+') as script_tmp:
                 for l in script:
                     if l == '    CHARACTER(LEN=Size) :: Root\n':
                         to_write = l.replace('Size',str(len(Root_Run)))
@@ -294,17 +296,17 @@ for run in Dict_Run:
                         to_write = l.replace('Null', "'" + Backup[1] + "'")
                         
                     elif l == '    Input_Racine = Root//Null\n':
-                        to_write = l.replace('Null', "'" +  name + "/'")
+                        to_write = l.replace('Null', "'/" +  name + "/'")
                         
                     elif l == '    Output_Racine = Root//Null\n':
-                        to_write = l.replace('Null', "'" + name + "/'")
+                        to_write = l.replace('Null', "'/" + name + "/'")
                     else:
                         to_write = l
                     script_tmp.write(to_write)
 
     # ON decoupe les lignes trop grandes
-    with open( str(Root_Code)+'Module_Init_tmp_1.f90' , 'r') as script:
-        with open(str(Root_Code)+'Module_Init'+'_tmp.f90', 'wr+') as script_tmp:
+    with open( os.path.join(Root_Code,'Module_Init_tmp_1.f90'), 'r') as script:
+        with open(os.path.join(Root_Code,'Module_Init'+'_tmp.f90'), 'wr+') as script_tmp:
             for line in script:
                 if line.split('=')[0] != '    Root ' and line.split('=')[0] != '    Root_Code ':
                     to_write = line
@@ -316,22 +318,22 @@ for run in Dict_Run:
                     script_tmp.write(to_write2)
             
     # Make executble with name: name
-    with open(str(Root_Code)+'run.sh' , 'r') as script:
-            with open(str(Root_Code)+'run_tmp.sh', 'wr+') as script_tmp:
+    with open(os.path.join(Root_Code,'run.sh') , 'r') as script:
+            with open(os.path.join(Root_Code,'run_tmp.sh'), 'wr+') as script_tmp:
                 for l in script:
                     if len(l.split('.o')) > 1:
-                        to_write = l.replace('run',Root_Code+name)
+                        to_write = l.replace('run',os.path.join(Root_Code,name))
                     else:
                         to_write = l
                     to_write = to_write.replace('Compilateur',Compilateur)
                     script_tmp.write(to_write)
 
-    subprocess.call(str(Root_Code)+'run_tmp.sh', shell=True)
+    subprocess.call(os.path.join(Root_Code,'run_tmp.sh'), shell=True)
 
 # Make the fihcier to run on malbec
 if _platform == "linux" or _platform == "linux2":
-    with open( str(Root_Code) + 'run.job' , 'r') as script:
-        with open(str(Root_Code)+'run_tmp'+'.job', 'wr+') as script_tmp:
+    with open( os.path.join(Root_Code, 'run.job') , 'r') as script:
+        with open(os.path.join(Root_Code,'run_tmp'+'.job'), 'wr+') as script_tmp:
             for l in script:
                 if l == '#SBATCH -J Name\n':
                     to_write = l.replace('Name','EL')
@@ -345,9 +347,9 @@ if _platform == "linux" or _platform == "linux2":
                     to_write = l
                 script_tmp.write(to_write)
     #On ecrit le fichier Multi_Job
-    map(os.remove,[str(Root_Code)+f for f in os.listdir(str(Root_Code))
+    map(os.remove,[os.path.join(Root_Code,f) for f in os.listdir(str(Root_Code))
                    if f.split('_')[0] == 'Multi'])
-    Job_File = str(Root_Code)+'Multi_Run'
+    Job_File = os.path.join(Root_Code,'Multi_Run')
     for i,run in enumerate(Dict_Run):
         name = str('E' + run['El']
                    + '_G' + run['Grav']
@@ -364,8 +366,8 @@ if _platform == "linux" or _platform == "linux2":
                    + '_Dt' + run['Dt'])
         with open(Job_File, 'a') as fc:
             fc.write(str(i)+' '+name+'\n')
-            with open(Root_Code + Bactrace_Run, 'a') as f:
+            with open(os.path.join(Root_Code ,Bactrace_Run), 'a') as f:
                 f.write(name +'\n')
 
-    script = str('sbatch '+ str(Root_Code)+'run_tmp'+'.job')
+    script = str('sbatch '+ os.path.join(Root_Code,'run_tmp'+'.job'))
     subprocess.call(script ,shell=True)
