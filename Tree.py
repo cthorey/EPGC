@@ -106,7 +106,8 @@ def Draw_Tree(Root,Startup_Node):
     Visit_Branch(Runs,{'el0.0':'el0.0'})
     graph.write_pdf(Root+'/Tree_Runs.pdf')
 
-Root = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/SCAPAD/GRAV/Workspace_2015-04-21_0'
-Startup_Node = {'el0.0':'el0.0'}
+Root = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/'
+dir_w = Root + 'SCAPAD/ELAS/MSkin_TSc_Newton_HSc_Newton_RBercovici/Workspace_2015-05-29_0'
+Startup_Node = {'el1.0':'el1.0'}
 Draw_Tree(Root,Startup_Node)
 
