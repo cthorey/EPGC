@@ -217,20 +217,16 @@ SUBROUTINE XI_SPLIT(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
     INTEGER, INTENT(IN) :: Rheology
     
     ! Nombre sans dimension
-    DOUBLE PRECISION ,INTENT(IN) :: Pe,delta0,el,grav,N1,tmps,Dt,theta,psi,nu
-    
+    DOUBLE PRECISION ,INTENT(IN) :: nu,Pe,delta0,el,grav,N1,tmps,Dt,theta,psi
+
     ! Parametre pour le sous programme
     DOUBLE PRECISION, PARAMETER :: pi=3.14159265
 
+    DOUBLE PRECISION :: h_a,delta_a,delta_a2,eta_a,Ai,T_a
+    DOUBLE PRECISIOn :: omega_a,sigma_a
 
-    DOUBLE PRECISIOn :: omega_a,sigma_a,omega_b,sigma_b
-    DOUBLE PRECISION :: Ai,Bi,eta_a,eta_b
-    DOUBLE PRECISION :: h_a,h_a2,h_a3,h_b,h_b2,h_b3
-    DOUBLE PRECISION :: delta_a,delta_a2,delta_a3,delta_b,delta_b2,delta_b3
-    DOUBLE PRECISION :: T_a,T_a2,T_a3,T_b,T_b2,T_b3
-    DOUBLE PRECISION :: Ts_a,Ts_a2,Ts_a3,Ts_b,Ts_b2,Ts_b3
-    DOUBLE PRECISIOn :: Ds_b,Ds_a
-    
+    DOUBLE PRECISION :: h_b,delta_b,delta_b2,eta_b,Bi,T_b
+    DOUBLE PRECISIOn :: omega_b,sigma_b,Ts_a,Ts_b,Ds_b,Ds_a
     DOUBLE PRECISION :: loss,beta,Crys
     INTEGER :: i,col
 
@@ -241,60 +237,32 @@ SUBROUTINE XI_SPLIT(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
     DO i=1,N,1  
        IF1:IF (i .NE. 1) THEN
           Bi=(ray(i-1)/(dist(i)*Dr))*Dt
-          eta_b=(grav*(H(i,3)-H(i-1,3)))/Dr
-          h_b = 0.5d0*(H(i,3)+H(i-1,3))
-          h_b2 = 0.5d0*(H(i,3)**2+H(i-1,3)**2)
-          h_b3 = 0.5d0*(H(i,3)**3+H(i-1,3)**3)
-          
-          delta_b = 0.5d0*(BL(i,col)+BL(i-1,col))
-          delta_b2 = 0.5d0*(BL(i,col)**2+BL(i-1,col)**2)
-          delta_b3 = 0.5d0*(BL(i,col)**3+BL(i-1,col)**3)
-          
+          h_b=0.5d0*(H(i,3)+H(i-1,3))
+          delta_b=0.5d0*(BL(i,col)+BL(i-1,col))
+          delta_b2=0.5d0*(BL(i,col)**2+BL(i-1,col)**2)
           T_b = 0.5d0*(T(i,col)+T(i-1,col))
-          T_b2 = 0.5d0*(T(i,col)**2+T(i-1,col)**2)
-          T_b3 = 0.5d0*(T(i,col)**3+T(i-1,col)**3)
-          
           Ts_b = 0.5d0*(Ts(i,col)+Ts(i-1,col))
-          Ts_b2 = 0.5d0*(Ts(i,col)**2+Ts(i-1,col)**2)
-          Ts_b3 = 0.5d0*(Ts(i,col)**3+Ts(i-1,col)**3)
-          
+          eta_b = (H(i,3)-H(i-1,3))/Dr
           Ds_b = T_b-Ts_b
 
-          CALL fomega_b(Bi,h_b,h_b2,h_b3,delta_b,delta_b2,delta_b3,T_b,T_b2,T_b3&
-               &,Ts_b,Ts_b2,Ts_b3,Ds_b,eta_b,omega_b,nu,Rheology,ERROR_CODE)
-
-          CALL fsigma_b(Bi,h_b,h_b2,h_b3,delta_b,delta_b2,delta_b3,T_b,T_b2,T_b3&
-               &,Ts_b,Ts_b2,Ts_b3,Ds_b,eta_b,sigma_b,nu,Rheology,ERROR_CODE)
+          CALL fOmega_b(Bi,h_b,delta_b,T_b,Ts_b,eta_b,Ds_b,omega_b,nu,Rheology,ERROR_CODE)
+          CALL fsigma_b(Bi,h_b,delta_b,T_b,Ts_b,sigma_b,Ds_b,delta_b2,&
+               &eta_b,nu,Rheology,ERROR_CODE)
 
        ENDIF IF1
 
        IF2: IF (i .NE. N) THEN
           Ai=(ray(i)/(dist(i)*Dr))*Dt
-          eta_a=(grav*(H(i+1,3)-H(i,3)))/Dr
-
-          h_a = 0.5d0*(H(i,3)+H(i+1,3))
-          h_a2 = 0.5d0*(H(i,3)**2+H(i+1,3)**2)
-          h_a3 = 0.5d0*(H(i,3)**3+H(i+1,3)**3)
-          
-          delta_a = 0.5d0*(BL(i,col)+BL(i+1,col))
-          delta_a2 = 0.5d0*(BL(i,col)**2+BL(i+1,col)**2)
-          delta_a3 = 0.5d0*(BL(i,col)**3+BL(i+1,col)**3)
-          
+          h_a=0.5d0*(H(i+1,3)+H(i,3))
+          delta_a=0.5d0*(BL(i+1,col)+BL(i,col))
+          delta_a2=0.5d0*(BL(i+1,col)**2+BL(i,col)**2)
           T_a = 0.5d0*(T(i,col)+T(i+1,col))
-          T_a2 = 0.5d0*(T(i,col)**2+T(i+1,col)**2)
-          T_a3 = 0.5d0*(T(i,col)**3+T(i+1,col)**3)
-          
           Ts_a = 0.5d0*(Ts(i,col)+Ts(i+1,col))
-          Ts_a2 = 0.5d0*(Ts(i,col)**2+Ts(i+1,col)**2)
-          Ts_a3 = 0.5d0*(Ts(i,col)**3+Ts(i+1,col)**3)
-          
+          eta_a = (H(i+1,3)-H(i,3))/Dr
           Ds_a = T_a-Ts_a
-          
-          CALL fomega_a(Ai,h_a,h_a2,h_a3,delta_a,delta_a2,delta_a3,T_a,T_a2,T_a3&
-               &,Ts_a,Ts_a2,Ts_a3,Ds_a,eta_a,omega_a,nu,Rheology,ERROR_CODE)
-
-          CALL fsigma_a(Ai,h_a,h_a2,h_a3,delta_a,delta_a2,delta_a3,T_a,T_a2,T_a3&
-               &,Ts_a,Ts_a2,Ts_a3,Ds_a,eta_a,sigma_a,nu,Rheology,ERROR_CODE)
+          CALL fomega_a(Ai,h_a,delta_a,T_a,Ts_a,eta_a,Ds_a,omega_a,nu,Rheology,ERROR_CODE)
+          CALL fsigma_a(Ai,h_a,delta_a,T_a,Ts_a,eta_a,Ds_a,delta_a2,&
+               &sigma_a,nu,Rheology,ERROR_CODE)
 
        END IF IF2
 
