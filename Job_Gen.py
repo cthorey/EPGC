@@ -57,7 +57,7 @@ Dict_Param = {'Sigma': ['2D-2'],
               'gam':['0D0'],
               'Inter_Q':['1D20'],
               'Dr' : ['1D-2'],
-              'Ep': ['1D-3'],
+              'Ep': ['1D-4'],
               'Dt' : ['1D-7']}
 M_grid = 4000
 Init = 0 # 1 If you want to begin for the last backup

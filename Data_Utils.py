@@ -169,7 +169,7 @@ def copy_folder(src,dest):
 
 root_path = Who_is_Root()
 runs = []
-runs.append(os.path.join('ELAS','MSkin_TSc_Newton_HSc_Newton_RBercovici','Run_2015-05-28_0'))
+runs.append(os.path.join('ELAS','MSkin_TSc_Newton_HSc_Newton_RBercovici','Run_2015-05-29_1'))
 # runs.append(os.path.join('ELAS','MSkin_TSc_Newton_HSc_Newton_RBercovici','Run_2015-05-28_1'))
 # runs.append(os.path.join('ELAS','MSkin_TSc_Newton_HSc_Newton_RBercovici','Run_2015-05-28_3'))
 # runs.append(os.path.join('ELAS','MSkin_TSc_Newton_HSc_Newton_RArrhenius','Run_2015-05-28_1'))
