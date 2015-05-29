@@ -115,47 +115,53 @@ def convert_to_worskpace(c_input,c_output,tracker):
     track.write('Dossier input %s\n'%(c_input))
     track.close()
     for liste in merge:
-        track = open(tracker,'a')
-        track.write(liste[0]+'\n')
-        track.close()
-        dict_tmp = dict.fromkeys(liste)
-        if len(dict_tmp) == 1: # On fait un premier test pour savoir si le wroksapce existe deja
-            key = dict_tmp.keys()[0]
-            Racine = os.path.join(c_input,key)
-            test,Workspace,Nsd = Load_Nsd(Racine)
-            Already_Same_Workspace = Tcheque_Workspace(key,Workspace,c_input,c_output)
-            if Already_Same_Workspace:
-                # print 'Pas de changement dans: '+key
-                continue
-        for key,value in dict_tmp.iteritems():
-            Racine = os.path.join(c_input,key)
-            test,Workspace,Nsd = Load_Nsd(Racine)
-            Data = load_Data_tmp(Racine)
-            dict_tmp[key] = {'NsD': Nsd,
-                             'Data': Data}
+        print liste
+        try:
+            track = open(tracker,'a')
+            track.write(liste[0]+'\n')
+            track.close()
+            dict_tmp = dict.fromkeys(liste)
+            if len(dict_tmp) == 1: # On fait un premier test pour savoir si le wroksapce existe deja
+                key = dict_tmp.keys()[0]
+                Racine = os.path.join(c_input,key)
+                test,Workspace,Nsd = Load_Nsd(Racine)
+                Already_Same_Workspace = Tcheque_Workspace(key,Workspace,c_input,c_output)
+                if Already_Same_Workspace:
+                    # print 'Pas de changement dans: '+key
+                    continue
+            for key,value in dict_tmp.iteritems():
+                Racine = os.path.join(c_input,key)
+                test,Workspace,Nsd = Load_Nsd(Racine)
+                Data = load_Data_tmp(Racine)
+                dict_tmp[key] = {'NsD': Nsd,
+                                 'Data': Data}
         
-        data_tmp = []; Nsd_l = [];
-        for df in dict_tmp.itervalues():
-            Nsd_l.append(df['NsD'])
-            data_tmp.append(df['Data'])
-        Data_final=[df for df in itertools.chain(*data_tmp)]
-        t_index=np.array([[i,df.tm.max()] for i,df in enumerate(Data_final)])
-        df=pd.DataFrame({'indice':t_index[:,0],'t':t_index[:,1]}).sort('t')
-        indice=[np.int(elt) for elt in df.sort('t').indice]
-        Data_final=[Data_final[i] for i in indice]
-        Column_data = ['tm','dist', 'H','Te','BL', 'Xi','Ts', 'P','Srr','Stt','R','hmubar','hthetabar','Mu_e']
-        Data = [Df[Column_data] for Df in Data_final]
-        for i,df in enumerate(Data_final):
-            if i == 0:
-                Max = { key : [] for key in df.columns}
-            for key,liste in Max.iteritems():
-                liste.append(df[key][0])
+            data_tmp = []; Nsd_l = [];
+            for df in dict_tmp.itervalues():
+                Nsd_l.append(df['NsD'])
+                data_tmp.append(df['Data'])
+            Data_final=[df for df in itertools.chain(*data_tmp)]
+            t_index=np.array([[i,df.tm.max()] for i,df in enumerate(Data_final)])
+            df=pd.DataFrame({'indice':t_index[:,0],'t':t_index[:,1]}).sort('t')
+            indice=[np.int(elt) for elt in df.sort('t').indice]
+            Data_final=[Data_final[i] for i in indice]
+            Column_data = ['tm','dist', 'H','Te','BL', 'Xi','Ts', 'P','Srr','Stt','R','hmubar','hthetabar','Mu_e']
+            Data = [Df[Column_data] for Df in Data_final]
+            for i,df in enumerate(Data_final):
+                if i == 0:
+                    Max = { key : [] for key in df.columns}
+                for key,liste in Max.iteritems():
+                    liste.append(df[key][0])
             
-        D_pickle = {'NsD': Nsd_l[0],
-                    'Data': Data,
-                    'Max': Max}
-        with open(os.path.join(c_output,Workspace), 'wb') as f:
-            pickle.dump(D_pickle, f, pickle.HIGHEST_PROTOCOL)
+            D_pickle = {'NsD': Nsd_l[0],
+                        'Data': Data,
+                        'Max': Max}
+            with open(os.path.join(c_output,Workspace), 'wb') as f:
+                pickle.dump(D_pickle, f, pickle.HIGHEST_PROTOCOL)
+        except:
+            track = open(tracker,'a')
+            track.write(liste[0]+': FAILED \n')
+            track.close()        
 
 def copy_folder(src,dest):
     if not os.path.isdir(dest):
@@ -169,11 +175,11 @@ def copy_folder(src,dest):
 
 root_path = Who_is_Root()
 runs = []
-runs.append(os.path.join('ELAS','MSkin_TSc_Newton_HSc_Newton_RArrhenius','Run_2015-05-29_0'))
+# runs.append(os.path.join('ELAS','MSkin_TSc_Newton_HSc_Newton_RArrhenius','Run_2015-05-29_0'))
 # runs.append(os.path.join('ELAS','MSkin_TSc_Newton_HSc_Newton_RBercovici','Run_2015-05-28_1'))
 # runs.append(os.path.join('ELAS','MSkin_TSc_Newton_HSc_Newton_RBercovici','Run_2015-05-28_3'))
 # runs.append(os.path.join('ELAS','MSkin_TSc_Newton_HSc_Newton_RArrhenius','Run_2015-05-28_1'))
-# runs.append(os.path.join('GRAV','MSkin_TSc_GFD_HSc_Newton_RArrhenius','Run_2015-05-29_0'))
+runs.append(os.path.join('GRAV','MSkin_TSc_GFD_HSc_Newton_RArrhenius','Run_2015-05-29_0'))
 # runs.append(os.path.join('GRAV','MSkin_TSc_GFD_HSc_Newton_RBercovici','Run_2015-05-29_0'))
 
 # runs.append('GRAV/Run_2015-04-21_0/')# Pas obulier / a la fin
