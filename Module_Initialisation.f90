@@ -42,11 +42,11 @@ CONTAINS
     
     !Choix du model
     Model = 1
-    T_Schema = 0
+    T_Schema = 1
     H_Schema = 0
-    Rheology = 0
-    el = 1D0
-    grav = 0D0
+    Rheology = 2
+    el = 0D0
+    grav = 1D0
 
     ! Parametre du model
     tmps_m = 1D32  
@@ -58,7 +58,7 @@ CONTAINS
     ! Nombre sans dimensions
     delta0 = 5D-3
     sigma = 2D-2
-    nu = 1D0
+    nu = 1D-3
     Pe = 1D-2
     psi = 1D0
     N1 = 1D0
