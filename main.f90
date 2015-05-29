@@ -115,7 +115,7 @@ PROGRAM MAIN
 
   
   ! Temps auquelle on imprime un fichier
-  ALLOCATE(time_frame(300))
+  ALLOCATE(time_frame(250))
   CALL logspace(Dt,1D5,time_frame)
 
   TEMPS: DO WHILE (tmps<tmps_m)
@@ -236,7 +236,8 @@ PROGRAM MAIN
      k = k+1
      tmps_n = tmps
      tmps = tmps+Dt
-
+     ! print*,k,H(1,3),T(1,3),Ts(1,3)
+     
   END DO TEMPS
 
   DEALLOCATE(H,T,Xi,BL,Ts)

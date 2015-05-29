@@ -86,7 +86,6 @@ CONTAINS
 !!! DATA FILE
     CASE(1)
        IF (compteur==k2) THEN
-          print*,'Write data',tmps,k
           ! Data pour chaque point de la grille
           WRITE(Data_File,Format_RV)Output_Racine,'RV_',compteur,'.dat'
           OPEN(unit=2,file=Data_File,status='replace')
