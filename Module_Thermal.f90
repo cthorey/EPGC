@@ -63,7 +63,7 @@ CONTAINS
        z=z+1
        ! PRINT*,F_err,z,'Temperature'
        IF (F_err>F_errt) THEN
-          PRINT*,tmps,z,'Erreur_Ite_Temp',F_err,F_errt
+          ! PRINT*,tmps,z,'Erreur_Ite_Temp',F_err,F_errt
        ENDIF
        IF (z>2000 .OR. ERROR_CODE == 1) THEN
           PRINT*,z

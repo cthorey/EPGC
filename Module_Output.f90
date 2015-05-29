@@ -94,7 +94,7 @@ CONTAINS
           
           R = 0.d0
           DO i =1,M,1
-             IF (H(i,3)<delta0) THEN
+             IF (H(i,3)<=delta0) THEN
                 R = dist(i-1);EXIT
              ENDIF
           ENDDO

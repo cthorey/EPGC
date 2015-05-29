@@ -78,9 +78,9 @@ CONTAINS
     Input_Data_Name =  'Backup_0000015.dat'
     Root = '/Users/thorey/Documents/These/Projet/Refroidissement&
          &/Skin_Model/'
-    Root_Code = Root//'Code/Code_ELAS/'
-    Input_Racine = Root//'Code/Code_ELAS/Test/Run/'
-    Output_Racine = Root//'Code/Code_ELAS/Test/Run/'
+    Root_Code = Root//'Code/EPGC/'
+    Input_Racine = Root//'Code/EPGC/Test/Run/'
+    Output_Racine = Root//'Code/EPGC/Test/Run/'
     NF = 'Output_Time'
 
     ! Ecriture du nom des fichiers
