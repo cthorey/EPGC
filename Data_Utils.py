@@ -12,14 +12,14 @@ from itertools import groupby
 # Fonction
 
 def set_path_input(Root,Run):
-    run = Root+Run
+    run = os.path.join(Root,Run)
     if not os.path.exists(run):
         print 'Erreur, pas de run en question',run
         sys.exit()
     return run
         
 def set_path_output(Root,Run):
-    workspace = (Root+Run).replace('Run','Workspace')
+    workspace = (os.path.join(Root,Run)).replace('Run','Workspace')
     if not os.path.exists(workspace):
         os.mkdir(workspace)
     return workspace
@@ -48,14 +48,14 @@ def m_Test_Size_pickle(input_file):
         return len(data_pickle.tm)
         
 def Tcheque_Workspace(key,Workspace,c_input,c_output):
-    filee = c_output+Workspace
+    filee = os.path.join(c_output,Workspace)
     boole= None
     if not os.path.isfile(filee):
         # print 'N existe pas encore',filee
         boole = False
     else:
         N = m_Test_Size_pickle(filee)
-        N_new = len([f for f in os.listdir(c_input+key+'/') if f.split()[0][0] == 'R'])
+        N_new = len([f for f in os.listdir(os.path.join(c_input,key)) if f.split()[0][0] == 'R'])
         # print N,N_new
         if N == N_new:
             boole = True
@@ -67,12 +67,11 @@ def to_string(s):
     return str(s).replace('D','E')
 
 def Load_Nsd(Racine):
-
-    test = os.path.isfile(Racine+'NbSsDim.txt')
+    test = os.path.isfile(os.path.join(Racine,'NbSsDim.txt'))
     if not test:
         # print 'Pas de fichier: '+ key
         return test,None,None
-    Nsd = pd.read_csv(Racine+'NbSsDim.txt',
+    Nsd = pd.read_csv(os.path.join(Racine,'NbSsDim.txt'),
                       sep=' ',
                       skipinitialspace=True,
                       lineterminator='\n',
@@ -91,15 +90,14 @@ def load_Data_tmp(Racine):
     Data = []
     files = [f for f in os.listdir(Racine) if f.split()[0][0] == 'R']
     for i, file in enumerate(files):
-        # print file
-        Data_tmp = pd.read_csv(Racine+file,
+        Data_tmp = pd.read_csv(os.path.join(Racine,file),
                                sep=' ',
                                skipinitialspace=True,
                                lineterminator='\n',
                                header=0)
         if len(Data_tmp) == 0:
-            os.remove(Racine+file)
-            os.remove(Racine+'Backup_'+file[3:])
+            os.remove(os.path.join(Racine,file))
+            os.remove(os.path.join(Racine,'Backup_'+file[3:]))
             continue
         Data_tmp = Data_tmp.applymap(lambda x: to_string(x))
         Data_tmp = Data_tmp.applymap(lambda x: to_number(x))
@@ -123,15 +121,14 @@ def convert_to_worskpace(c_input,c_output,tracker):
         dict_tmp = dict.fromkeys(liste)
         if len(dict_tmp) == 1: # On fait un premier test pour savoir si le wroksapce existe deja
             key = dict_tmp.keys()[0]
-            # print key
-            Racine = c_input+key+'/'
+            Racine = os.path.join(c_input,key)
             test,Workspace,Nsd = Load_Nsd(Racine)
             Already_Same_Workspace = Tcheque_Workspace(key,Workspace,c_input,c_output)
             if Already_Same_Workspace:
                 # print 'Pas de changement dans: '+key
                 continue
         for key,value in dict_tmp.iteritems():
-            Racine = c_input+key+'/'
+            Racine = os.path.join(c_input,key)
             test,Workspace,Nsd = Load_Nsd(Racine)
             Data = load_Data_tmp(Racine)
             dict_tmp[key] = {'NsD': Nsd,
@@ -157,28 +154,34 @@ def convert_to_worskpace(c_input,c_output,tracker):
         D_pickle = {'NsD': Nsd_l[0],
                     'Data': Data,
                     'Max': Max}
-        with open(c_output+Workspace, 'wb') as f:
+        with open(os.path.join(c_output,Workspace), 'wb') as f:
             pickle.dump(D_pickle, f, pickle.HIGHEST_PROTOCOL)
 
 def copy_folder(src,dest):
     if not os.path.isdir(dest):
         os.mkdir(dest)
     for filee in [f for f in os.listdir(src) if f[0]!='.']:
-        if not os.path.isdir(src+filee):
-            shutil.copy(src+filee,dest)                
+        if not os.path.isdir(os.path.join(src,filee)):
+            shutil.copy(os.path.join(src,filee),dest)                
 
 #############
 # Program
 
 root_path = Who_is_Root()
 runs = []
-runs.append('ELAS/MSkin_TSc_Newton_HSc_Newton_RBercovici/Run_2015-05-21_1/')
+runs.append(os.path.join('ELAS','MSkin_TSc_Newton_HSc_Newton_RBercovici','Run_2015-05-28_0'))
+# runs.append(os.path.join('ELAS','MSkin_TSc_Newton_HSc_Newton_RBercovici','Run_2015-05-28_1'))
+# runs.append(os.path.join('ELAS','MSkin_TSc_Newton_HSc_Newton_RBercovici','Run_2015-05-28_3'))
+# runs.append(os.path.join('ELAS','MSkin_TSc_Newton_HSc_Newton_RArrhenius','Run_2015-05-28_1'))
+# runs.append(os.path.join('GRAV','MSkin_TSc_GFD_HSc_Newton_RArrhenius','Run_2015-05-28_0'))
+# runs.append(os.path.join('GRAV','MSkin_TSc_GFD_HSc_Newton_RBercovici','Run_2015-05-28_0'))
+
 # runs.append('GRAV/Run_2015-04-21_0/')# Pas obulier / a la fin
 for run in runs:
-    tracker = '/home/thorey/Code_ELAS/Tracker_'+'_'.join(run.split('_')[-2:])[:-1]+'.txt'
+    tracker = '/home/thorey/EPGC/Tracker_'+'_'.join(run.split('/'))+'.txt'
     run_path = set_path_input(root_path,run)
     workspace_path = set_path_output(root_path,run)
-    copy_folder(run_path+'Run_Code/',workspace_path+'Run_Code/')
+    copy_folder(os.path.join(run_path,'Run_Code'),os.path.join(workspace_path,'Run_Code'))
     convert_to_worskpace(run_path,workspace_path,tracker)
     f = open(tracker,'a')
     f.write('Workspace made with sucess !! \n')

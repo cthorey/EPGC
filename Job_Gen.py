@@ -67,6 +67,7 @@ def copy_folder(src,dest):
     os.mkdir(dest)
     print dest
     for filee in [f for f in os.listdir(src) if f[0]!='.']:
+        print filee
         if not os.path.isdir(os.path.join(src,filee)):
             shutil.copy(filee,dest+'/')
 

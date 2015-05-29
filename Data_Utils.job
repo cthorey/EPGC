@@ -4,9 +4,9 @@
 #SBATCH --partition data
 
 echo "Running on: $SLURM_NODELIST"
-cd /gpfs/users/thorey/Classification/Script/
+cd /gpfs/users/thorey/EPGC
 module purge
 module load slurm
 module load python/gcc/2.7.3_ext
 
-python /home/thorey/Code_ELAS/Data_Utils.py
+python /home/thorey/EPGC/Data_Utils.py
