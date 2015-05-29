@@ -23,9 +23,9 @@ CONTAINS
             & h_a**3 - 4.0d0/5.0d0*Ts_a*delta_a**3*nu + (4.0d0/5.0d0)*Ts_a*&
             & delta_a**3 + 2*Ts_a*delta_a**2*h_a*nu - 2*Ts_a*delta_a**2*h_a - 2&
             & *Ts_a*delta_a*h_a**2*nu + 2*Ts_a*delta_a*h_a**2 + h_a**3*nu
-
-       phi_a = (nu+(1.d0-nu)*T_a)*h_a3-(2.d0/5.d0)*(1.d0-nu)*&
-            &Delta_T_a*(2.d0*delta_a3-5.d0*delta_a2*h_a+5.d0*delta_a*h_a2)
+       
+       ! phi_a = (nu+(1.d0-nu)*T_a)*h_a3-(2.d0/5.d0)*(1.d0-nu)*&
+       !      &Delta_T_a*(2.d0*delta_a3-5.d0*delta_a2*h_a+5.d0*delta_a*h_a2)
        
     ELSEIF (Rheology == 1) THEN
        ERROR_CODE = 1
@@ -87,25 +87,26 @@ CONTAINS
     DOUBLE PRECISION, PARAMETER :: pi = 3.14159265358979d0
     
     IF (Rheology == 0) THEN
-         dphia_dhi1 = -T_a*delta_a**2*nu + T_a*delta_a**2 + T_a*delta_a*hi*&
-            & nu - T_a*delta_a*hi + T_a*delta_a*hia*nu - T_a*delta_a*hia -&
-            & 3.0d0/8.0d0*T_a*hi**2*nu + (3.0d0/8.0d0)*T_a*hi**2 - 3.0d0/4.0d0*&
-            & T_a*hi*hia*nu + (3.0d0/4.0d0)*T_a*hi*hia - 3.0d0/8.0d0*T_a*hia**2&
-            & *nu + (3.0d0/8.0d0)*T_a*hia**2 + Ts_a*delta_a**2*nu - Ts_a*&
-            & delta_a**2 - Ts_a*delta_a*hi*nu + Ts_a*delta_a*hi - Ts_a*delta_a*&
-            & hia*nu + Ts_a*delta_a*hia + (3.0d0/8.0d0)*hi**2*nu + (3.0d0/4.0d0&
-            & )*hi*hia*nu + (3.0d0/8.0d0)*hia**2*nu
-         dphia_dhi = -T_a*delta_a**2*nu + T_a*delta_a**2 + T_a*delta_a*hi*&
-              & nu - T_a*delta_a*hi + T_a*delta_a*hia*nu - T_a*delta_a*hia -&
-              & 3.0d0/8.0d0*T_a*hi**2*nu + (3.0d0/8.0d0)*T_a*hi**2 - 3.0d0/4.0d0*&
-              & T_a*hi*hia*nu + (3.0d0/4.0d0)*T_a*hi*hia - 3.0d0/8.0d0*T_a*hia**2&
-              & *nu + (3.0d0/8.0d0)*T_a*hia**2 + Ts_a*delta_a**2*nu - Ts_a*&
-              & delta_a**2 - Ts_a*delta_a*hi*nu + Ts_a*delta_a*hi - Ts_a*delta_a*&
-              & hia*nu + Ts_a*delta_a*hia + (3.0d0/8.0d0)*hi**2*nu + (3.0d0/4.0d0&
-              & )*hi*hia*nu + (3.0d0/8.0d0)*hia**2*nu
+       
+          dphia_dhi1 = -T_a*delta_a**2*nu + T_a*delta_a**2 + T_a*delta_a*hi*&
+               & nu - T_a*delta_a*hi + T_a*delta_a*hia*nu - T_a*delta_a*hia -&
+               & 3.0d0/8.0d0*T_a*hi**2*nu + (3.0d0/8.0d0)*T_a*hi**2 - 3.0d0/4.0d0*&
+               & T_a*hi*hia*nu + (3.0d0/4.0d0)*T_a*hi*hia - 3.0d0/8.0d0*T_a*hia**2&
+               & *nu + (3.0d0/8.0d0)*T_a*hia**2 + Ts_a*delta_a**2*nu - Ts_a*&
+               & delta_a**2 - Ts_a*delta_a*hi*nu + Ts_a*delta_a*hi - Ts_a*delta_a*&
+               & hia*nu + Ts_a*delta_a*hia + (3.0d0/8.0d0)*hi**2*nu + (3.0d0/4.0d0&
+               & )*hi*hia*nu + (3.0d0/8.0d0)*hia**2*nu
+          dphia_dhi = -T_a*delta_a**2*nu + T_a*delta_a**2 + T_a*delta_a*hi*&
+               & nu - T_a*delta_a*hi + T_a*delta_a*hia*nu - T_a*delta_a*hia -&
+               & 3.0d0/8.0d0*T_a*hi**2*nu + (3.0d0/8.0d0)*T_a*hi**2 - 3.0d0/4.0d0*&
+               & T_a*hi*hia*nu + (3.0d0/4.0d0)*T_a*hi*hia - 3.0d0/8.0d0*T_a*hia**2&
+               & *nu + (3.0d0/8.0d0)*T_a*hia**2 + Ts_a*delta_a**2*nu - Ts_a*&
+               & delta_a**2 - Ts_a*delta_a*hi*nu + Ts_a*delta_a*hi - Ts_a*delta_a*&
+               & hia*nu + Ts_a*delta_a*hia + (3.0d0/8.0d0)*hi**2*nu + (3.0d0/4.0d0&
+               & )*hi*hia*nu + (3.0d0/8.0d0)*hia**2*nu
 
-         dphia_dhi1=(3.d0/2.d0)*(nu+(1-nu)*T_a)*hia**2-(1-nu)*Delta_T_a*(-delta_a2+delta_a*hia) ! d(phi_i+1/2)/d(h_i+1)
-         dphia_dhi=(3.d0/2.d0)*(nu+(1-nu)*T_a)*hi**2-(1-nu)*Delta_T_a*(-delta_a2+delta_a*hi)     ! d(phi_i+1/2)/d(h_i)
+         ! dphia_dhi1=(3.d0/2.d0)*(nu+(1-nu)*T_a)*hia**2-(1-nu)*Delta_T_a*(-delta_a2+delta_a*hia) ! d(phi_i+1/2)/d(h_i+1)
+         ! dphia_dhi=(3.d0/2.d0)*(nu+(1-nu)*T_a)*hi**2-(1-nu)*Delta_T_a*(-delta_a2+delta_a*hi)     ! d(phi_i+1/2)/d(h_i)
          
     ELSEIF (Rheology == 1) THEN
        ERROR_CODE = 1
@@ -203,14 +204,14 @@ CONTAINS
     IF (Rheology == 0) THEN
        
        phi_b = (4.0d0/5.0d0)*T_b*delta_b**3*nu - 4.0d0/5.0d0*T_b*delta_b&
-          & **3 - 2*T_b*delta_b**2*h_b*nu + 2*T_b*delta_b**2*h_b + 2*T_b*&
-          & delta_b*h_b**2*nu - 2*T_b*delta_b*h_b**2 - T_b*h_b**3*nu + T_b*&
-          & h_b**3 - 4.0d0/5.0d0*Ts_b*delta_b**3*nu + (4.0d0/5.0d0)*Ts_b*&
-          & delta_b**3 + 2*Ts_b*delta_b**2*h_b*nu - 2*Ts_b*delta_b**2*h_b - 2&
-          & *Ts_b*delta_b*h_b**2*nu + 2*Ts_b*delta_b*h_b**2 + h_b**3*nu
+            & **3 - 2*T_b*delta_b**2*h_b*nu + 2*T_b*delta_b**2*h_b + 2*T_b*&
+            & delta_b*h_b**2*nu - 2*T_b*delta_b*h_b**2 - T_b*h_b**3*nu + T_b*&
+            & h_b**3 - 4.0d0/5.0d0*Ts_b*delta_b**3*nu + (4.0d0/5.0d0)*Ts_b*&
+            & delta_b**3 + 2*Ts_b*delta_b**2*h_b*nu - 2*Ts_b*delta_b**2*h_b - 2&
+            & *Ts_b*delta_b*h_b**2*nu + 2*Ts_b*delta_b*h_b**2 + h_b**3*nu
        
-       phi_b=(nu+(1.d0-nu)*T_b)*h_b3-(2.d0/5.d0)*(1.d0-nu)*&
-            &Delta_T_b*(2.d0*delta_b3-5.d0*delta_b2*h_b+5.d0*delta_b*h_b2)
+       ! phi_b=(nu+(1.d0-nu)*T_b)*h_b3-(2.d0/5.d0)*(1.d0-nu)*&
+       !      &Delta_T_b*(2.d0*delta_b3-5.d0*delta_b2*h_b+5.d0*delta_b*h_b2)
     ELSEIF (Rheology == 1) THEN
        ERROR_CODE = 1
     ELSEIF (Rheology == 2) THEN
@@ -289,8 +290,8 @@ CONTAINS
             & hib*nu + Ts_b*delta_b*hib + (3.0d0/8.0d0)*hi**2*nu + (3.0d0/4.0d0&
             & )*hi*hib*nu + (3.0d0/8.0d0)*hib**2*nu
        
-       dphib_dhi=(3.d0/2.d0)*(nu+(1-nu)*T_b)*hi**2-(1-nu)*Delta_T_b*(-delta_b2+delta_b*hi)     ! d(phi_i-1/2)/d(h_i)
-       dphib_dhi1=(3.d0/2.d0)*(nu+(1-nu)*T_b)*hib**2-(1-nu)*Delta_T_b*(-delta_b2+delta_b*hib) ! d(phi_i-1/2)/d(h_i-1)
+       ! dphib_dhi=(3.d0/2.d0)*(nu+(1-nu)*T_b)*hi**2-(1-nu)*Delta_T_b*(-delta_b2+delta_b*hi)     ! d(phi_i-1/2)/d(h_i)
+       ! dphib_dhi1=(3.d0/2.d0)*(nu+(1-nu)*T_b)*hib**2-(1-nu)*Delta_T_b*(-delta_b2+delta_b*hib) ! d(phi_i-1/2)/d(h_i-1)
        
     ELSEIF (Rheology == 1) THEN
        ERROR_CODE = 1
