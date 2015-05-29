@@ -425,7 +425,7 @@ CONTAINS
           Ts_b = 0.5d0*(Ts(i,col)+Ts(i-1,col))
           Ds_b = T_b-Ts_b
 
-          CALL fOmega_b(Bi,h_b,delta_b,T_b,Ts_b,eta_b,Ds_b,omega_b,nu,Rheology,ERROR_CODE)
+          CALL fomega_b(Bi,h_b,delta_b,T_b,Ts_b,eta_b,Ds_b,omega_b,nu,Rheology,ERROR_CODE)
           CALL fsigma_b(Bi,h_b,delta_b,T_b,Ts_b,sigma_b,Ds_b,delta_b2,&
                &eta_b,nu,Rheology,ERROR_CODE)
 
