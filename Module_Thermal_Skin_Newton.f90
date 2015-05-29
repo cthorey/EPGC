@@ -1,7 +1,7 @@
 
 MODULE MODULE_THERMAL_SKIN_NEWTON
 
-  USE MOBILITY_THERMAL_SKIN_RHEOLOGY
+  USE MODULE_MOBILITY
   
 CONTAINS
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -75,7 +75,7 @@ CONTAINS
        PRINT*, 'Erreur allocation dans coeff Temperature'; STOP
     END IF
 
-    CALL JACOBI_TEMPERATURE_BALMFORTH(a1,b1,c1,N,H,BL,T,Ts,Xi,P,Dr,dist,ray,&
+    CALL JACOBI_TEMPERATURE_BALMFORTH(a1,b1,c1,N,H,BL,T,Ts,Xi,P,Dr,Dt,dist,ray,&
          &nu,Pe,delta0,el,grav,Rheology,ERROR_CODE)
 
     !Systeme a inverser
@@ -403,11 +403,10 @@ CONTAINS
     ! Parametre pour le sous programme
     DOUBLE PRECISION, PARAMETER :: pi=3.14159265
 
-    DOUBLE PRECISION :: h_a,delta_a,delta_a2,eta_a,Ai,T_a
     DOUBLE PRECISIOn :: omega_a,sigma_a
+    DOUBLE PRECISIOn :: omega_b,sigma_b
+    DOUBLE PRECISIOn :: Ai,Bi
 
-    DOUBLE PRECISION :: h_b,delta_b,delta_b2,eta_b,Bi,T_b
-    DOUBLE PRECISIOn :: omega_b,sigma_b,Ts_a,Ts_b,Ds_b,Ds_a
     DOUBLE PRECISION :: loss,beta
     INTEGER :: i,Na
 
@@ -416,39 +415,20 @@ CONTAINS
     DO i=1,N,1   
 
        IF1:IF (i .NE. 1) THEN
-          eta_b=(grav*(H(i,3)-H(i-1,3))+el*(P(i,3)-P(i-1,3)))/Dr
-          Bi=(ray(i-1)/(dist(i)*Dr))
-          h_b=0.5d0*(H(i,3)+H(i-1,3))
-          delta_b=0.5d0*(BL(i,col)+BL(i-1,col))
-          delta_b2=0.5d0*(BL(i,col)**2+BL(i-1,col)**2)
-          T_b = 0.5d0*(T(i,col)+T(i-1,col))
-          Ts_b = 0.5d0*(Ts(i,col)+Ts(i-1,col))
-          Ds_b = T_b-Ts_b
-
-          CALL fomega_b(Bi,h_b,delta_b,T_b,Ts_b,eta_b,Ds_b,omega_b,nu,Rheology,ERROR_CODE)
-          CALL fsigma_b(Bi,h_b,delta_b,T_b,Ts_b,sigma_b,Ds_b,delta_b2,&
-               &eta_b,nu,Rheology,ERROR_CODE)
-
-          ! omega_b = (eta_b*delta_b)/10.d0*(nu*(-20.d0*delta_b+30.d0*h_b)+&
-          !      &(1.d0-nu)*(6.d0*Ds_b*delta_b-15.d0*Ds_b*h_b-20.d0*T_b*delta_b+30.d0*T_b*h_b))
-          ! sigma_b = (-1.d0/210.d0)*Ds_b*delta_b2*eta_b*(nu*(-98.d0*delta_b+105.d0*h_b)+&
-          !      &(1-nu)*(22.d0*Ds_b*delta_b-35.d0*Ds_b*h_b-98.d0*T_b*delta_b+105.d0*T_b*h_b))
+          CALL fBi_thermal(ray,dist,Dr,i,Bi)
+          CALL fomega_b(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i&
+               &,nu,Rheology,ERROR_CODE,omega_b)
+          CALL fsigma_b(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i&
+               &,nu,Rheology,ERROR_CODE,sigma_b)
+          
        ENDIF IF1
 
        IF2: IF (i .NE. N) THEN
-          eta_a=(grav*(H(i+1,3)-H(i,3))+el*(P(i+1,3)-P(i,3)))/Dr
-          Ai=(ray(i)/(dist(i)*Dr))
-          h_a=0.5d0*(H(i+1,3)+H(i,3))
-          delta_a=0.5d0*(BL(i+1,col)+BL(i,col))
-          delta_a2=0.5d0*(BL(i+1,col)**2+BL(i,col)**2)
-          T_a = 0.5d0*(T(i,col)+T(i+1,col))
-          Ts_a = 0.5d0*(Ts(i,col)+Ts(i+1,col))
-          Ds_a = T_a-Ts_a
-
-          CALL fomega_a(Ai,h_a,delta_a,T_a,Ts_a,eta_a,Ds_a,omega_a,nu,Rheology,ERROR_CODE)
-          CALL fsigma_a(Ai,h_a,delta_a,T_a,Ts_a,eta_a,Ds_a,delta_a2,&
-               &sigma_a,nu,Rheology,ERROR_CODE)
-
+          CALL fAi_thermal(ray,dist,Dr,i,Ai)
+          CALL fomega_a(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i&
+               &,nu,Rheology,ERROR_CODE,omega_a)
+          CALL fsigma_a(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i&
+               &,nu,Rheology,ERROR_CODE,sigma_a)
        END IF IF2
 
        ! beta = N1*Pe**(-0.5d0)/(sqrt(pi*(tmps+Dt)))
@@ -477,7 +457,7 @@ CONTAINS
   !-------------------------------------------------------------------------------------
   !-------------------------------------------------------------------------------------
 
-  SUBROUTINE JACOBI_TEMPERATURE_BALMFORTH(a,b,c,N,H,BL,T,Ts,Xi,P,Dr,dist,ray,nu,Pe,&
+  SUBROUTINE JACOBI_TEMPERATURE_BALMFORTH(a,b,c,N,H,BL,T,Ts,Xi,P,Dr,Dt,dist,ray,nu,Pe,&
        &delta0,el,grav,Rheology,ERROR_CODE)
 
     !*****************************************************************
@@ -492,7 +472,7 @@ CONTAINS
     DOUBLE PRECISION ,DIMENSION(:), INTENT(IN) :: dist,ray
 
     ! Prametre du model
-    DOUBLE PRECISION ,INTENT(IN) :: Dr 
+    DOUBLE PRECISION ,INTENT(IN) :: Dr,Dt
     INTEGER ,INTENT(IN) :: N
     !Parametre a transletre
     INTEGER, INTENT(INOUT) :: ERROR_CODE
@@ -502,10 +482,10 @@ CONTAINS
 
     ! Parametre pour le sous programme
 
-    DOUBLE PRECISION :: h_a,delta_a,delta_a2,eta_a,Ai,T_a,zeta_a
     DOUBLE PRECISIOn :: omega_a,sigma_a
-    DOUBLE PRECISION :: h_b,delta_b,delta_b2,eta_b,Bi,T_b,zeta_b
-    DOUBLE PRECISIOn :: omega_b,sigma_b,Ds_b,Ds_a,Ts_a,Ts_b
+    DOUBLE PRECISIOn :: omega_b,sigma_b
+    DOUBLE PRECISIOn :: Ai,Bi
+
     DOUBLE PRECISION :: loss
 
     INTEGER :: i,col
@@ -516,29 +496,15 @@ CONTAINS
 
     DO i=1,N,1
        IF1:IF (i .NE. 1) THEN
-          eta_b=(grav*(H(i,3)-H(i-1,3))+el*(P(i,3)-P(i-1,3)))/Dr
-          Bi=(ray(i-1)/(dist(i)*Dr))
-          h_b=0.5d0*(H(i,3)+H(i-1,3))
-          delta_b=0.5d0*(BL(i,col)+BL(i-1,col))
-          delta_b2=0.5d0*(BL(i,col)**2+BL(i-1,col)**2)
-          T_b = 0.5d0*(T(i,col)+T(i-1,col))
-          Ts_b = 0.5d0*(Ts(i,col)+Ts(i-1,col))
-          Ds_b = T_b-Ts_b
-
-          CALL fOmega_b(Bi,h_b,delta_b,T_b,Ts_b,eta_b,Ds_b,omega_b,nu,Rheology,ERROR_CODE)
+          CALL fBi_thermal(ray,dist,Dr,i,Bi)
+          CALL fomega_b(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i&
+               &,nu,Rheology,ERROR_CODE,omega_b)
+          
        ENDIF IF1
        IF2: IF (i .NE. N) THEN
-          eta_a=(grav*(H(i+1,3)-H(i,3))+el*(P(i+1,3)-P(i,3)))/Dr
-          Ai=(ray(i)/(dist(i)*Dr))
-          h_a=0.5d0*(H(i+1,3)+H(i,3))
-          delta_a=0.5d0*(BL(i+1,col)+BL(i,col))
-          delta_a2=0.5d0*(BL(i+1,col)**2+BL(i,col)**2)
-          T_a = 0.5d0*(T(i,col)+T(i+1,col))
-          Ts_a = 0.5d0*(Ts(i,col)+Ts(i+1,col))
-          Ds_a = T_a-Ts_a
-
-          CALL fomega_a(Ai,h_a,delta_a,T_a,Ts_a,eta_a,Ds_a,omega_a,nu,Rheology,ERROR_CODE)
-
+          CALL fAi_thermal(ray,dist,Dr,i,Ai)
+          CALL fomega_a(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i&
+               &,nu,Rheology,ERROR_CODE,omega_a)
        END IF IF2
 
 

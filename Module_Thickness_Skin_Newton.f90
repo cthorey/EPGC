@@ -1,6 +1,7 @@
 MODULE MODULE_THICKNESS_SKIN_NEWTON
 
-  USE MOBILITY_THICKNESS_SKIN_RHEOLOGY
+  ! USE MOBILITY_THICKNESS_SKIN_RHEOLOGY
+  USE MODULE_MOBILITY
   
 CONTAINS
 
@@ -302,11 +303,9 @@ CONTAINS
     INTEGER, INTENT(IN) :: Rheology
     
     ! Parametre pour le sous programme
-    DOUBLE PRECISION :: h_a,h_b,h_a2,h_b2,h_a3,h_b3,T_a,T_b
-    DOUBLE PRECISION :: delta_a,delta_b,delta_a2,delta_b2,delta_a3,delta_b3
     DOUBLE PRECISION :: phi_a,phi_b
+    DOUBLE PRECISION :: Ai,Bi
     DOUBLE PRECISION :: Ael,Bel,Agrav,Bgrav
-    DOUBLE PRECISION :: Ts_a,Ts_b,Delta_T_b,Delta_T_a
     INTEGER :: i,err1,algo1
 
     ! Remplissage de f
@@ -318,40 +317,23 @@ CONTAINS
 
     DO i=1,N,1
        IF (i .NE. N) THEN
-          Ael=el*(ray(i)/(dist(i)*Dr**2))
-          Agrav=grav*(ray(i)/(dist(i)*Dr**2))
-          h_a=0.5d0*(H(i+1,col)+H(i,col))
-          h_a2=0.5d0*(H(i+1,col)**2+H(i,col)**2)
-          h_a3=0.5d0*(H(i+1,col)**3+H(i,col)**3)
-          delta_a=0.5d0*(BL(i+1,3)+BL(i,3))
-          delta_a2=0.5d0*(BL(i+1,3)**2+BL(i,3)**2)
-          delta_a3=0.5d0*(BL(i+1,3)**3+BL(i,3)**3)
-          T_a=0.5d0*(T(i,3)+T(i+1,3))
-          Ts_a = 0.5d0*(Ts(i,3)+Ts(i+1,3))
-          Delta_T_a = T_a -Ts_a
-
-          CALL fPhi_A(Ael,Agrav,h_a,delta_a,T_a,Ts_a,delta_a2,delta_a3,h_a2,h_a3,Delta_T_a,&
-               &phi_a,nu,Rheology,ERROR_CODE)
+          CALL fAi_thickness(ray,dist,Dr,i,Ai)
+          CALL fPhi_A(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i&
+               &,nu,Rheology,ERROR_CODE,phi_a)
        ENDIF
 
        IF (i .NE. 1) THEN
-          Bel=el*(ray(i-1)/(dist(i)*Dr**2))
-          Bgrav=grav*(ray(i-1)/(dist(i)*Dr**2))
-          h_b=0.5d0*(H(i,col)+H(i-1,col))
-          h_b2=0.5d0*(H(i,col)**2+H(i-1,col)**2)
-          h_b3=0.5d0*(H(i,col)**3+H(i-1,col)**3)
-          delta_b=0.5d0*(BL(i,3)+BL(i-1,3))
-          delta_b2=0.5d0*(BL(i,3)**2+BL(i-1,3)**2)
-          delta_b3=0.5d0*(BL(i,3)**3+BL(i-1,3)**3)
-          T_b=0.5d0*(T(i,3)+T(i-1,3))
-          Ts_b = 0.5d0*(Ts(i,3)+Ts(i-1,3))
-          Delta_T_b = T_b - Ts_b
-
-          CALL fPhi_B(Bel,Bgrav,h_b,delta_b,T_b,Ts_b,delta_b2,delta_b3,h_b2,h_b3,Delta_T_b,&
-               &phi_b,nu,Rheology,ERROR_CODE)
+          CALL fBi_thickness(ray,dist,Dr,i,Bi)
+          CALL fPhi_B(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i&
+               &,nu,Rheology,ERROR_CODE,phi_b)
 
        ENDIF
 
+       Ael = el*Ai
+       Agrav = grav*Ai
+       Bel = el*Bi
+       Bgrav = grav*Bi
+       
        IF (i==1) THEN
           f(i)=Ael*phi_a*(P(2,col)-P(1,col))+Agrav*phi_a*(H(2,col)-H(1,col))&
                &+qa(i)
@@ -403,11 +385,9 @@ CONTAINS
     
     ! Parametre pour le sous programme
     DOUBLE PRECISION ,DIMENSION(:), ALLOCATABLE :: alpha,beta,gamma,lambda,kappa,delta,epsilonn
-    DOUBLE PRECISION ::Ael,Bel,Agrav,Bgrav,h_a,h_b,h_a2,h_b2,h_a3,h_b3,T_a,T_b
-    DOUBLE PRECISION ::delta_a,delta_b,delta_a2,delta_b2,delta_a3,delta_b3
-    DOUBLE PRECISION :: Ts_a,Ts_b,Delta_T_b,Delta_T_a
+    DOUBLE PRECISION ::Ael,Bel,Agrav,Bgrav,Ai,Bi
     DOUBLE PRECISION :: phi_a,phi_b,dphib_dhi,dphib_dhi1,dphia_dhi,dphia_dhi1
-    DOUBLE PRECISION :: H1,H2,P1,P2,hi,hi2,hia,hib,hia2,hib2
+    DOUBLE PRECISION :: H1,H2,P1,P2
     INTEGER :: i,col,algo1,err1
 
     ! Allocation + remplissage pression
@@ -432,54 +412,33 @@ CONTAINS
     DO i=1,N,1
 
        IF1: IF (i .NE. N) THEN
-          Ael=el*(ray(i)/(dist(i)*Dr**2))
-          Agrav=grav*(ray(i)/(dist(i)*Dr**2))
-          h_a=0.5d0*(H(i+1,col)+H(i,col))
-          h_a2=0.5d0*(H(i+1,col)**2+H(i,col)**2)
-          h_a3=0.5d0*(H(i+1,col)**3+H(i,col)**3)
-          delta_a=0.5d0*(BL(i+1,3)+BL(i,3))
-          delta_a2=0.5d0*(BL(i+1,3)**2+BL(i,3)**2)
-          delta_a3=0.5d0*(BL(i+1,3)**3+BL(i,3)**3)
-          T_a=0.5d0*(T(i,3)+T(i+1,3))
-          Ts_a = 0.5d0*(Ts(i,3)+Ts(i+1,3))
-          Delta_T_a = T_a -Ts_a
-          hia = H(i+1,col)
-          hi = H(i,col)
+          CALL fAi_thickness(ray,dist,Dr,i,Ai)
+          CALL fPhi_A(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i&
+               &,nu,Rheology,ERROR_CODE,phi_a)
+          CALL fdPhi_A(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i&
+       &,nu,Rheology,ERROR_CODE,dphia_dhi,dphia_dhi1)
 
-          CALL fPhi_A(Ael,Agrav,h_a,delta_a,T_a,Ts_a,delta_a2,delta_a3,h_a2,h_a3,Delta_T_a,&
-               &phi_a,nu,Rheology,ERROR_CODE)
-          CALL fdPhi_A(Ael,Agrav,h_a,delta_a,T_a,Ts_a,hi,hia,Delta_T_a,delta_a2,&
-               &dphia_dhi1,dphia_dhi,nu,Rheology,ERROR_CODE)
-
-                   
           P1=P(i+1,2)-P(i,2); P2=P(i,2)-P(i-1,2)
           H1=H(i+1,2)-H(i,2); H2=H(i,2)-H(i-1,2)
        ENDIF IF1
 
        IF2: IF (i .NE. 1) THEN
-          Bel=el*(ray(i-1)/(dist(i)*Dr**2))
-          Bgrav=grav*(ray(i-1)/(dist(i)*Dr**2))
-          h_b=0.5d0*(H(i,col)+H(i-1,col))
-          h_b2=0.5d0*(H(i,col)**2+H(i-1,col)**2)
-          h_b3=0.5d0*(H(i,col)**3+H(i-1,col)**3)
-          delta_b=0.5d0*(BL(i,3)+BL(i-1,3))
-          delta_b2=0.5d0*(BL(i,3)**2+BL(i-1,3)**2)
-          delta_b3=0.5d0*(BL(i,3)**3+BL(i-1,3)**3)
-          T_b=0.5d0*(T(i,3)+T(i-1,3))
-          Ts_b = 0.5d0*(Ts(i,3)+Ts(i-1,3))
-          Delta_T_b = T_b - Ts_b
-          hib = H(i-1,col); hib2 = H(i-1,col)**2
-          hi = H(i,col);hi2 = H(i,col)**2
 
-          CALL fPhi_B(Bel,Bgrav,h_b,delta_b,T_b,Ts_b,delta_b2,delta_b3,h_b2,h_b3,Delta_T_b,&
-               &phi_b,nu,Rheology,ERROR_CODE)
-          CALL fDPhi_B(Bel,Bgrav,h_b,delta_b,T_b,Ts_b,hib,hi,Delta_T_b,delta_b2,&
-               &dphib_dhi,dphib_dhi1,nu,Rheology,ERROR_CODE)
+          CALL fBi_thickness(ray,dist,Dr,i,Bi)
+          CALL fPhi_B(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i&
+               &,nu,Rheology,ERROR_CODE,phi_b)
+          CALL fDPhi_B(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i&
+               &,nu,Rheology,ERROR_CODE,dphib_dhi,dphib_dhi1)
                     
           P2=P(i,2)-P(i-1,2)
           H2=H(i,2)-H(i-1,2)
        ENDIF IF2
 
+       Ael = el*Ai
+       Agrav = grav*Ai
+       Bel = el*Bi
+       Bgrav = grav*Bi
+       
        IF3: IF (i==1) THEN
           a(i)=0;b(i)=0;c(i)=0;d(i)=0
           e(i)=Ael*dphia_dhi*P1+Ael*phi_a*((gamma(i+1)+beta(i+1))-(lambda(i)+gamma(i)))&
