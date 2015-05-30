@@ -1,6 +1,6 @@
 MODULE MODULE_MOBILITY
 CONTAINS
-  
+
   SUBROUTINE CoeffA_THickness(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i,&
        &h_a,h_a2,h_a3,delta_a,delta_a2,delta_a3,T_a,T_a2,T_a3,&
        &Ts_a,Ts_a2,Ts_a3,Ds_a)
@@ -35,7 +35,7 @@ CONTAINS
 
   END SUBROUTINE CoeffA_THickness
 
-  
+
   SUBROUTINE CoeffA_Thermal(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i,&
        &h_a,h_a2,h_a3,delta_a,delta_a2,delta_a3,T_a,T_a2,T_a3,&
        &Ts_a,Ts_a2,Ts_a3,Ds_a,eta_a)
@@ -104,9 +104,9 @@ CONTAINS
     Ts_b3 = 0.5d0*(Ts(i,3)**3+Ts(i-1,3)**3)
 
     Ds_b = T_b-Ts_b
-    
+
   END SUBROUTINE CoeffB_Thickness
-  
+
   SUBROUTINE CoeffB_Thermal(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i,&
        &h_b,h_b2,h_b3,delta_b,delta_b2,delta_b3,T_b,T_b2,T_b3,&
        &Ts_b,Ts_b2,Ts_b3,Ds_b,eta_b)
@@ -141,55 +141,55 @@ CONTAINS
     Ts_b3 = 0.5d0*(Ts(i,col)**3+Ts(i-1,col)**3)
 
     Ds_b = T_b-Ts_b
-    
+
   END SUBROUTINE CoeffB_Thermal
 
   SUBROUTINE fAi_thermal(ray,dist,Dr,i,Ai)
     IMPLICIT NONE
-    
+
     DOUBLE PRECISION ,DIMENSION(:), INTENT(IN) :: dist,ray
     DOUBLE PRECISION , INTENT(IN) :: Dr
     INTEGER , INTENT(IN) :: i
     DOUBLE PRECISION , INTENT(INOUT) :: Ai
 
     Ai=(ray(i)/(dist(i)*Dr))
-    
+
   END SUBROUTINE fAi_thermal
 
   SUBROUTINE fBi_thermal(ray,dist,Dr,i,Bi)
     IMPLICIT NONE
-    
+
     DOUBLE PRECISION ,DIMENSION(:), INTENT(IN) :: dist,ray
     DOUBLE PRECISION , INTENT(IN) :: Dr
     INTEGER , INTENT(IN) :: i
     DOUBLE PRECISION , INTENT(INOUT) :: Bi
 
     Bi = (ray(i-1)/(dist(i)*Dr))
-    
+
   END SUBROUTINE fBi_thermal
 
   SUBROUTINE fAi_thickness(ray,dist,Dr,i,Ai)
     IMPLICIT NONE
-    
+
     DOUBLE PRECISION ,DIMENSION(:), INTENT(IN) :: dist,ray
     DOUBLE PRECISION , INTENT(IN) :: Dr
     INTEGER , INTENT(IN) :: i
     DOUBLE PRECISION , INTENT(INOUT) :: Ai
 
     Ai=(ray(i)/(dist(i)*Dr**2))
-    
+
   END SUBROUTINE fAi_thickness
 
   SUBROUTINE fBi_thickness(ray,dist,Dr,i,Bi)
     IMPLICIT NONE
-    
+
     DOUBLE PRECISION ,DIMENSION(:), INTENT(IN) :: dist,ray
     DOUBLE PRECISION , INTENT(IN) :: Dr
     INTEGER , INTENT(IN) :: i
     DOUBLE PRECISION , INTENT(INOUT) :: Bi
 
     Bi = (ray(i-1)/(dist(i)*Dr**2))
-    
+
   END SUBROUTINE fBi_thickness
 
   SUBROUTINE fomega_a(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i&
@@ -213,8 +213,8 @@ CONTAINS
     INTEGER, INTENT(INOUT) :: ERROR_CODE
 
     CALL CoeffA_Thermal(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i,&
-       &h_a,h_a2,h_a3,delta_a,delta_a2,delta_a3,T_a,T_a2,T_a3,&
-       &Ts_a,Ts_a2,Ts_a3,Ds_a,eta_a)
+         &h_a,h_a2,h_a3,delta_a,delta_a2,delta_a3,T_a,T_a2,T_a3,&
+         &Ts_a,Ts_a2,Ts_a3,Ds_a,eta_a)
 
     IF (Rheology == 0) THEN
        omega_a = (7.0d0/5.0d0)*T_a*delta_a**2*eta_a*nu - 7.0d0/5.0d0*T_a*&
@@ -234,6 +234,12 @@ CONTAINS
           omega_a = 3*sqrt(pi)*Ds_a**(-1.5d0)*delta_a2*eta_a*nu*nu**(-T_a)&
                & *(-log(nu))**(-1.5d0)*erf(sqrt(Ds_a)*sqrt(-log(nu))) - 6*1.0/Ds_a&
                & *delta_a2*eta_a*nu*nu**(-T_a)*1.0/(-log(nu)) - 3*1.0/Ds_a*&
+               & delta_a*eta_a*h_a*nu*nu**Ds_a*nu**(-T_a)*1.0/(-log(nu)) + 3*1.0/&
+               & Ds_a*delta_a*eta_a*h_a*nu*nu**(-T_a)*1.0/(-log(nu))
+
+          omega_a = 3*sqrt(pi)*Ds_a**(-1.5d0)*delta_a**2*eta_a*nu*nu**(-T_a)&
+               & *(-log(nu))**(-1.5d0)*erf(sqrt(Ds_a)*sqrt(-log(nu))) - 6*1.0/Ds_a&
+               & *delta_a**2*eta_a*nu*nu**(-T_a)*1.0/(-log(nu)) - 3*1.0/Ds_a*&
                & delta_a*eta_a*h_a*nu*nu**Ds_a*nu**(-T_a)*1.0/(-log(nu)) + 3*1.0/&
                & Ds_a*delta_a*eta_a*h_a*nu*nu**(-T_a)*1.0/(-log(nu))
 
@@ -268,8 +274,8 @@ CONTAINS
     INTEGER, INTENT(INOUT) :: ERROR_CODE
 
     CALL CoeffA_Thermal(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i,&
-       &h_a,h_a2,h_a3,delta_a,delta_a2,delta_a3,T_a,T_a2,T_a3,&
-       &Ts_a,Ts_a2,Ts_a3,Ds_a,eta_a)
+         &h_a,h_a2,h_a3,delta_a,delta_a2,delta_a3,T_a,T_a2,T_a3,&
+         &Ts_a,Ts_a2,Ts_a3,Ds_a,eta_a)
 
     IF (Rheology == 0) THEN
        sigma_a = -38.0d0/105.0d0*T_a**2*delta_a**3*eta_a*nu + (38.0d0/&
@@ -304,6 +310,18 @@ CONTAINS
                & -2.0d0)*log(nu) + delta_a2*eta_a*h_a*nu*nu**(-T_a)*(-log(nu))**&
                & (-2.0d0)*log(nu)
 
+          sigma_a = (3.0d0/2.0d0)*sqrt(pi)*Ds_a**(-1.5d0)*delta_a**3*eta_a*&
+               & nu*nu**(-T_a)*(-log(nu))**(-2.5d0)*erf(sqrt(Ds_a)*sqrt(-log(nu&
+               & ))) - 1.0/Ds_a*delta_a**3*eta_a*nu*nu**Ds_a*nu**(-T_a)*(-log(nu))&
+               & **(-2.0d0) - 2*1.0/Ds_a*delta_a**3*eta_a*nu*nu**(-T_a)*(-log(nu))&
+               & **(-2.0d0) - 1.0/Ds_a*delta_a**2*eta_a*h_a*nu*nu**Ds_a*nu**(-T_a)&
+               & *(-log(nu))**(-2.0d0) + 1.0/Ds_a*delta_a**2*eta_a*h_a*nu*nu**(&
+               & -T_a)*(-log(nu))**(-2.0d0) + sqrt(pi)*Ds_a**(-0.5d0)*delta_a**3*&
+               & eta_a*nu*nu**(-T_a)*(-log(nu))**(-2.5d0)*log(nu)*erf(sqrt(Ds_a)*&
+               & sqrt(-log(nu))) - 2*delta_a**3*eta_a*nu*nu**(-T_a)*(-log(nu))**(&
+               & -2.0d0)*log(nu) + delta_a**2*eta_a*h_a*nu*nu**(-T_a)*(-log(nu))**&
+               & (-2.0d0)*log(nu)
+
        ELSEIF (nu==1.0) THEN
           sigma_a = (7.0d0/15.0d0)*Ds_a*delta_a3*eta_a - 1.0d0/2.0d0*Ds_a*&
                & delta_a2*eta_a*h_a
@@ -315,7 +333,7 @@ CONTAINS
     ENDIF
   END SUBROUTINE Fsigma_A
 
-    SUBROUTINE fomega_b(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i&
+  SUBROUTINE fomega_b(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i&
        &,nu,Rheology,ERROR_CODE,omega_b)
 
     IMPLICIT NONE
@@ -336,8 +354,8 @@ CONTAINS
     INTEGER, INTENT(INOUT) :: ERROR_CODE
 
     CALL CoeffB_THermal(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i,&
-       &h_b,h_b2,h_b3,delta_b,delta_b2,delta_b3,T_b,T_b2,T_b3,&
-       &Ts_b,Ts_b2,Ts_b3,Ds_b,eta_b)
+         &h_b,h_b2,h_b3,delta_b,delta_b2,delta_b3,T_b,T_b2,T_b3,&
+         &Ts_b,Ts_b2,Ts_b3,Ds_b,eta_b)
 
 
     IF (Rheology == 0) THEN
@@ -355,11 +373,17 @@ CONTAINS
        ERROR_CODE = 1
     ELSEIF (Rheology == 2) THEN
        nutest:IF (nu /= 1.0) THEN
-              omega_b = 3*sqrt(pi)*Ds_b**(-1.5d0)*delta_b2*eta_b*nu*nu**(-T_b)&
-             & *(-log(nu))**(-1.5d0)*erf(sqrt(Ds_b)*sqrt(-log(nu))) - 6*1.0/Ds_b&
-             & *delta_b2*eta_b*nu*nu**(-T_b)*1.0/(-log(nu)) - 3*1.0/Ds_b*&
-             & delta_b*eta_b*h_b*nu*nu**Ds_b*nu**(-T_b)*1.0/(-log(nu)) + 3*1.0/&
-             & Ds_b*delta_b*eta_b*h_b*nu*nu**(-T_b)*1.0/(-log(nu))        
+          omega_b = 3*sqrt(pi)*Ds_b**(-1.5d0)*delta_b2*eta_b*nu*nu**(-T_b)&
+               & *(-log(nu))**(-1.5d0)*erf(sqrt(Ds_b)*sqrt(-log(nu))) - 6*1.0/Ds_b&
+               & *delta_b2*eta_b*nu*nu**(-T_b)*1.0/(-log(nu)) - 3*1.0/Ds_b*&
+               & delta_b*eta_b*h_b*nu*nu**Ds_b*nu**(-T_b)*1.0/(-log(nu)) + 3*1.0/&
+               & Ds_b*delta_b*eta_b*h_b*nu*nu**(-T_b)*1.0/(-log(nu))
+
+          omega_b = 3*sqrt(pi)*Ds_b**(-1.5d0)*delta_b**2*eta_b*nu*nu**(-T_b)&
+               & *(-log(nu))**(-1.5d0)*erf(sqrt(Ds_b)*sqrt(-log(nu))) - 6*1.0/Ds_b&
+               & *delta_b**2*eta_b*nu*nu**(-T_b)*1.0/(-log(nu)) - 3*1.0/Ds_b*&
+               & delta_b*eta_b*h_b*nu*nu**Ds_b*nu**(-T_b)*1.0/(-log(nu)) + 3*1.0/&
+               & Ds_b*delta_b*eta_b*h_b*nu*nu**(-T_b)*1.0/(-log(nu))
 
        ELSEIF (nu==1.0) THEN
           omega_b = -2.0d0*delta_b2*eta_b + 3.0d0*delta_b*eta_b*h_b
@@ -393,10 +417,10 @@ CONTAINS
     INTEGER, INTENT(INOUT) :: ERROR_CODE
 
     CALL CoeffB_Thermal(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i,&
-       &h_b,h_b2,h_b3,delta_b,delta_b2,delta_b3,T_b,T_b2,T_b3,&
-       &Ts_b,Ts_b2,Ts_b3,Ds_b,eta_b)
+         &h_b,h_b2,h_b3,delta_b,delta_b2,delta_b3,T_b,T_b2,T_b3,&
+         &Ts_b,Ts_b2,Ts_b3,Ds_b,eta_b)
 
-    
+
     IF (Rheology == 0) THEN
        sigma_b = -38.0d0/105.0d0*T_b**2*delta_b**3*eta_b*nu + (38.0d0/&
             & 105.0d0)*T_b**2*delta_b**3*eta_b + (1.0d0/3.0d0)*T_b**2*delta_b**&
@@ -418,20 +442,32 @@ CONTAINS
        ERROR_CODE = 1
     ELSEIF (Rheology == 2) THEN
        nutest:IF (nu /= 1.0) THEN
-                      sigma_b = (3.0d0/2.0d0)*sqrt(pi)*Ds_b**(-1.5d0)*delta_b3*eta_b*&
-             & nu*nu**(-T_b)*(-log(nu))**(-2.5d0)*erf(sqrt(Ds_b)*sqrt(-log(nu&
-             & ))) - 1.0/Ds_b*delta_b3*eta_b*nu*nu**Ds_b*nu**(-T_b)*(-log(nu))&
-             & **(-2.0d0) - 2*1.0/Ds_b*delta_b3*eta_b*nu*nu**(-T_b)*(-log(nu))&
-             & **(-2.0d0) - 1.0/Ds_b*delta_b2*eta_b*h_b*nu*nu**Ds_b*nu**(-T_b)&
-             & *(-log(nu))**(-2.0d0) + 1.0/Ds_b*delta_b2*eta_b*h_b*nu*nu**(&
-             & -T_b)*(-log(nu))**(-2.0d0) + sqrt(pi)*Ds_b**(-0.5d0)*delta_b3*&
-             & eta_b*nu*nu**(-T_b)*(-log(nu))**(-2.5d0)*log(nu)*erf(sqrt(Ds_b)*&
-             & sqrt(-log(nu))) - 2*delta_b3*eta_b*nu*nu**(-T_b)*(-log(nu))**(&
-             & -2.0d0)*log(nu) + delta_b2*eta_b*h_b*nu*nu**(-T_b)*(-log(nu))**&
-             & (-2.0d0)*log(nu)
+          sigma_b = (3.0d0/2.0d0)*sqrt(pi)*Ds_b**(-1.5d0)*delta_b3*eta_b*&
+               & nu*nu**(-T_b)*(-log(nu))**(-2.5d0)*erf(sqrt(Ds_b)*sqrt(-log(nu&
+               & ))) - 1.0/Ds_b*delta_b3*eta_b*nu*nu**Ds_b*nu**(-T_b)*(-log(nu))&
+               & **(-2.0d0) - 2*1.0/Ds_b*delta_b3*eta_b*nu*nu**(-T_b)*(-log(nu))&
+               & **(-2.0d0) - 1.0/Ds_b*delta_b2*eta_b*h_b*nu*nu**Ds_b*nu**(-T_b)&
+               & *(-log(nu))**(-2.0d0) + 1.0/Ds_b*delta_b2*eta_b*h_b*nu*nu**(&
+               & -T_b)*(-log(nu))**(-2.0d0) + sqrt(pi)*Ds_b**(-0.5d0)*delta_b3*&
+               & eta_b*nu*nu**(-T_b)*(-log(nu))**(-2.5d0)*log(nu)*erf(sqrt(Ds_b)*&
+               & sqrt(-log(nu))) - 2*delta_b3*eta_b*nu*nu**(-T_b)*(-log(nu))**(&
+               & -2.0d0)*log(nu) + delta_b2*eta_b*h_b*nu*nu**(-T_b)*(-log(nu))**&
+               & (-2.0d0)*log(nu)
+
+          sigma_b = (3.0d0/2.0d0)*sqrt(pi)*Ds_b**(-1.5d0)*delta_b**3*eta_b*&
+               & nu*nu**(-T_b)*(-log(nu))**(-2.5d0)*erf(sqrt(Ds_b)*sqrt(-log(nu&
+               & ))) - 1.0/Ds_b*delta_b**3*eta_b*nu*nu**Ds_b*nu**(-T_b)*(-log(nu))&
+               & **(-2.0d0) - 2*1.0/Ds_b*delta_b**3*eta_b*nu*nu**(-T_b)*(-log(nu))&
+               & **(-2.0d0) - 1.0/Ds_b*delta_b**2*eta_b*h_b*nu*nu**Ds_b*nu**(-T_b)&
+               & *(-log(nu))**(-2.0d0) + 1.0/Ds_b*delta_b**2*eta_b*h_b*nu*nu**(&
+               & -T_b)*(-log(nu))**(-2.0d0) + sqrt(pi)*Ds_b**(-0.5d0)*delta_b**3*&
+               & eta_b*nu*nu**(-T_b)*(-log(nu))**(-2.5d0)*log(nu)*erf(sqrt(Ds_b)*&
+               & sqrt(-log(nu))) - 2*delta_b**3*eta_b*nu*nu**(-T_b)*(-log(nu))**(&
+               & -2.0d0)*log(nu) + delta_b**2*eta_b*h_b*nu*nu**(-T_b)*(-log(nu))**&
+               & (-2.0d0)*log(nu)
        ELSEIF (nu==1.0) THEN
-             sigma_b = (7.0d0/15.0d0)*Ds_b*delta_b**3*eta_b - 1.0d0/2.0d0*Ds_b*&
-                  & delta_b**2*eta_b*h_b
+          sigma_b = (7.0d0/15.0d0)*Ds_b*delta_b**3*eta_b - 1.0d0/2.0d0*Ds_b*&
+               & delta_b**2*eta_b*h_b
        ELSE
           ERROR_CODE = 1
        ENDIF nutest
@@ -440,7 +476,7 @@ CONTAINS
     ENDIF
   END SUBROUTINE Fsigma_B
 
-    SUBROUTINE fPhi_A(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i&
+  SUBROUTINE fPhi_A(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i&
        &,nu,Rheology,ERROR_CODE,phi_a)
 
     IMPLICIT NONE
@@ -460,10 +496,10 @@ CONTAINS
     INTEGER, INTENT(INOUT) :: ERROR_CODE
 
     CALL CoeffA_Thickness(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i,&
-       &h_a,h_a2,h_a3,delta_a,delta_a2,delta_a3,T_a,T_a2,T_a3,&
-       &Ts_a,Ts_a2,Ts_a3,Ds_a)
+         &h_a,h_a2,h_a3,delta_a,delta_a2,delta_a3,T_a,T_a2,T_a3,&
+         &Ts_a,Ts_a2,Ts_a3,Ds_a)
 
-    
+
     IF (Rheology == 0) THEN
        phi_a = (4.0d0/5.0d0)*T_a*delta_a**3*nu - 4.0d0/5.0d0*T_a*delta_a&
             & **3 - 2*T_a*delta_a**2*h_a*nu + 2*T_a*delta_a**2*h_a + 2*T_a*&
@@ -471,10 +507,10 @@ CONTAINS
             & h_a**3 - 4.0d0/5.0d0*Ts_a*delta_a**3*nu + (4.0d0/5.0d0)*Ts_a*&
             & delta_a**3 + 2*Ts_a*delta_a**2*h_a*nu - 2*Ts_a*delta_a**2*h_a - 2&
             & *Ts_a*delta_a*h_a**2*nu + 2*Ts_a*delta_a*h_a**2 + h_a**3*nu
-       
+
        ! phi_a = (nu+(1.d0-nu)*T_a)*h_a3-(2.d0/5.d0)*(1.d0-nu)*&
        !      &Delta_T_a*(2.d0*delta_a3-5.d0*delta_a2*h_a+5.d0*delta_a*h_a2)
-       
+
     ELSEIF (Rheology == 1) THEN
        ERROR_CODE = 1
     ELSEIF (Rheology == 2) THEN
@@ -494,6 +530,24 @@ CONTAINS
                & delta_a2*h_a*nu*nu**(-T_a)*1.0/(-log(nu))*log(nu) + 6*delta_a*&
                & h_a**2*nu*nu**(-T_a)*1.0/(-log(nu))*log(nu) - h_a**3*nu*nu**(-T_a&
                & )*1.0/(-log(nu))*log(nu)
+
+          phi_a = 6*sqrt(pi)*Ds_a**(-1.5d0)*delta_a**3*nu*nu**(-T_a)*(-log(&
+               & nu))**(-1.5d0)*erf(sqrt(Ds_a)*sqrt(-log(nu))) + 12*1.0/Ds_a*&
+               & delta_a**3*nu*nu**Ds_a*nu**(-T_a)*1.0/(-log(nu)) - 24*1.0/Ds_a*&
+               & delta_a**3*nu*nu**(-T_a)*1.0/(-log(nu)) - 12*1.0/Ds_a*delta_a**2*&
+               & h_a*nu*nu**Ds_a*nu**(-T_a)*1.0/(-log(nu)) + 12*1.0/Ds_a*delta_a**&
+               & 2*h_a*nu*nu**(-T_a)*1.0/(-log(nu)) - 12*sqrt(pi)*Ds_a**(-0.5d0)*&
+               & delta_a**3*nu*nu**(-T_a)*(-log(nu))**(-1.5d0)*log(nu)*erf(sqrt(&
+               & Ds_a)*sqrt(-log(nu))) + 12*sqrt(pi)*Ds_a**(-0.5d0)*delta_a**2*h_a&
+               & *nu*nu**(-T_a)*(-log(nu))**(-1.5d0)*log(nu)*erf(sqrt(Ds_a)*sqrt(&
+               & -log(nu))) - 3*sqrt(pi)*Ds_a**(-0.5d0)*delta_a*h_a**2*nu*nu**(&
+               & -T_a)*(-log(nu))**(-1.5d0)*log(nu)*erf(sqrt(Ds_a)*sqrt(-log(nu&
+               & ))) + 8*delta_a**3*nu*nu**(-T_a)*1.0/(-log(nu))*log(nu) - 12*&
+               & delta_a**2*h_a*nu*nu**(-T_a)*1.0/(-log(nu))*log(nu) + 6*delta_a*&
+               & h_a**2*nu*nu**(-T_a)*1.0/(-log(nu))*log(nu) - h_a**3*nu*nu**(-T_a&
+               & )*1.0/(-log(nu))*log(nu)
+
+
        ELSEIF (nu==1.0) THEN
           phi_a = 1.0d0*h_a**3
        ELSE
@@ -504,7 +558,7 @@ CONTAINS
     ENDIF
   END SUBROUTINE FPhi_A
 
-    SUBROUTINE  fdPhi_A(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i&
+  SUBROUTINE  fdPhi_A(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i&
        &,nu,Rheology,ERROR_CODE,dphia_dhi,dphia_dhi1)
 
     IMPLICIT NONE
@@ -520,69 +574,95 @@ CONTAINS
     DOUBLE PRECISIOn :: h_a,h_a2,h_a3,delta_a,delta_a2,delta_a3,T_a,T_a2,T_a3
     DOUBLE PRECISIOn :: Ts_a,Ts_a2,Ts_a3,Ds_a
     DOUBLE PRECISION :: hi,hia
-    
+
     DOUBLE PRECISION, INTENT(INOUT) :: dphia_dhi,dphia_dhi1
     INTEGER, INTENT(INOUT) :: ERROR_CODE
 
     CALL CoeffA_Thickness(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i,&
-       &h_a,h_a2,h_a3,delta_a,delta_a2,delta_a3,T_a,T_a2,T_a3,&
-       &Ts_a,Ts_a2,Ts_a3,Ds_a)
+         &h_a,h_a2,h_a3,delta_a,delta_a2,delta_a3,T_a,T_a2,T_a3,&
+         &Ts_a,Ts_a2,Ts_a3,Ds_a)
 
-     hia = H(i+1,col)
-     hi = H(i,col)
-    
+    hia = H(i+1,col)
+    hi = H(i,col)
+
     IF (Rheology == 0) THEN
-       
-          dphia_dhi1 = -T_a*delta_a**2*nu + T_a*delta_a**2 + T_a*delta_a*hi*&
-               & nu - T_a*delta_a*hi + T_a*delta_a*hia*nu - T_a*delta_a*hia -&
-               & 3.0d0/8.0d0*T_a*hi**2*nu + (3.0d0/8.0d0)*T_a*hi**2 - 3.0d0/4.0d0*&
-               & T_a*hi*hia*nu + (3.0d0/4.0d0)*T_a*hi*hia - 3.0d0/8.0d0*T_a*hia**2&
-               & *nu + (3.0d0/8.0d0)*T_a*hia**2 + Ts_a*delta_a**2*nu - Ts_a*&
-               & delta_a**2 - Ts_a*delta_a*hi*nu + Ts_a*delta_a*hi - Ts_a*delta_a*&
-               & hia*nu + Ts_a*delta_a*hia + (3.0d0/8.0d0)*hi**2*nu + (3.0d0/4.0d0&
-               & )*hi*hia*nu + (3.0d0/8.0d0)*hia**2*nu
-          dphia_dhi = -T_a*delta_a**2*nu + T_a*delta_a**2 + T_a*delta_a*hi*&
-               & nu - T_a*delta_a*hi + T_a*delta_a*hia*nu - T_a*delta_a*hia -&
-               & 3.0d0/8.0d0*T_a*hi**2*nu + (3.0d0/8.0d0)*T_a*hi**2 - 3.0d0/4.0d0*&
-               & T_a*hi*hia*nu + (3.0d0/4.0d0)*T_a*hi*hia - 3.0d0/8.0d0*T_a*hia**2&
-               & *nu + (3.0d0/8.0d0)*T_a*hia**2 + Ts_a*delta_a**2*nu - Ts_a*&
-               & delta_a**2 - Ts_a*delta_a*hi*nu + Ts_a*delta_a*hi - Ts_a*delta_a*&
-               & hia*nu + Ts_a*delta_a*hia + (3.0d0/8.0d0)*hi**2*nu + (3.0d0/4.0d0&
-               & )*hi*hia*nu + (3.0d0/8.0d0)*hia**2*nu
 
-         ! dphia_dhi1=(3.d0/2.d0)*(nu+(1-nu)*T_a)*hia**2-(1-nu)*Delta_T_a*(-delta_a2+delta_a*hia) ! d(phi_i+1/2)/d(h_i+1)
-         ! dphia_dhi=(3.d0/2.d0)*(nu+(1-nu)*T_a)*hi**2-(1-nu)*Delta_T_a*(-delta_a2+delta_a*hi)     ! d(phi_i+1/2)/d(h_i)
-         
+       dphia_dhi1 = -T_a*delta_a**2*nu + T_a*delta_a**2 + T_a*delta_a*hi*&
+            & nu - T_a*delta_a*hi + T_a*delta_a*hia*nu - T_a*delta_a*hia -&
+            & 3.0d0/8.0d0*T_a*hi**2*nu + (3.0d0/8.0d0)*T_a*hi**2 - 3.0d0/4.0d0*&
+            & T_a*hi*hia*nu + (3.0d0/4.0d0)*T_a*hi*hia - 3.0d0/8.0d0*T_a*hia**2&
+            & *nu + (3.0d0/8.0d0)*T_a*hia**2 + Ts_a*delta_a**2*nu - Ts_a*&
+            & delta_a**2 - Ts_a*delta_a*hi*nu + Ts_a*delta_a*hi - Ts_a*delta_a*&
+            & hia*nu + Ts_a*delta_a*hia + (3.0d0/8.0d0)*hi**2*nu + (3.0d0/4.0d0&
+            & )*hi*hia*nu + (3.0d0/8.0d0)*hia**2*nu
+       dphia_dhi = -T_a*delta_a**2*nu + T_a*delta_a**2 + T_a*delta_a*hi*&
+            & nu - T_a*delta_a*hi + T_a*delta_a*hia*nu - T_a*delta_a*hia -&
+            & 3.0d0/8.0d0*T_a*hi**2*nu + (3.0d0/8.0d0)*T_a*hi**2 - 3.0d0/4.0d0*&
+            & T_a*hi*hia*nu + (3.0d0/4.0d0)*T_a*hi*hia - 3.0d0/8.0d0*T_a*hia**2&
+            & *nu + (3.0d0/8.0d0)*T_a*hia**2 + Ts_a*delta_a**2*nu - Ts_a*&
+            & delta_a**2 - Ts_a*delta_a*hi*nu + Ts_a*delta_a*hi - Ts_a*delta_a*&
+            & hia*nu + Ts_a*delta_a*hia + (3.0d0/8.0d0)*hi**2*nu + (3.0d0/4.0d0&
+            & )*hi*hia*nu + (3.0d0/8.0d0)*hia**2*nu
+
+       ! dphia_dhi1=(3.d0/2.d0)*(nu+(1-nu)*T_a)*hia**2-(1-nu)*Delta_T_a*(-delta_a2+delta_a*hia) ! d(phi_i+1/2)/d(h_i+1)
+       ! dphia_dhi=(3.d0/2.d0)*(nu+(1-nu)*T_a)*hi**2-(1-nu)*Delta_T_a*(-delta_a2+delta_a*hi)     ! d(phi_i+1/2)/d(h_i)
+
     ELSEIF (Rheology == 1) THEN
        ERROR_CODE = 1
     ELSEIF (Rheology == 2) THEN
        nutest:IF (nu /= 1.0) THEN
-         dphia_dhi1 = -12*1.0/Ds_a*delta_a2*nu*nu**Ds_a*nu**(-T_a)*1.0/(&
-                  & -log(nu)) + 12*1.0/Ds_a*delta_a2*nu*nu**(-T_a)*1.0/(-log(nu)) +&
-                  & 12*sqrt(pi)*Ds_a**(-0.5d0)*delta_a2*nu*nu**(-T_a)*(-log(nu))**(&
-                  & -1.5d0)*log(nu)*erf(sqrt(Ds_a)*sqrt(-log(nu))) - 6*sqrt(pi)*Ds_a&
-                  & **(-0.5d0)*delta_a*hi*nu*nu**(-T_a)*(-log(nu))**(-1.5d0)*log(nu)*&
-                  & erf(sqrt(Ds_a)*sqrt(-log(nu))) - 6*sqrt(pi)*Ds_a**(-0.5d0)*&
-                  & delta_a*hia*nu*nu**(-T_a)*(-log(nu))**(-1.5d0)*log(nu)*erf(sqrt(&
-                  & Ds_a)*sqrt(-log(nu))) - 12*delta_a2*nu*nu**(-T_a)*1.0/(-log(nu&
-                  & ))*log(nu) + 12*delta_a*hi*nu*nu**(-T_a)*1.0/(-log(nu))*log(nu) +&
-                  & 12*delta_a*hia*nu*nu**(-T_a)*1.0/(-log(nu))*log(nu) - 3*hi**2*nu*&
-                  & nu**(-T_a)*1.0/(-log(nu))*log(nu) - 6*hi*hia*nu*nu**(-T_a)*1.0/(&
-                  & -log(nu))*log(nu) - 3*hia**2*nu*nu**(-T_a)*1.0/(-log(nu))*log(nu)
+          dphia_dhi1 = -12*1.0/Ds_a*delta_a2*nu*nu**Ds_a*nu**(-T_a)*1.0/(&
+               & -log(nu)) + 12*1.0/Ds_a*delta_a2*nu*nu**(-T_a)*1.0/(-log(nu)) +&
+               & 12*sqrt(pi)*Ds_a**(-0.5d0)*delta_a2*nu*nu**(-T_a)*(-log(nu))**(&
+               & -1.5d0)*log(nu)*erf(sqrt(Ds_a)*sqrt(-log(nu))) - 6*sqrt(pi)*Ds_a&
+               & **(-0.5d0)*delta_a*hi*nu*nu**(-T_a)*(-log(nu))**(-1.5d0)*log(nu)*&
+               & erf(sqrt(Ds_a)*sqrt(-log(nu))) - 6*sqrt(pi)*Ds_a**(-0.5d0)*&
+               & delta_a*hia*nu*nu**(-T_a)*(-log(nu))**(-1.5d0)*log(nu)*erf(sqrt(&
+               & Ds_a)*sqrt(-log(nu))) - 12*delta_a2*nu*nu**(-T_a)*1.0/(-log(nu&
+               & ))*log(nu) + 12*delta_a*hi*nu*nu**(-T_a)*1.0/(-log(nu))*log(nu) +&
+               & 12*delta_a*hia*nu*nu**(-T_a)*1.0/(-log(nu))*log(nu) - 3*hi**2*nu*&
+               & nu**(-T_a)*1.0/(-log(nu))*log(nu) - 6*hi*hia*nu*nu**(-T_a)*1.0/(&
+               & -log(nu))*log(nu) - 3*hia**2*nu*nu**(-T_a)*1.0/(-log(nu))*log(nu)
 
-             dphia_dhi = -12*1.0/Ds_a*delta_a2*nu*nu**Ds_a*nu**(-T_a)*1.0/(&
-                  & -log(nu)) + 12*1.0/Ds_a*delta_a2*nu*nu**(-T_a)*1.0/(-log(nu)) +&
-                  & 12*sqrt(pi)*Ds_a**(-0.5d0)*delta_a2*nu*nu**(-T_a)*(-log(nu))**(&
-                  & -1.5d0)*log(nu)*erf(sqrt(Ds_a)*sqrt(-log(nu))) - 6*sqrt(pi)*Ds_a&
-                  & **(-0.5d0)*delta_a*hi*nu*nu**(-T_a)*(-log(nu))**(-1.5d0)*log(nu)*&
-                  & erf(sqrt(Ds_a)*sqrt(-log(nu))) - 6*sqrt(pi)*Ds_a**(-0.5d0)*&
-                  & delta_a*hia*nu*nu**(-T_a)*(-log(nu))**(-1.5d0)*log(nu)*erf(sqrt(&
-                  & Ds_a)*sqrt(-log(nu))) - 12*delta_a2*nu*nu**(-T_a)*1.0/(-log(nu&
-                  & ))*log(nu) + 12*delta_a*hi*nu*nu**(-T_a)*1.0/(-log(nu))*log(nu) +&
-                  & 12*delta_a*hia*nu*nu**(-T_a)*1.0/(-log(nu))*log(nu) - 3*hi**2*nu*&
-                  & nu**(-T_a)*1.0/(-log(nu))*log(nu) - 6*hi*hia*nu*nu**(-T_a)*1.0/(&
-                  & -log(nu))*log(nu) - 3*hia**2*nu*nu**(-T_a)*1.0/(-log(nu))*log(nu)
-             
+          dphia_dhi = -12*1.0/Ds_a*delta_a2*nu*nu**Ds_a*nu**(-T_a)*1.0/(&
+               & -log(nu)) + 12*1.0/Ds_a*delta_a2*nu*nu**(-T_a)*1.0/(-log(nu)) +&
+               & 12*sqrt(pi)*Ds_a**(-0.5d0)*delta_a2*nu*nu**(-T_a)*(-log(nu))**(&
+               & -1.5d0)*log(nu)*erf(sqrt(Ds_a)*sqrt(-log(nu))) - 6*sqrt(pi)*Ds_a&
+               & **(-0.5d0)*delta_a*hi*nu*nu**(-T_a)*(-log(nu))**(-1.5d0)*log(nu)*&
+               & erf(sqrt(Ds_a)*sqrt(-log(nu))) - 6*sqrt(pi)*Ds_a**(-0.5d0)*&
+               & delta_a*hia*nu*nu**(-T_a)*(-log(nu))**(-1.5d0)*log(nu)*erf(sqrt(&
+               & Ds_a)*sqrt(-log(nu))) - 12*delta_a2*nu*nu**(-T_a)*1.0/(-log(nu&
+               & ))*log(nu) + 12*delta_a*hi*nu*nu**(-T_a)*1.0/(-log(nu))*log(nu) +&
+               & 12*delta_a*hia*nu*nu**(-T_a)*1.0/(-log(nu))*log(nu) - 3*hi**2*nu*&
+               & nu**(-T_a)*1.0/(-log(nu))*log(nu) - 6*hi*hia*nu*nu**(-T_a)*1.0/(&
+               & -log(nu))*log(nu) - 3*hia**2*nu*nu**(-T_a)*1.0/(-log(nu))*log(nu)
+
+          dphia_dhi1 = -12*1.0/Ds_a*delta_a**2*nu*nu**Ds_a*nu**(-T_a)*1.0/(&
+               & -log(nu)) + 12*1.0/Ds_a*delta_a**2*nu*nu**(-T_a)*1.0/(-log(nu)) +&
+               & 12*sqrt(pi)*Ds_a**(-0.5d0)*delta_a**2*nu*nu**(-T_a)*(-log(nu))**(&
+               & -1.5d0)*log(nu)*erf(sqrt(Ds_a)*sqrt(-log(nu))) - 6*sqrt(pi)*Ds_a&
+               & **(-0.5d0)*delta_a*hi*nu*nu**(-T_a)*(-log(nu))**(-1.5d0)*log(nu)*&
+               & erf(sqrt(Ds_a)*sqrt(-log(nu))) - 6*sqrt(pi)*Ds_a**(-0.5d0)*&
+               & delta_a*hia*nu*nu**(-T_a)*(-log(nu))**(-1.5d0)*log(nu)*erf(sqrt(&
+               & Ds_a)*sqrt(-log(nu))) - 12*delta_a**2*nu*nu**(-T_a)*1.0/(-log(nu&
+               & ))*log(nu) + 12*delta_a*hi*nu*nu**(-T_a)*1.0/(-log(nu))*log(nu) +&
+               & 12*delta_a*hia*nu*nu**(-T_a)*1.0/(-log(nu))*log(nu) - 3*hi**2*nu*&
+               & nu**(-T_a)*1.0/(-log(nu))*log(nu) - 6*hi*hia*nu*nu**(-T_a)*1.0/(&
+               & -log(nu))*log(nu) - 3*hia**2*nu*nu**(-T_a)*1.0/(-log(nu))*log(nu)
+
+          dphia_dhi = -12*1.0/Ds_a*delta_a**2*nu*nu**Ds_a*nu**(-T_a)*1.0/(&
+               & -log(nu)) + 12*1.0/Ds_a*delta_a**2*nu*nu**(-T_a)*1.0/(-log(nu)) +&
+               & 12*sqrt(pi)*Ds_a**(-0.5d0)*delta_a**2*nu*nu**(-T_a)*(-log(nu))**(&
+               & -1.5d0)*log(nu)*erf(sqrt(Ds_a)*sqrt(-log(nu))) - 6*sqrt(pi)*Ds_a&
+               & **(-0.5d0)*delta_a*hi*nu*nu**(-T_a)*(-log(nu))**(-1.5d0)*log(nu)*&
+               & erf(sqrt(Ds_a)*sqrt(-log(nu))) - 6*sqrt(pi)*Ds_a**(-0.5d0)*&
+               & delta_a*hia*nu*nu**(-T_a)*(-log(nu))**(-1.5d0)*log(nu)*erf(sqrt(&
+               & Ds_a)*sqrt(-log(nu))) - 12*delta_a**2*nu*nu**(-T_a)*1.0/(-log(nu&
+               & ))*log(nu) + 12*delta_a*hi*nu*nu**(-T_a)*1.0/(-log(nu))*log(nu) +&
+               & 12*delta_a*hia*nu*nu**(-T_a)*1.0/(-log(nu))*log(nu) - 3*hi**2*nu*&
+               & nu**(-T_a)*1.0/(-log(nu))*log(nu) - 6*hi*hia*nu*nu**(-T_a)*1.0/(&
+               & -log(nu))*log(nu) - 3*hia**2*nu*nu**(-T_a)*1.0/(-log(nu))*log(nu)
+
        ELSEIF (nu==1.0) THEN
           dphia_dhi1 = 3*hi**2 + 6*hi*hia + 3*hia**2
           dphia_dhi = 3*hi**2 + 6*hi*hia + 3*hia**2
@@ -594,7 +674,7 @@ CONTAINS
     ENDIF
   END SUBROUTINE FdPhi_A
 
-   SUBROUTINE  fPhi_B(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i&
+  SUBROUTINE  fPhi_B(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i&
        &,nu,Rheology,ERROR_CODE,phi_b)
 
     IMPLICIT NONE
@@ -614,19 +694,19 @@ CONTAINS
     INTEGER, INTENT(INOUT) :: ERROR_CODE
 
     CALL CoeffB_Thickness(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i,&
-       &h_b,h_b2,h_b3,delta_b,delta_b2,delta_b3,T_b,T_b2,T_b3,&
-       &Ts_b,Ts_b2,Ts_b3,Ds_b)
+         &h_b,h_b2,h_b3,delta_b,delta_b2,delta_b3,T_b,T_b2,T_b3,&
+         &Ts_b,Ts_b2,Ts_b3,Ds_b)
 
-    
+
     IF (Rheology == 0) THEN
-       
+
        phi_b = (4.0d0/5.0d0)*T_b*delta_b**3*nu - 4.0d0/5.0d0*T_b*delta_b&
             & **3 - 2*T_b*delta_b**2*h_b*nu + 2*T_b*delta_b**2*h_b + 2*T_b*&
             & delta_b*h_b**2*nu - 2*T_b*delta_b*h_b**2 - T_b*h_b**3*nu + T_b*&
             & h_b**3 - 4.0d0/5.0d0*Ts_b*delta_b**3*nu + (4.0d0/5.0d0)*Ts_b*&
             & delta_b**3 + 2*Ts_b*delta_b**2*h_b*nu - 2*Ts_b*delta_b**2*h_b - 2&
             & *Ts_b*delta_b*h_b**2*nu + 2*Ts_b*delta_b*h_b**2 + h_b**3*nu
-       
+
        ! phi_b=(nu+(1.d0-nu)*T_b)*h_b3-(2.d0/5.d0)*(1.d0-nu)*&
        !      &Delta_T_b*(2.d0*delta_b3-5.d0*delta_b2*h_b+5.d0*delta_b*h_b2)
     ELSEIF (Rheology == 1) THEN
@@ -648,6 +728,22 @@ CONTAINS
                & delta_b2*h_b*nu*nu**(-T_b)*1.0/(-log(nu))*log(nu) + 6*delta_b*&
                & h_b**2*nu*nu**(-T_b)*1.0/(-log(nu))*log(nu) - h_b**3*nu*nu**(-T_b&
                & )*1.0/(-log(nu))*log(nu)
+
+          phi_b = 6*sqrt(pi)*Ds_b**(-1.5d0)*delta_b**3*nu*nu**(-T_b)*(-log(&
+               & nu))**(-1.5d0)*erf(sqrt(Ds_b)*sqrt(-log(nu))) + 12*1.0/Ds_b*&
+               & delta_b**3*nu*nu**Ds_b*nu**(-T_b)*1.0/(-log(nu)) - 24*1.0/Ds_b*&
+               & delta_b**3*nu*nu**(-T_b)*1.0/(-log(nu)) - 12*1.0/Ds_b*delta_b**2*&
+               & h_b*nu*nu**Ds_b*nu**(-T_b)*1.0/(-log(nu)) + 12*1.0/Ds_b*delta_b**&
+               & 2*h_b*nu*nu**(-T_b)*1.0/(-log(nu)) - 12*sqrt(pi)*Ds_b**(-0.5d0)*&
+               & delta_b**3*nu*nu**(-T_b)*(-log(nu))**(-1.5d0)*log(nu)*erf(sqrt(&
+               & Ds_b)*sqrt(-log(nu))) + 12*sqrt(pi)*Ds_b**(-0.5d0)*delta_b**2*h_b&
+               & *nu*nu**(-T_b)*(-log(nu))**(-1.5d0)*log(nu)*erf(sqrt(Ds_b)*sqrt(&
+               & -log(nu))) - 3*sqrt(pi)*Ds_b**(-0.5d0)*delta_b*h_b**2*nu*nu**(&
+               & -T_b)*(-log(nu))**(-1.5d0)*log(nu)*erf(sqrt(Ds_b)*sqrt(-log(nu&
+               & ))) + 8*delta_b**3*nu*nu**(-T_b)*1.0/(-log(nu))*log(nu) - 12*&
+               & delta_b**2*h_b*nu*nu**(-T_b)*1.0/(-log(nu))*log(nu) + 6*delta_b*&
+               & h_b**2*nu*nu**(-T_b)*1.0/(-log(nu))*log(nu) - h_b**3*nu*nu**(-T_b&
+               & )*1.0/(-log(nu))*log(nu)
        ELSEIF (nu==1.0) THEN
           phi_b = 1.0d0*h_b**3
        ELSE
@@ -657,7 +753,7 @@ CONTAINS
        ERROR_CODE = 1
     ENDIF
   END SUBROUTINE FPhi_B
-  
+
   SUBROUTINE  fDPhi_B(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i&
        &,nu,Rheology,ERROR_CODE,dphib_dhi,dphib_dhi1)
 
@@ -680,14 +776,14 @@ CONTAINS
     INTEGER, INTENT(INOUT) :: ERROR_CODE
 
     CALL CoeffB_Thickness(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i,&
-       &h_b,h_b2,h_b3,delta_b,delta_b2,delta_b3,T_b,T_b2,T_b3,&
-       &Ts_b,Ts_b2,Ts_b3,Ds_b)
+         &h_b,h_b2,h_b3,delta_b,delta_b2,delta_b3,T_b,T_b2,T_b3,&
+         &Ts_b,Ts_b2,Ts_b3,Ds_b)
 
     hib = H(i-1,col)
     hi = H(i,col)
-    
+
     IF (Rheology == 0) THEN
-       
+
        dphib_dhi = -T_b*delta_b**2*nu + T_b*delta_b**2 + T_b*delta_b*hi*&
             & nu - T_b*delta_b*hi + T_b*delta_b*hib*nu - T_b*delta_b*hib -&
             & 3.0d0/8.0d0*T_b*hi**2*nu + (3.0d0/8.0d0)*T_b*hi**2 - 3.0d0/4.0d0*&
@@ -704,40 +800,66 @@ CONTAINS
             & delta_b**2 - Ts_b*delta_b*hi*nu + Ts_b*delta_b*hi - Ts_b*delta_b*&
             & hib*nu + Ts_b*delta_b*hib + (3.0d0/8.0d0)*hi**2*nu + (3.0d0/4.0d0&
             & )*hi*hib*nu + (3.0d0/8.0d0)*hib**2*nu
-       
+
        ! dphib_dhi=(3.d0/2.d0)*(nu+(1-nu)*T_b)*hi**2-(1-nu)*Delta_T_b*(-delta_b2+delta_b*hi)     ! d(phi_i-1/2)/d(h_i)
        ! dphib_dhi1=(3.d0/2.d0)*(nu+(1-nu)*T_b)*hib**2-(1-nu)*Delta_T_b*(-delta_b2+delta_b*hib) ! d(phi_i-1/2)/d(h_i-1)
-       
+
     ELSEIF (Rheology == 1) THEN
        ERROR_CODE = 1
     ELSEIF (Rheology == 2) THEN
        nutest:IF (nu /= 1.0) THEN
-           dphib_dhi = -12*1.0/Ds_b*delta_b2*nu*nu**Ds_b*nu**(-T_b)*1.0/(&
-             & -log(nu)) + 12*1.0/Ds_b*delta_b2*nu*nu**(-T_b)*1.0/(-log(nu)) +&
-             & 12*sqrt(pi)*Ds_b**(-0.5d0)*delta_b2*nu*nu**(-T_b)*(-log(nu))**(&
-             & -1.5d0)*log(nu)*erf(sqrt(Ds_b)*sqrt(-log(nu))) - 6*sqrt(pi)*Ds_b&
-             & **(-0.5d0)*delta_b*hi*nu*nu**(-T_b)*(-log(nu))**(-1.5d0)*log(nu)*&
-             & erf(sqrt(Ds_b)*sqrt(-log(nu))) - 6*sqrt(pi)*Ds_b**(-0.5d0)*&
-             & delta_b*hib*nu*nu**(-T_b)*(-log(nu))**(-1.5d0)*log(nu)*erf(sqrt(&
-             & Ds_b)*sqrt(-log(nu))) - 12*delta_b2*nu*nu**(-T_b)*1.0/(-log(nu&
-             & ))*log(nu) + 12*delta_b*hi*nu*nu**(-T_b)*1.0/(-log(nu))*log(nu) +&
-             & 12*delta_b*hib*nu*nu**(-T_b)*1.0/(-log(nu))*log(nu) - 3*hi**2*nu*&
-             & nu**(-T_b)*1.0/(-log(nu))*log(nu) - 6*hi*hib*nu*nu**(-T_b)*1.0/(&
-             & -log(nu))*log(nu) - 3*hib**2*nu*nu**(-T_b)*1.0/(-log(nu))*log(nu)
+          dphib_dhi = -12*1.0/Ds_b*delta_b2*nu*nu**Ds_b*nu**(-T_b)*1.0/(&
+               & -log(nu)) + 12*1.0/Ds_b*delta_b2*nu*nu**(-T_b)*1.0/(-log(nu)) +&
+               & 12*sqrt(pi)*Ds_b**(-0.5d0)*delta_b2*nu*nu**(-T_b)*(-log(nu))**(&
+               & -1.5d0)*log(nu)*erf(sqrt(Ds_b)*sqrt(-log(nu))) - 6*sqrt(pi)*Ds_b&
+               & **(-0.5d0)*delta_b*hi*nu*nu**(-T_b)*(-log(nu))**(-1.5d0)*log(nu)*&
+               & erf(sqrt(Ds_b)*sqrt(-log(nu))) - 6*sqrt(pi)*Ds_b**(-0.5d0)*&
+               & delta_b*hib*nu*nu**(-T_b)*(-log(nu))**(-1.5d0)*log(nu)*erf(sqrt(&
+               & Ds_b)*sqrt(-log(nu))) - 12*delta_b2*nu*nu**(-T_b)*1.0/(-log(nu&
+               & ))*log(nu) + 12*delta_b*hi*nu*nu**(-T_b)*1.0/(-log(nu))*log(nu) +&
+               & 12*delta_b*hib*nu*nu**(-T_b)*1.0/(-log(nu))*log(nu) - 3*hi**2*nu*&
+               & nu**(-T_b)*1.0/(-log(nu))*log(nu) - 6*hi*hib*nu*nu**(-T_b)*1.0/(&
+               & -log(nu))*log(nu) - 3*hib**2*nu*nu**(-T_b)*1.0/(-log(nu))*log(nu)
 
-             dphib_dhi1 = -12*1.0/Ds_b*delta_b2*nu*nu**Ds_b*nu**(-T_b)*1.0/(&
-             & -log(nu)) + 12*1.0/Ds_b*delta_b2*nu*nu**(-T_b)*1.0/(-log(nu)) +&
-             & 12*sqrt(pi)*Ds_b**(-0.5d0)*delta_b2*nu*nu**(-T_b)*(-log(nu))**(&
-             & -1.5d0)*log(nu)*erf(sqrt(Ds_b)*sqrt(-log(nu))) - 6*sqrt(pi)*Ds_b&
-             & **(-0.5d0)*delta_b*hi*nu*nu**(-T_b)*(-log(nu))**(-1.5d0)*log(nu)*&
-             & erf(sqrt(Ds_b)*sqrt(-log(nu))) - 6*sqrt(pi)*Ds_b**(-0.5d0)*&
-             & delta_b*hib*nu*nu**(-T_b)*(-log(nu))**(-1.5d0)*log(nu)*erf(sqrt(&
-             & Ds_b)*sqrt(-log(nu))) - 12*delta_b2*nu*nu**(-T_b)*1.0/(-log(nu&
-             & ))*log(nu) + 12*delta_b*hi*nu*nu**(-T_b)*1.0/(-log(nu))*log(nu) +&
-             & 12*delta_b*hib*nu*nu**(-T_b)*1.0/(-log(nu))*log(nu) - 3*hi**2*nu*&
-             & nu**(-T_b)*1.0/(-log(nu))*log(nu) - 6*hi*hib*nu*nu**(-T_b)*1.0/(&
-             & -log(nu))*log(nu) - 3*hib**2*nu*nu**(-T_b)*1.0/(-log(nu))*log(nu)
-             
+          dphib_dhi1 = -12*1.0/Ds_b*delta_b2*nu*nu**Ds_b*nu**(-T_b)*1.0/(&
+               & -log(nu)) + 12*1.0/Ds_b*delta_b2*nu*nu**(-T_b)*1.0/(-log(nu)) +&
+               & 12*sqrt(pi)*Ds_b**(-0.5d0)*delta_b2*nu*nu**(-T_b)*(-log(nu))**(&
+               & -1.5d0)*log(nu)*erf(sqrt(Ds_b)*sqrt(-log(nu))) - 6*sqrt(pi)*Ds_b&
+               & **(-0.5d0)*delta_b*hi*nu*nu**(-T_b)*(-log(nu))**(-1.5d0)*log(nu)*&
+               & erf(sqrt(Ds_b)*sqrt(-log(nu))) - 6*sqrt(pi)*Ds_b**(-0.5d0)*&
+               & delta_b*hib*nu*nu**(-T_b)*(-log(nu))**(-1.5d0)*log(nu)*erf(sqrt(&
+               & Ds_b)*sqrt(-log(nu))) - 12*delta_b2*nu*nu**(-T_b)*1.0/(-log(nu&
+               & ))*log(nu) + 12*delta_b*hi*nu*nu**(-T_b)*1.0/(-log(nu))*log(nu) +&
+               & 12*delta_b*hib*nu*nu**(-T_b)*1.0/(-log(nu))*log(nu) - 3*hi**2*nu*&
+               & nu**(-T_b)*1.0/(-log(nu))*log(nu) - 6*hi*hib*nu*nu**(-T_b)*1.0/(&
+               & -log(nu))*log(nu) - 3*hib**2*nu*nu**(-T_b)*1.0/(-log(nu))*log(nu)
+
+          dphib_dhi = -12*1.0/Ds_b*delta_b**2*nu*nu**Ds_b*nu**(-T_b)*1.0/(&
+               & -log(nu)) + 12*1.0/Ds_b*delta_b**2*nu*nu**(-T_b)*1.0/(-log(nu)) +&
+               & 12*sqrt(pi)*Ds_b**(-0.5d0)*delta_b**2*nu*nu**(-T_b)*(-log(nu))**(&
+               & -1.5d0)*log(nu)*erf(sqrt(Ds_b)*sqrt(-log(nu))) - 6*sqrt(pi)*Ds_b&
+               & **(-0.5d0)*delta_b*hi*nu*nu**(-T_b)*(-log(nu))**(-1.5d0)*log(nu)*&
+               & erf(sqrt(Ds_b)*sqrt(-log(nu))) - 6*sqrt(pi)*Ds_b**(-0.5d0)*&
+               & delta_b*hib*nu*nu**(-T_b)*(-log(nu))**(-1.5d0)*log(nu)*erf(sqrt(&
+               & Ds_b)*sqrt(-log(nu))) - 12*delta_b**2*nu*nu**(-T_b)*1.0/(-log(nu&
+               & ))*log(nu) + 12*delta_b*hi*nu*nu**(-T_b)*1.0/(-log(nu))*log(nu) +&
+               & 12*delta_b*hib*nu*nu**(-T_b)*1.0/(-log(nu))*log(nu) - 3*hi**2*nu*&
+               & nu**(-T_b)*1.0/(-log(nu))*log(nu) - 6*hi*hib*nu*nu**(-T_b)*1.0/(&
+               & -log(nu))*log(nu) - 3*hib**2*nu*nu**(-T_b)*1.0/(-log(nu))*log(nu)
+
+          dphib_dhi1 = -12*1.0/Ds_b*delta_b**2*nu*nu**Ds_b*nu**(-T_b)*1.0/(&
+               & -log(nu)) + 12*1.0/Ds_b*delta_b**2*nu*nu**(-T_b)*1.0/(-log(nu)) +&
+               & 12*sqrt(pi)*Ds_b**(-0.5d0)*delta_b**2*nu*nu**(-T_b)*(-log(nu))**(&
+               & -1.5d0)*log(nu)*erf(sqrt(Ds_b)*sqrt(-log(nu))) - 6*sqrt(pi)*Ds_b&
+               & **(-0.5d0)*delta_b*hi*nu*nu**(-T_b)*(-log(nu))**(-1.5d0)*log(nu)*&
+               & erf(sqrt(Ds_b)*sqrt(-log(nu))) - 6*sqrt(pi)*Ds_b**(-0.5d0)*&
+               & delta_b*hib*nu*nu**(-T_b)*(-log(nu))**(-1.5d0)*log(nu)*erf(sqrt(&
+               & Ds_b)*sqrt(-log(nu))) - 12*delta_b**2*nu*nu**(-T_b)*1.0/(-log(nu&
+               & ))*log(nu) + 12*delta_b*hi*nu*nu**(-T_b)*1.0/(-log(nu))*log(nu) +&
+               & 12*delta_b*hib*nu*nu**(-T_b)*1.0/(-log(nu))*log(nu) - 3*hi**2*nu*&
+               & nu**(-T_b)*1.0/(-log(nu))*log(nu) - 6*hi*hib*nu*nu**(-T_b)*1.0/(&
+               & -log(nu))*log(nu) - 3*hib**2*nu*nu**(-T_b)*1.0/(-log(nu))*log(nu)
+
        ELSEIF (nu == 1.0) THEN
           dphib_dhi1 = 3*hi**2 + 6*hi*hib + 3*hib**2
           dphib_dhi = 3*hi**2 + 6*hi*hib + 3*hib**2
@@ -750,6 +872,6 @@ CONTAINS
   END SUBROUTINE FDPhi_B
 
 
-    
+
 END MODULE MODULE_MOBILITY
 
