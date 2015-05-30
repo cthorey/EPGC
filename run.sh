@@ -19,10 +19,10 @@ Compilateur -o Module_Thermal_Skin_Newton_Roscoe.o -c Module_Thermal_Skin_Newton
 Compilateur -o Module_Thermal.o -c Module_Thermal.f90
 Compilateur -o Module_Thickness_Inte_GFD_Bercovici.o -c Module_Thickness_Inte_GFD_Bercovici.f90
 Compilateur -o Module_Thickness_Skin_Newton.o -c Module_Thickness_Skin_Newton.f90
-Compilateur -o Module_Thickness_Newton_Gravi.o -c Module_Thickness_Newton_Gravi.f90
-Compilateur -o Module_Thickness.o -c Module_Thickness.f90
 Compilateur -o Module_Thickness_Skin_Newton_Arrhenius.o -c Module_Thickness_Skin_Newton_Arrhenius.f90
 Compilateur -o Module_Thickness_Skin_Newton_Bercovici.o -c Module_Thickness_Skin_Newton_Bercovici.f90
+Compilateur -o Module_Thickness_Newton_Gravi.o -c Module_Thickness_Newton_Gravi.f90
+Compilateur -o Module_Thickness.o -c Module_Thickness.f90
 Compilateur -o Module_Thickness_Skin_Newton_Roscoe.o -c Module_Thickness_Skin_Newton_Roscoe.f90
 Compilateur -o lib_array.o -c lib_array.f90
 Compilateur -o main.o -c main.f90
