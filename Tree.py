@@ -9,13 +9,13 @@ import pandas as pd
 import seaborn as sns
 
 def m_Max_Time(root,run,workspaces):
-    input_file = root+'/'+workspaces[run]
+    input_file = os.path.join(root,workspaces[run])
     with open(input_file, 'rb') as f:
         try:
             data_pickle = pickle.load(f)
         except:
             data_pickle = pd.read_pickle(input_file)
-    return '%3.1f'%(pd.DataFrame(data_pickle['Max']).tm.max())
+    return '%s'%(str(pd.DataFrame(data_pickle['Max']).tm.max()))
 
 def Bug_tcheque(run,Bugs):
     if run in Bugs:
@@ -68,13 +68,14 @@ def Draw_Tree(Root,Startup_Node):
     List = [f for f in os.listdir(Root) if f[:2] == 'el']
     Runs = ['_'.join([g for g in f.split('_') if g[0]!='M']) for f in List]  # On enleve M
     workspaces = dict(zip(Runs,List))
-    Bugs = [f for f in os.listdir(Root+'/Run_Code') if f[0] == 'E' and f.endswith('BUG')]
+    Bugs = [f for f in os.listdir(os.path.join(Root,'Run_Code')) if f[0] == 'E' and f.endswith('BUG')]
     Bugs = map(Map_Old_New_Name,Bugs)
     graph = pydot.Dot(graph_type='graph')
     Level = [f[:2] for f in Runs[0].split('_')]
     color = ['#'+pack("BBB",*tuple(np.array(triplet)*255)).encode('hex') for triplet in sns.color_palette('deep',len(Level))]
     def Visit_Branch(List_Run,Parent_Node):
         for key_node,label_node in Parent_Node.iteritems():
+            print key_node
             Level_Parent = Level.index(key_node[:2])
             Child_List = list(set([key.split('_')[Level_Parent+1] for key in List_Run if key.split('_')[Level_Parent] == key_node]))
             Tree_Child = [f for f in List_Run if f.split('_')[Level_Parent] == key_node]
@@ -103,11 +104,11 @@ def Draw_Tree(Root,Startup_Node):
                     graph.add_edge(pydot.Edge(label_child, node_final))
                     print m_Max_Time(Root,label_child,workspaces)
 
-    Visit_Branch(Runs,{'el0.0':'el0.0'})
-    graph.write_pdf(Root+'/Tree_Runs.pdf')
+    Visit_Branch(Runs,Startup_Node)
+    graph.write_pdf(os.path.join(Root,'Tree_Runs.pdf'))
 
 Root = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/'
-dir_w = Root + 'SCAPAD/ELAS/MSkin_TSc_Newton_HSc_Newton_RBercovici/Workspace_2015-05-29_0'
+Root = os.path.join(Root,'SCAPAD/ELAS/MSkin_TSc_Newton_HSc_Newton_RArrhenius/Workspace_2015-05-29_0')
 Startup_Node = {'el1.0':'el1.0'}
 Draw_Tree(Root,Startup_Node)
 
