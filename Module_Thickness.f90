@@ -41,13 +41,16 @@ CONTAINS
 
     F_err=20; F_errt=20; z=0
     THICKNESS_ITERATION: DO
-       
-       IF (Model == 1 .AND. Schema == 0 .AND. el == 1D0) THEN
-          CALL  THICKNESS_SKIN_NEWTON(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,&
-               &gam,Inter_Q,z,F_err,theta,tmps,Rheology,ERROR_CODE)
+
+       IF (Model == 1 .AND. Schema == 0 .AND. Rheology == 2 .AND. el == 1D0 ) THEN
           CALL THICKNESS_SKIN_NEWTON_ARRHENIUS(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,&
                &gam,Inter_Q,z,F_err,theta,tmps)
-       ELSEIF (Model == 1 .AND. Schema ==0 .AND. el == 0D0) THEN
+          
+       ELSEIF (Model == 1 .AND. Schema == 0 .AND. Rheology == 0 .AND. el == 1D0 ) THEN
+          CALL THICKNESS_SKIN_NEWTON_BERCOVICI(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,&
+               &gam,Inter_Q,z,F_err,theta,tmps)
+          
+       ELSEIF (Model == 1 .AND. Schema == 1 .AND. el == 0D0) THEN
           CALL THICKNESS_SKIN_NEWTON_GRAVI(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma&
                &,nu,delta0,z,F_err,theta,Rheology,ERROR_CODE)
           
