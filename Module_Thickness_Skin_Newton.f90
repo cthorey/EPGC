@@ -333,7 +333,7 @@ CONTAINS
        Agrav = grav*Ai
        Bel = el*Bi
        Bgrav = grav*Bi
-       
+
        IF (i==1) THEN
           f(i)=Ael*phi_a*(P(2,col)-P(1,col))+Agrav*phi_a*(H(2,col)-H(1,col))&
                &+qa(i)

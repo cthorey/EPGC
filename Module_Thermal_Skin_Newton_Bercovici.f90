@@ -481,6 +481,7 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
        ! print*,'loss Old',loss
        loss = 2*Pe*psi*(T(i,col)-Ts(i,col))/BL(i,col)
        ! print*,i,'loss New',loss
+
        IF4: IF (i==1) THEN
           f(i)=loss+Ai*Omega_a*Xi(i,col)+Ai*Sigma_a
        ELSEIF (i==N) THEN
@@ -579,7 +580,6 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
 
        END IF IF2
 
-
        IF3:IF (i==1) THEN
           a(i)=0.d0
           b(i)=Ai*Omega_a
@@ -593,7 +593,7 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
           b(i) = Ai*Omega_a
           c(i)=0.d0
        END IF IF3
-
+       
     ENDDO
   END SUBROUTINE JACOBI_TEMPERATURE_BALMFORTH
 

@@ -436,6 +436,7 @@ CONTAINS
        ! print*,'loss Old',loss
        loss = 2*Pe*psi*(T(i,col)-Ts(i,col))/BL(i,col)
        ! print*,i,'loss New',loss
+
        IF4: IF (i==1) THEN
           f(i)=loss+Ai*Omega_a*Xi(i,col)+Ai*Sigma_a
        ELSEIF (i==N) THEN
@@ -446,6 +447,7 @@ CONTAINS
                &+Ai*Sigma_a-Bi*Sigma_b &
                &+loss
        END IF IF4
+       
 
     END DO
 
@@ -506,7 +508,6 @@ CONTAINS
           CALL fomega_a(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i&
                &,nu,Rheology,ERROR_CODE,omega_a)
        END IF IF2
-
 
        IF3:IF (i==1) THEN
           a(i)=0.d0
