@@ -333,7 +333,7 @@ CONTAINS
           ! phi_b=(nu+(1.d0-nu)*T_b)*h_b3-(2.d0/5.d0)*(1.d0-nu)*Delta_T_b*(2.d0*delta_b3-5.d0*delta_b2*h_b+5.d0*delta_b*h_b2)
 
        ENDIF
-
+       
        IF (i==1) THEN
           f(i)=Ael*phi_a*(P(2,col)-P(1,col))+Agrav*phi_a*(H(2,col)-H(1,col))&
                &+qa(i)
@@ -502,7 +502,7 @@ CONTAINS
           P2=P(i,2)-P(i-1,2)
           H2=H(i,2)-H(i-1,2)
        ENDIF IF2
-
+       
        IF3: IF (i==1) THEN
           a(i)=0;b(i)=0;c(i)=0;d(i)=0
           e(i)=Ael*dphia_dhi*P1+Ael*phi_a*((gamma(i+1)+beta(i+1))-(lambda(i)+gamma(i)))&

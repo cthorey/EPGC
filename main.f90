@@ -236,7 +236,6 @@ PROGRAM MAIN
      k = k+1
      tmps_n = tmps
      tmps = tmps+Dt
-     ! print*,k,H(1,3),T(1,3),Ts(1,3)
      
   END DO TEMPS
 

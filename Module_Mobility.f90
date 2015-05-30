@@ -1,7 +1,42 @@
 MODULE MODULE_MOBILITY
 CONTAINS
+  
+  SUBROUTINE CoeffA_THickness(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i,&
+       &h_a,h_a2,h_a3,delta_a,delta_a2,delta_a3,T_a,T_a2,T_a3,&
+       &Ts_a,Ts_a2,Ts_a3,Ds_a)
 
-  SUBROUTINE CoeffA(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i,&
+    IMPLICIT NONE
+
+    DOUBLE PRECISION , INTENT(IN) :: Dr,Dt,el,grav
+    INTEGER, INTENT(IN) :: col,i
+    DOUBLE PRECISION ,DIMENSION(:,:), INTENT(IN) :: H,T,Ts,BL,P
+    DOUBLE PRECISION ,DIMENSION(:), INTENT(IN) :: dist,ray
+
+    DOUBLE PRECISIOn, INTENT(INOUT) :: h_a,h_a2,h_a3,delta_a,delta_a2,delta_a3,T_a,T_a2,T_a3
+    DOUBLE PRECISIOn, INTENT(INOUT) :: Ts_a,Ts_a2,Ts_a3,Ds_a
+
+    h_a=0.5d0*(H(i+1,col)+H(i,col))
+    h_a2=0.5d0*(H(i+1,col)**2+H(i,col)**2)
+    h_a3=0.5d0*(H(i+1,col)**3+H(i,col)**3)
+
+    delta_a=0.5d0*(BL(i+1,3)+BL(i,3))
+    delta_a2=0.5d0*(BL(i+1,3)**2+BL(i,3)**2)
+    delta_a3=0.5d0*(BL(i+1,3)**3+BL(i,3)**3)
+
+    T_a = 0.5d0*(T(i,3)+T(i+1,3))
+    T_a2 = 0.5d0*(T(i,3)**2+T(i+1,3)**2)
+    T_a3 = 0.5d0*(T(i,3)**3+T(i+1,3)**3)
+
+    Ts_a = 0.5d0*(Ts(i,3)+Ts(i+1,3))
+    Ts_a2 = 0.5d0*(Ts(i,3)**2+Ts(i+1,3)**2)
+    Ts_a3 = 0.5d0*(Ts(i,3)**3+Ts(i+1,3)**3)
+
+    Ds_a = T_a-Ts_a
+
+  END SUBROUTINE CoeffA_THickness
+
+  
+  SUBROUTINE CoeffA_Thermal(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i,&
        &h_a,h_a2,h_a3,delta_a,delta_a2,delta_a3,T_a,T_a2,T_a3,&
        &Ts_a,Ts_a2,Ts_a3,Ds_a,eta_a)
 
@@ -36,9 +71,43 @@ CONTAINS
 
     Ds_a = T_a-Ts_a
 
-  END SUBROUTINE CoeffA
+  END SUBROUTINE CoeffA_Thermal
 
-  SUBROUTINE CoeffB(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i,&
+  SUBROUTINE CoeffB_Thickness(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i,&
+       &h_b,h_b2,h_b3,delta_b,delta_b2,delta_b3,T_b,T_b2,T_b3,&
+       &Ts_b,Ts_b2,Ts_b3,Ds_b)
+
+    IMPLICIT NONE
+
+    DOUBLE PRECISION , INTENT(IN) :: Dr,Dt,el,grav
+    INTEGER, INTENT(IN) :: col,i
+    DOUBLE PRECISION ,DIMENSION(:,:), INTENT(IN) :: H,T,Ts,BL,P
+    DOUBLE PRECISION ,DIMENSION(:), INTENT(IN) :: dist,ray
+
+    DOUBLE PRECISIOn, INTENT(INOUT) :: h_b,h_b2,h_b3,delta_b,delta_b2,delta_b3,T_b,T_b2,T_b3
+    DOUBLE PRECISIOn, INTENT(INOUT) :: Ts_b,Ts_b2,Ts_b3,Ds_b
+
+    h_b=0.5d0*(H(i-1,col)+H(i,col))
+    h_b2=0.5d0*(H(i-1,col)**2+H(i,col)**2)
+    h_b3=0.5d0*(H(i-1,col)**3+H(i,col)**3)
+
+    delta_b=0.5d0*(BL(i-1,3)+BL(i,3))
+    delta_b2=0.5d0*(BL(i-1,3)**2+BL(i,3)**2)
+    delta_b3=0.5d0*(BL(i-1,3)**3+BL(i,3)**3)
+
+    T_b = 0.5d0*(T(i,3)+T(i-1,3))
+    T_b2 = 0.5d0*(T(i,3)**2+T(i-1,3)**2)
+    T_b3 = 0.5d0*(T(i,3)**3+T(i-1,3)**3)
+
+    Ts_b = 0.5d0*(Ts(i,3)+Ts(i-1,3))
+    Ts_b2 = 0.5d0*(Ts(i,3)**2+Ts(i-1,3)**2)
+    Ts_b3 = 0.5d0*(Ts(i,3)**3+Ts(i-1,3)**3)
+
+    Ds_b = T_b-Ts_b
+    
+  END SUBROUTINE CoeffB_Thickness
+  
+  SUBROUTINE CoeffB_Thermal(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i,&
        &h_b,h_b2,h_b3,delta_b,delta_b2,delta_b3,T_b,T_b2,T_b3,&
        &Ts_b,Ts_b2,Ts_b3,Ds_b,eta_b)
 
@@ -72,8 +141,8 @@ CONTAINS
     Ts_b3 = 0.5d0*(Ts(i,col)**3+Ts(i-1,col)**3)
 
     Ds_b = T_b-Ts_b
-
-  END SUBROUTINE CoeffB
+    
+  END SUBROUTINE CoeffB_Thermal
 
   SUBROUTINE fAi_thermal(ray,dist,Dr,i,Ai)
     IMPLICIT NONE
@@ -143,7 +212,7 @@ CONTAINS
     DOUBLE PRECISION, INTENT(INOUT) :: omega_a
     INTEGER, INTENT(INOUT) :: ERROR_CODE
 
-    CALL CoeffA(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i,&
+    CALL CoeffA_Thermal(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i,&
        &h_a,h_a2,h_a3,delta_a,delta_a2,delta_a3,T_a,T_a2,T_a3,&
        &Ts_a,Ts_a2,Ts_a3,Ds_a,eta_a)
 
@@ -229,7 +298,7 @@ CONTAINS
     DOUBLE PRECISION, INTENT(INOUT) :: sigma_a
     INTEGER, INTENT(INOUT) :: ERROR_CODE
 
-    CALL CoeffA(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i,&
+    CALL CoeffA_Thermal(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i,&
        &h_a,h_a2,h_a3,delta_a,delta_a2,delta_a3,T_a,T_a2,T_a3,&
        &Ts_a,Ts_a2,Ts_a3,Ds_a,eta_a)
 
@@ -386,7 +455,7 @@ CONTAINS
     DOUBLE PRECISION, INTENT(INOUT) :: omega_b
     INTEGER, INTENT(INOUT) :: ERROR_CODE
 
-    CALL CoeffB(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i,&
+    CALL CoeffB_THermal(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i,&
        &h_b,h_b2,h_b3,delta_b,delta_b2,delta_b3,T_b,T_b2,T_b3,&
        &Ts_b,Ts_b2,Ts_b3,Ds_b,eta_b)
 
@@ -473,7 +542,7 @@ CONTAINS
     DOUBLE PRECISION, INTENT(INOUT) :: sigma_b
     INTEGER, INTENT(INOUT) :: ERROR_CODE
 
-    CALL CoeffB(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i,&
+    CALL CoeffB_Thermal(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i,&
        &h_b,h_b2,h_b3,delta_b,delta_b2,delta_b3,T_b,T_b2,T_b3,&
        &Ts_b,Ts_b2,Ts_b3,Ds_b,eta_b)
 
@@ -625,14 +694,13 @@ CONTAINS
 
     DOUBLE PRECISIOn :: h_a,h_a2,h_a3,delta_a,delta_a2,delta_a3,T_a,T_a2,T_a3
     DOUBLE PRECISIOn :: Ts_a,Ts_a2,Ts_a3,Ds_a
-    DOUBLE PRECISION :: eta_a
 
     DOUBLE PRECISION, INTENT(INOUT) :: phi_a
     INTEGER, INTENT(INOUT) :: ERROR_CODE
 
-    CALL CoeffA(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i,&
+    CALL CoeffA_Thickness(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i,&
        &h_a,h_a2,h_a3,delta_a,delta_a2,delta_a3,T_a,T_a2,T_a3,&
-       &Ts_a,Ts_a2,Ts_a3,Ds_a,eta_a)
+       &Ts_a,Ts_a2,Ts_a3,Ds_a)
 
     
     IF (Rheology == 0) THEN
@@ -705,15 +773,14 @@ CONTAINS
 
     DOUBLE PRECISIOn :: h_a,h_a2,h_a3,delta_a,delta_a2,delta_a3,T_a,T_a2,T_a3
     DOUBLE PRECISIOn :: Ts_a,Ts_a2,Ts_a3,Ds_a
-    DOUBLE PRECISION :: eta_a
     DOUBLE PRECISION :: hi,hia
     
     DOUBLE PRECISION, INTENT(INOUT) :: dphia_dhi,dphia_dhi1
     INTEGER, INTENT(INOUT) :: ERROR_CODE
 
-    CALL CoeffA(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i,&
+    CALL CoeffA_Thickness(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i,&
        &h_a,h_a2,h_a3,delta_a,delta_a2,delta_a3,T_a,T_a2,T_a3,&
-       &Ts_a,Ts_a2,Ts_a3,Ds_a,eta_a)
+       &Ts_a,Ts_a2,Ts_a3,Ds_a)
 
      hia = H(i+1,col)
      hi = H(i,col)
@@ -832,14 +899,13 @@ CONTAINS
 
     DOUBLE PRECISIOn :: h_b,h_b2,h_b3,delta_b,delta_b2,delta_b3,T_b,T_b2,T_b3
     DOUBLE PRECISIOn :: Ts_b,Ts_b2,Ts_b3,Ds_b
-    DOUBLE PRECISION :: eta_b
 
     DOUBLE PRECISION, INTENT(INOUT) :: phi_b
     INTEGER, INTENT(INOUT) :: ERROR_CODE
 
-    CALL CoeffB(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i,&
+    CALL CoeffB_Thickness(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i,&
        &h_b,h_b2,h_b3,delta_b,delta_b2,delta_b3,T_b,T_b2,T_b3,&
-       &Ts_b,Ts_b2,Ts_b3,Ds_b,eta_b)
+       &Ts_b,Ts_b2,Ts_b3,Ds_b)
 
     
     IF (Rheology == 0) THEN
@@ -912,16 +978,15 @@ CONTAINS
 
     DOUBLE PRECISIOn :: h_b,h_b2,h_b3,delta_b,delta_b2,delta_b3,T_b,T_b2,T_b3
     DOUBLE PRECISIOn :: Ts_b,Ts_b2,Ts_b3,Ds_b
-    DOUBLE PRECISION :: eta_b
 
     DOUBLE PRECISION :: hi,hib
 
     DOUBLE PRECISION, INTENT(INOUT) :: dphib_dhi,dphib_dhi1
     INTEGER, INTENT(INOUT) :: ERROR_CODE
 
-    CALL CoeffB(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i,&
+    CALL CoeffB_Thickness(H,T,Ts,BL,P,col,dist,ray,Dr,Dt,el,grav,i,&
        &h_b,h_b2,h_b3,delta_b,delta_b2,delta_b3,T_b,T_b2,T_b3,&
-       &Ts_b,Ts_b2,Ts_b3,Ds_b,eta_b)
+       &Ts_b,Ts_b2,Ts_b3,Ds_b)
 
     hib = H(i-1,col)
     hi = H(i,col)
