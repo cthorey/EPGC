@@ -46,7 +46,7 @@ elif _platform == "darwin":
 Namejob = 'Arrhe_db2'
 Model = 1
 T_Schema = 0;H_Schema = 0
-Rheology = 2
+Rheology = 0
 
 Dict_Param = {'Sigma': ['2D-2'],
               'Delta0': ['5D-3'],
