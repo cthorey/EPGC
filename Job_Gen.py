@@ -42,14 +42,16 @@ elif _platform == "darwin":
 # ! Model: {0: Integration Epaisseur, 1: Skin thermal layer}
 # ! Schema :{0: Newton_Rhaspod, 1: Finite difference}
 # ! Rheology: {0: Bercovici, 1: Roscoe, 2: Arrhenius}
+
+Namejob = 'Arrhe_db2'
 Model = 1
-T_Schema = 1;H_Schema = 0
+T_Schema = 0;H_Schema = 0
 Rheology = 2
 
 Dict_Param = {'Sigma': ['2D-2'],
               'Delta0': ['5D-3'],
-              'Grav': ['1D0'],
-              'El': ['0D0'],
+              'Grav': ['0D0'],
+              'El': ['1D0'],
               'Nu': ['1D0','1D-3'],
               'Pe': ['1D0','1D-3'],
               'Psi': ['1D0'],
@@ -57,7 +59,7 @@ Dict_Param = {'Sigma': ['2D-2'],
               'gam':['0D0'],
               'Inter_Q':['1D20'],
               'Dr' : ['1D-2'],
-              'Ep': ['1D-3'],
+              'Ep': ['1D-4'],
               'Dt' : ['1D-7']}
 M_grid = 4000
 Init = 0 # 1 If you want to begin for the last backup
@@ -338,7 +340,7 @@ if _platform == "linux" or _platform == "linux2":
         with open(os.path.join(Root_Code,'run_tmp'+'.job'), 'wr+') as script_tmp:
             for l in script:
                 if l == '#SBATCH -J Name\n':
-                    to_write = l.replace('Name','EL')
+                    to_write = l.replace('Name',Namejob)
                 elif l == '#SBATCH --nodes=Nnode\n':
                     to_write = l.replace('Nnode',str((len(Dict_Run)-1)//16+1))
                 elif l == '#SBATCH --ntasks=Ntask\n':
