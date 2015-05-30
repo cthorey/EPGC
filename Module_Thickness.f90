@@ -4,7 +4,6 @@ MODULE MODULE_THICKNESS
 
   USE MODULE_THICKNESS_INTE_GFD_BERCOVICI
   USE MODULE_THICKNESS_SKIN_NEWTON
-  USE MODULE_THICKNESS_SKIN_NEWTON_BERCOVICI
   USE MODULE_THICKNESS_SKIN_NEWTON_GRAVI
   
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
