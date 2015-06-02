@@ -38,27 +38,27 @@ elif _platform == "darwin":
     Bactrace_Run = 'Bactrack.txt'
     Compilateur = 'gfortran'
 
-# !Definition
+    # !Definition
 # ! Model: {0: Integration Epaisseur, 1: Skin thermal layer}
 # ! Schema :{0: Newton_Rhaspod, 1: Finite difference}
 # ! Rheology: {0: Bercovici, 1: Roscoe, 2: Arrhenius}
 
-Namejob = 'E_A'
+Namejob = 'G_A'
 Model = 1
-T_Schema = 0; H_Schema = 0
-Rheology = 2
+T_Schema = 1; H_Schema = 0
+Rheology = 0
 
 Dict_Param = {'Sigma': ['2D-2'],
-              'Delta0': ['5D-3'],
-              'Grav': ['0D0'],
-              'El': ['1D0'],
+              'Delta0': ['0D0'],
+              'Grav': ['1D0'],
+              'El': ['0D0'],
               'Nu': ['1D0','1D-1','1D-2','1D-3'],
               'Pe': ['1D0','1D-1','1D-2','1D-3'],
               'Psi': ['1D0'],
               'N1' : ['1D0','1D5'],
               'gam':['0D0'],
               'Inter_Q':['1D20'],
-              'Dr' : ['1D-2','5D-3'],
+              'Dr' : ['1D-2'],
               'Ep': ['1D-4'],
               'Dt' : ['1D-7']}
 M_grid = 8000
@@ -220,7 +220,7 @@ for run in Dict_Run:
     Backup = [ '0' , 'Backup_000000.dat']
     if os.path.isdir(os.path.join(Root_Run,name)):
         print 'Le repertoire existe deja: Voici la liste des fichiers:'
-        print [elt for elt in os.listdir(Root_Run+name) if elt.split('_')[0] == 'Backup']
+        print [elt for elt in os.listdir(os.path.join(Root_Run,name)) if elt.split('_')[0] == 'Backup']
         if len([elt for elt in os.listdir(os.path.join(Root_Run,name)) if elt.split('_')[0] == 'Backup']) < 10:
             Bool = True
         else:
@@ -234,7 +234,7 @@ for run in Dict_Run:
                 print 'Pas de fichier backup dans le dossier '+name+' considerer. \n Consider to say do to the question before'
                 raise SystemExit
             else :
-                back = [elt for elt in os.listdir(os.path.join(Root_Run,name)) if elt.split('_')[0] == 'Backup'][-1]
+                back = [elt for elt in os.listdir(os.path.join(Root_Run,name)) if elt.split('_')[0] == 'Backup'][-2]
                 Backup = [ '1' , back]
                 print 'On repart du fichier ' + back 
     else:
