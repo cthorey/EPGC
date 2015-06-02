@@ -43,25 +43,25 @@ elif _platform == "darwin":
 # ! Schema :{0: Newton_Rhaspod, 1: Finite difference}
 # ! Rheology: {0: Bercovici, 1: Roscoe, 2: Arrhenius}
 
-Namejob = 'Arrhe_db2'
+Namejob = 'E_A'
 Model = 1
-T_Schema = 0;H_Schema = 0
-Rheology = 0
+T_Schema = 0; H_Schema = 0
+Rheology = 2
 
 Dict_Param = {'Sigma': ['2D-2'],
               'Delta0': ['5D-3'],
               'Grav': ['0D0'],
               'El': ['1D0'],
-              'Nu': ['1D0','1D-3'],
-              'Pe': ['1D0','1D-3'],
+              'Nu': ['1D0','1D-1','1D-2','1D-3'],
+              'Pe': ['1D0','1D-1','1D-2','1D-3'],
               'Psi': ['1D0'],
               'N1' : ['1D0','1D5'],
               'gam':['0D0'],
               'Inter_Q':['1D20'],
-              'Dr' : ['1D-2'],
+              'Dr' : ['1D-2','5D-3'],
               'Ep': ['1D-4'],
               'Dt' : ['1D-7']}
-M_grid = 4000
+M_grid = 8000
 Init = 0 # 1 If you want to begin for the last backup
 space = '\n --------------------- \n'
 
