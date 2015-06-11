@@ -12,11 +12,11 @@ CONTAINS
     IF (el == 0D0 ) THEN
        timegrav:     IF (tmps >1250D0) THEN
           Dt = 1D-2
-       ELSEIF (tmps>1000D0) THEN
+       ELSEIF (tmps>800D0) THEN
           Dt = 1D-3
-       ELSEIF (tmps>300D0) THEN
+       ELSEIF (tmps>200D0) THEN
           Dt = 1D-4
-       ELSEIF (tmps>5D0) THEN
+       ELSEIF (tmps>3D0) THEN
           Dt = 1D-5
        ELSEIF (tmps> 1D-5) THEN
           Dt = 1D-6
@@ -24,13 +24,13 @@ CONTAINS
     ELSEIF (el == 1D0) THEN
        timegeneral:IF (tmps >1000D0) THEN
           Dt = 1D-2
-       ELSEIF (tmps>500D0) THEN
+       ELSEIF (tmps>800D0) THEN
           Dt = 1D-3
-       ELSEIF (tmps>100D0) THEN
+       ELSEIF (tmps>200D0) THEN
           Dt = 1D-4
-       ELSEIF (tmps>5D0) THEN
+       ELSEIF (tmps>3D0) THEN
           Dt = 1D-5
-       ELSEIF (tmps> 1D-1) THEN
+       ELSEIF (tmps> 1D-4) THEN
           Dt = 1D-6
        ENDIF timegeneral
     ENDIF
