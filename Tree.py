@@ -107,8 +107,8 @@ def Draw_Tree(Root,Startup_Node):
     Visit_Branch(Runs,Startup_Node)
     graph.write_pdf(os.path.join(Root,'Tree_Runs.pdf'))
 
-Root = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/'
-Root = os.path.join(Root,'SCAPAD/ELAS/MSkin_TSc_Newton_HSc_Newton_RArrhenius/Workspace_2015-05-29_0')
+Root = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/SCAPAD'
+Root = os.path.join(Root,'ELAS','MSkin_TSc_Newton_HSc_Newton_RArrhenius','Workspace_2015-06-02_0')    
 Startup_Node = {'el1.0':'el1.0'}
 Draw_Tree(Root,Startup_Node)
 
