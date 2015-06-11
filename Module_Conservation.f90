@@ -60,7 +60,8 @@ CONTAINS
 
   END SUBROUTINE MASS_CONSERVATION
 
-  SUBROUTINE ENERGY_CONSERVATION(H,BL,T,Ts,Pe,Dt,dist,ray,k,psi,BE_a,BE_b,En_t1,En_t2,Phi_s,Phi_l,delta0,sigma)
+  SUBROUTINE ENERGY_CONSERVATION(H,BL,T,Ts,Pe,Dt,dist,ray,k,psi,BE_a,BE_b,En_t1,En_t2,Phi_s,Phi_l,delta0,sigma&
+       &,Rheology)
 
     !*****************************************************************
     ! Control the energy conservation at each time step pour le code balmforth
@@ -79,7 +80,8 @@ CONTAINS
 
     ! Nombre sans dimension
     DOUBLE PRECISION ,INTENT(IN) :: Pe,Dt,psi,delta0,sigma
-
+    INTEGER ,INTENT(IN) :: Rheology
+  
     !Parametre du sous programme
     DOUBLE PRECISION :: tbar_t1,tbar_t2,A_1_t1,A_1_t2,A_2,A_3,A_4
     DOUBLE PRECISION :: Int_1_t1,Int_1_t2,Int_2,Int_3,Int_4

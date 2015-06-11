@@ -74,7 +74,7 @@ CONTAINS
   END SUBROUTINE STRESS_ELASTIC_FIELD
 
   SUBROUTINE AVERAGE_QUANTITY(Xi,H,T,Ts,BL,dist,ray,Dt,Dr,el,grav,N1,Pe,Psi,nu,Tm,Vm,Mum,Phim,M,tmps,delta0,&
-       &Vm01,Mum01,Vm02,Mum02,Vm05,Mum05,Vm005,Mum005,Tm01,Tm02,Tm05,Tm005)
+       &Vm01,Mum01,Vm02,Mum02,Vm05,Mum05,Vm005,Mum005,Tm01,Tm02,Tm05,Tm005,Rheology)
 
     IMPLICIT NONE
 
@@ -85,8 +85,10 @@ CONTAINS
     DOUBLE PRECISION ,INTENT(INOUT) :: Vm01,Mum01,Vm02,Mum02,Vm05,Mum05,Vm005,Mum005
     DOUBLE PRECISION ,INTENT(INOUT) :: Tm01,Tm02,Tm05,Tm005
     INTEGER, INTENT(IN) :: M
+    INTEGER ,INTENT(IN) :: Rheology
 
     DOUBLE PRECISION, EXTERNAL:: viscosity_1,viscosity_2,viscosity_3
+    DOUBLE PRECISION, EXTERNAL:: viscosity_Arrhe_1,viscosity_Arrhe_2,viscosity_Arrhe_3
     DOUBLE PRECISION :: hthetabar,a,beta,muPart1,muPart2,muPart3
     DOUBLE PRECISION :: hmubar,Phibar
     DOUBLE PRECISION :: abserr
@@ -123,9 +125,19 @@ CONTAINS
        hthetabar = -2*(T(i,3)-Ts(i,3))/3.d0*BL(i,3)+T(i,3)*H(i,3)
        beta = (1.d0-nu)
        Thetas = Ts(i,3);Thetab = T(i,3);delta = BL(i,3);nu_v = nu;ho=H(i,3)
-       CALL qxgs(Viscosity_1,0.d0,delta,1D-6,1D-3,muPart1,abserr,ier,10,last)
-       CALL qxgs(Viscosity_2,delta,ho-delta,1D-6,1D-3,muPart2,abserr,ier,10,last)
-       CALL qxgs(Viscosity_3,ho-delta,ho,1D-6,1D-3,muPart3,abserr,ier,10,last)
+       IF (Rheology == 0) THEN
+          CALL qxgs(Viscosity_1,0.d0,delta,1D-6,1D-3,muPart1,abserr,ier,10,last)
+          CALL qxgs(Viscosity_2,delta,ho-delta,1D-6,1D-3,muPart2,abserr,ier,10,last)
+          CALL qxgs(Viscosity_3,ho-delta,ho,1D-6,1D-3,muPart3,abserr,ier,10,last)
+       ELSEIF (Rheology == 2) THEN
+          CALL qxgs(Viscosity_Arrhe_1,0.d0,delta,1D-6,1D-3,muPart1,abserr,ier,10,last)
+          CALL qxgs(Viscosity_Arrhe_2,delta,ho-delta,1D-6,1D-3,muPart2,abserr,ier,10,last)
+          CALL qxgs(Viscosity_Arrhe_3,ho-delta,ho,1D-6,1D-3,muPart3,abserr,ier,10,last)
+       ELSE
+          PRINT*,'Rheology not implemented'
+          STOP
+       ENDIF
+       
        hmubar = muPart1+muPart2+muPart3
        Phibar = -4.d0*Pe*((T(i,3)-Ts(i,3))/BL(i,3))
 
@@ -192,7 +204,7 @@ CONTAINS
   SUBROUTINE TRACKING_FRONT(Xi,H,T,Ts,BL,dist,ray,P,Dt,Dr,el,grav,N1,Pe,Psi,nu,tmps,delta0,&
        &Fr_d_R,Fr_d_T,Fr_d_Mu,Fr_001_R,Fr_001_T,Fr_001_Mu,Mu_e,&
        &Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H,hmubar,hthetabar,ubar,&
-       &Fr_005_R,Fr_005_T,Fr_005_Mu)
+       &Fr_005_R,Fr_005_T,Fr_005_Mu,Rheology)
 
     IMPLICIT NONE
 
@@ -204,9 +216,11 @@ CONTAINS
     DOUBLE PRECISION ,INTENT(INOUT) :: Fr_001_R,Fr_001_T,Fr_001_Mu
     DOUBLE PRECISION ,INTENT(INOUT) :: Fr_005_R,Fr_005_T,Fr_005_Mu
     DOUBLE PRECISION ,INTENT(INOUT) :: Fr_Mu_R,Fr_Mu_T,Fr_Mu_Mu,Fr_Mu_H
-
+    INTEGER ,INTENT(IN) :: Rheology
+    
     DOUBLE PRECISION :: dsize
     DOUBLE PRECISION, EXTERNAL:: viscosity_1,viscosity_2,viscosity_3
+    DOUBLE PRECISION, EXTERNAL:: viscosity_Arrhe_1,viscosity_Arrhe_2,viscosity_Arrhe_3
     DOUBLE PRECISION :: a,beta,muPart1,muPart2,muPart3
     DOUBLE PRECISION :: Vm,Tm,Mum,tbar,mbar
     DOUBLE PRECISION :: abserr,eta
@@ -225,9 +239,19 @@ CONTAINS
     DO i=1,COUNT(H(:,3)>0),1
        beta = (1.d0-nu)
        Thetas = Ts(i,3);Thetab = T(i,3);delta = BL(i,3);nu_v = nu;ho=H(i,3)
-       CALL qxgs(Viscosity_1,0.d0,delta,1D-6,1D-3,muPart1,abserr,ier,10,last)
-       CALL qxgs(Viscosity_2,delta,ho-delta,1D-6,1D-3,muPart2,abserr,ier,10,last)
-       CALL qxgs(Viscosity_3,ho-delta,ho,1D-6,1D-3,muPart3,abserr,ier,10,last)
+       IF (Rheology == 0) THEN
+          CALL qxgs(Viscosity_1,0.d0,delta,1D-6,1D-3,muPart1,abserr,ier,10,last)
+          CALL qxgs(Viscosity_2,delta,ho-delta,1D-6,1D-3,muPart2,abserr,ier,10,last)
+          CALL qxgs(Viscosity_3,ho-delta,ho,1D-6,1D-3,muPart3,abserr,ier,10,last)
+       ELSEIF (Rheology == 2) THEN
+          CALL qxgs(Viscosity_Arrhe_1,0.d0,delta,1D-6,1D-3,muPart1,abserr,ier,10,last)
+          CALL qxgs(Viscosity_Arrhe_2,delta,ho-delta,1D-6,1D-3,muPart2,abserr,ier,10,last)
+          CALL qxgs(Viscosity_Arrhe_3,ho-delta,ho,1D-6,1D-3,muPart3,abserr,ier,10,last)
+       ELSE
+          PRINT*,'Rheology not implemented'
+          STOP
+       ENDIF
+       
        hmubar(i) = muPart1+muPart2+muPart3
        hthetabar(i) = -2*(T(i,3)-Ts(i,3))/3.d0*BL(i,3)+T(i,3)*H(i,3)
        IF (i ==COUNT(H(:,3)>0)) THEN
@@ -374,3 +398,31 @@ DOUBLE PRECISION FUNCTION Viscosity_3(x)
 
   Viscosity_3  = 1.d0/(nu_v+(1.d0-nu_v)*(Thetab-(Thetab-Thetas)*(1.d0-(ho-x)/delta)**2))
 END FUNCTION Viscosity_3
+
+DOUBLE PRECISION FUNCTION Viscosity_Arrhe_1(x)
+  IMPLICIT NONE  
+  DOUBLE PRECISION :: delta,Thetas,Thetab,nu_v,ho
+  common /arg/ delta,Thetas,Thetab,nu_v,ho
+  DOUBLE PRECISION :: x
+
+  Viscosity_Arrhe_1 = EXP(-LOG(nu_v)*(1D0-(Thetab-(Thetab-Thetas)*(1.d0-x/delta)**2)))
+END FUNCTION Viscosity_Arrhe_1
+
+DOUBLE PRECISION FUNCTION Viscosity_Arrhe_2(x)
+  IMPLICIT NONE  
+  DOUBLE PRECISION :: delta,Thetas,Thetab,nu_v,ho
+  common /arg/ delta,Thetas,Thetab,nu_v,ho
+  DOUBLE PRECISION :: x
+  
+  Viscosity_Arrhe_2 = EXP(-LOG(nu_v)*(1D0-Thetab))
+END FUNCTION Viscosity_Arrhe_2
+
+DOUBLE PRECISION FUNCTION Viscosity_Arrhe_3(x)
+  IMPLICIT NONE  
+  DOUBLE PRECISION :: delta,Thetas,Thetab,nu_v,ho
+  common /arg/ delta,Thetas,Thetab,nu_v,ho
+  DOUBLE PRECISION :: x
+
+  Viscosity_Arrhe_3 = EXP(-LOG(nu_v)*(1D0-(Thetab-(Thetab-Thetas)*(1.d0-(ho-x)/delta)**2)))
+  
+END FUNCTION Viscosity_Arrhe_3
