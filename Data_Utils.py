@@ -175,10 +175,10 @@ def copy_folder(src,dest):
 
 root_path = Who_is_Root()
 runs = []
-runs.append(os.path.join('ELAS','MSkin_TSc_Newton_HSc_Newton_RArrhenius','Run_2015-06-02_0'))
-runs.append(os.path.join('ELAS','MSkin_TSc_Newton_HSc_Newton_RBercovici','Run_2015-06-02_0'))
-runs.append(os.path.join('GRAV','MSkin_TSc_GFD_HSc_Newton_RArrhenius','Run_2015-05-30_0'))
-runs.append(os.path.join('GRAV','MSkin_TSc_GFD_HSc_Newton_RBercovici','Run_2015-06-02_0'))
+runs.append(os.path.join('ELAS','MSkin_TSc_Newton_HSc_Newton_RArrhenius','Run_2015-06-11_0'))
+# runs.append(os.path.join('ELAS','MSkin_TSc_Newton_HSc_Newton_RBercovici','Run_2015-06-02_0'))
+runs.append(os.path.join('GRAV','MSkin_TSc_GFD_HSc_Newton_RArrhenius','Run_2015-06-11_0'))
+# runs.append(os.path.join('GRAV','MSkin_TSc_GFD_HSc_Newton_RBercovici','Run_2015-06-02_0'))
 
 # runs.append('GRAV/Run_2015-04-21_0/')# Pas obulier / a la fin
 for run in runs:
