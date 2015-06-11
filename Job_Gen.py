@@ -43,10 +43,10 @@ elif _platform == "darwin":
 # ! Schema :{0: Newton_Rhaspod, 1: Finite difference}
 # ! Rheology: {0: Bercovici, 1: Roscoe, 2: Arrhenius}
 
-Namejob = 'E_B'
+Namejob = 'E_A'
 Model = 1
 T_Schema = 0; H_Schema = 0
-Rheology = 0
+Rheology = 2
 
 Dict_Param = {'Sigma': ['2D-2'],
               'Delta0': ['5D-3'],
