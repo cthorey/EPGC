@@ -38,7 +38,7 @@ elif _platform == "darwin":
     Bactrace_Run = 'Bactrack.txt'
     Compilateur = 'gfortran'
 
-# !Definition
+    # !Definition
 # ! Model: {0: Integration Epaisseur, 1: Skin thermal layer}
 # ! Schema :{0: Newton_Rhaspod, 1: Finite difference}
 # ! Rheology: {0: Bercovici, 1: Roscoe, 2: Arrhenius}
@@ -61,6 +61,7 @@ Dict_Param = {'Sigma': ['2D-2'],
               'Dr' : ['1D-2','5D-3'],
               'Ep': ['1D-4'],
               'Dt' : ['1D-7']}
+
 M_grid = 8000
 Init = 0 # 1 If you want to begin for the last backup
 space = '\n --------------------- \n'
@@ -220,7 +221,7 @@ for run in Dict_Run:
     Backup = [ '0' , 'Backup_000000.dat']
     if os.path.isdir(os.path.join(Root_Run,name)):
         print 'Le repertoire existe deja: Voici la liste des fichiers:'
-        print [elt for elt in os.listdir(Root_Run+name) if elt.split('_')[0] == 'Backup']
+        print [elt for elt in os.listdir(os.path.join(Root_Run,name)) if elt.split('_')[0] == 'Backup']
         if len([elt for elt in os.listdir(os.path.join(Root_Run,name)) if elt.split('_')[0] == 'Backup']) < 10:
             Bool = True
         else:
@@ -234,7 +235,7 @@ for run in Dict_Run:
                 print 'Pas de fichier backup dans le dossier '+name+' considerer. \n Consider to say do to the question before'
                 raise SystemExit
             else :
-                back = [elt for elt in os.listdir(os.path.join(Root_Run,name)) if elt.split('_')[0] == 'Backup'][-1]
+                back = [elt for elt in os.listdir(os.path.join(Root_Run,name)) if elt.split('_')[0] == 'Backup'][-2]
                 Backup = [ '1' , back]
                 print 'On repart du fichier ' + back 
     else:
