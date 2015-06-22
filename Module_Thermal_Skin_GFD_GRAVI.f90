@@ -77,6 +77,16 @@ CONTAINS
     ! Separation variables
     CALL XI_SPLIT(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
 
+    DO i=1,N,1
+       IF (T(i,3)<5D-3 .AND. tmps>1D0) THEN
+          T(i:,3) = 0D0
+          Ts(i:,3) = 0D0
+          BL(i:,3) = H(i,3)/2D0
+          Xi(i:,3) = H(i,3)/2D0
+          EXIT
+       ENDIF
+    END DO
+    
     ! Calcule de l'erreur
     IF (DOT_PRODUCT(Xi(:,3),Xi(:,3))==DOT_PRODUCT(H(:,3)/2D0,H(:,3)/2D0)) THEN
        F_err = 0D0 ! Cas ou le refroidissemnt est trop important et tout devient nulle
@@ -256,10 +266,6 @@ SUBROUTINE XI_SPLIT(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
        
        beta = N1*Pe**(-0.5d0)/(sqrt(pi*(tmps+Dt)))
        loss = Pe*beta*Ts(i,col)*Dt*psi
-       IF (ABS(N-i)<2) THEN
-          loss = loss/2.0
-       ENDIF
-
 
        IF3:IF (i==1) THEN
           a(i) = 0.d0

@@ -59,7 +59,7 @@ CONTAINS
     delta0 = 0D0
     sigma = 2D-2
     nu = 1D-3
-    Pe = 1D-1
+    Pe = 1D0
     psi = 1D0
     N1 = 1D5
     gam = 0D0
