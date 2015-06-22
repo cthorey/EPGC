@@ -315,6 +315,9 @@ CONTAINS
        IF (H(1,3)-d<0.D0) THEN
           N = 0
           EXIT
+       ELSEIF (i == COUNT(H(:,3)>0D0)) THEN
+          N = COUNT(H(:,3)>0D0)
+          EXIT
        ELSEIF (H(i,3)-d>0.d0 .OR. N /= 0) THEN
           CYCLE
        ELSE
