@@ -237,7 +237,7 @@ PROGRAM MAIN
      k = k+1
      tmps_n = tmps
      tmps = tmps+Dt
-     ! print*,tmps,Mum/Vm,Tm/Vm
+     print*,tmps,Mum/Vm,Tm/Vm
      
   END DO TEMPS
 
