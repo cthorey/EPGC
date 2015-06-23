@@ -43,7 +43,7 @@ elif _platform == "darwin":
 # ! Schema :{0: Newton_Rhaspod, 1: Finite difference}
 # ! Rheology: {0: Bercovici, 1: Roscoe, 2: Arrhenius}
 
-Namejob = 'G_Arr'
+Namejob = 'G_Arrhe'
 Model = 1
 T_Schema = 1; H_Schema = 0
 Rheology = 2
