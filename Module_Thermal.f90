@@ -10,6 +10,7 @@ USE MODULE_THERMAL_SKIN_NEWTON_ROSCOE
 USE MODULE_THERMAL_SKIN_NEWTON_ARRHENIUS
 USE MODULE_THERMAL_SKIN_NEWTON
 USE MODULE_THERMAL_SKIN_GFD_GRAVI
+USE MODULE_THERMAL_GFD_GRAVI_BERCOVICI
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!  SUBROUTINES
@@ -52,6 +53,10 @@ CONTAINS
        ELSEIF (Model == 1 .AND. Schema == 0 .AND. Rheology == 0 .AND. el == 1D0 ) THEN
           CALL THERMAL_SKIN_NEWTON_BERCOVICI(Xi,H,P,T,Ts,BL,Dt,Dr,theta,dist,ray,M,&
                &sigma,nu,Pe,psi,delta0,el,grav,N1,F_err,z,tmps)
+          
+       ELSEIF (Model == 1 .AND. Schema == 1 .AND. el == 0D0 .AND. Rheology == 0) THEN
+          CALL THERMAL_GFD_SOLVER_BERCOVICI(Xi,H,P,T,Ts,BL,Dt,Dr,theta,dist,ray,M,sigma,nu,Pe,&
+               &psi,delta0,el,grav,N1,F_err,z,tmps)
           
        ELSEIF (Model == 1 .AND. Schema == 1 .AND. el == 0D0) THEN
           CALL THERMAL_SKIN_GFD_GRAVI(Xi,H,P,T,Ts,BL,Dt,Dr,theta,dist,ray,M&
