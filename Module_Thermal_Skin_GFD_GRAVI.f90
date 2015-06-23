@@ -71,21 +71,13 @@ CONTAINS
        IF (Xi(i,3) >H(i,3)/2D0) THEN
           Xi(i:,3) = H(i:,3)/2D0
           EXIT
+       ELSEIF (Xi(i,3)<0.D0) THEN
+          Xi(i,3) =0.D0
        ENDIF
     END DO
 
     ! Separation variables
     CALL XI_SPLIT(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
-
-    DO i=1,N,1
-       IF (T(i,3)<5D-3 .AND. tmps>1D0) THEN
-          T(i:,3) = 0D0
-          Ts(i:,3) = 0D0
-          BL(i:,3) = H(i,3)/2D0
-          Xi(i:,3) = H(i,3)/2D0
-          EXIT
-       ENDIF
-    END DO
     
     ! Calcule de l'erreur
     IF (DOT_PRODUCT(Xi(:,3),Xi(:,3))==DOT_PRODUCT(H(:,3)/2D0,H(:,3)/2D0)) THEN
