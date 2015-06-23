@@ -177,8 +177,9 @@ root_path = Who_is_Root()
 runs = []
 # runs.append(os.path.join('ELAS','MSkin_TSc_Newton_HSc_Newton_RArrhenius','Run_2015-06-11_0'))
 # runs.append(os.path.join('ELAS','MSkin_TSc_Newton_HSc_Newton_RBercovici','Run_2015-06-02_0'))
-runs.append(os.path.join('GRAV','MSkin_TSc_GFD_HSc_Newton_RArrhenius','Run_2015-06-22_0'))
-runs.append(os.path.join('GRAV','MSkin_TSc_GFD_HSc_Newton_RBercovici','Run_2015-06-22_0'))
+runs.append(os.path.join('GRAV','MSkin_TSc_GFD_HSc_Newton_RBercovici','Run_2015-06-23_0'))
+runs.append(os.path.join('GRAV','MSkin_TSc_GFD_HSc_Newton_RBercovici','Run_2015-06-23_1'))
+runs.append(os.path.join('GRAV','Run_2015-06-23_0'))
 
 for run in runs:
     tracker = '/home/thorey/EPGC/Tracker_'+'_'.join(run.split('/'))+'.txt'
