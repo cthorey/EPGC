@@ -258,7 +258,10 @@ SUBROUTINE XI_SPLIT(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
        
        beta = N1*Pe**(-0.5d0)/(sqrt(pi*(tmps+Dt)))
        loss = Pe*beta*Ts(i,col)*Dt*psi
-
+       IF (ABS(N-i)<2) THEN
+          loss = loss/2.0
+       ENDIF
+       
        IF3:IF (i==1) THEN
           a(i) = 0.d0
           b(i) = 1D0-Ai*Omega_a
