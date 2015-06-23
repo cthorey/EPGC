@@ -8,6 +8,7 @@ MODULE MODULE_THICKNESS
   USE MODULE_THICKNESS_SKIN_NEWTON
   USE MODULE_THICKNESS_SKIN_NEWTON_GRAVI
   USE MODULE_THICKNESS_NEWTON_GRAV_BERCOVICI
+  USE MODULE_THICKNESS_NEWTON_GRAV_ARRHENIUS
   
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!  SUBROUTINES
@@ -54,9 +55,10 @@ CONTAINS
        ELSEIF (Model == 1 .AND. Schema == 0 .AND. el == 0D0 .AND. Rheology == 0) THEN
           CALL THICKNESS_NEWTON_GRAV_BERCOVICI(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,&
                &delta0,z,F_err,theta)
-       ELSEIF (Model == 1 .AND. Schema == 0 .AND. el == 0D0 ) THEN
-          CALL THICKNESS_SKIN_NEWTON_GRAVI(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma&
-               &,nu,delta0,z,F_err,theta,Rheology,ERROR_CODE)
+          
+       ELSEIF (Model == 1 .AND. Schema == 0 .AND. el == 0D0 .AND. Rheology == 2 ) THEN
+          CALL THICKNESS_NEWTON_GRAV_ARRHENIUS(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,&
+               &delta0,z,F_err,theta)
        ELSE
           PRINT*,'PAS DE MODULE CORRESPONDANT IMPLEMENTE ENCORE THICKNESS'
           PRINT*,'MODEL =',Model,'SCHEMA =',Schema,'Rheology =',Rheology
