@@ -237,10 +237,6 @@ PROGRAM MAIN
      k = k+1
      tmps_n = tmps
      tmps = tmps+Dt
-<<<<<<< HEAD
-=======
-     ! print*,tmps,Mum/Vm,Tm/Vm
->>>>>>> 032e4419f4300286ffcabd0f34e1df336b25c9a0
      
   END DO TEMPS
 
