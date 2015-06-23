@@ -44,7 +44,7 @@ CONTAINS
     Model = 1
     T_Schema = 1
     H_Schema = 0
-    Rheology = 0
+    Rheology = 2
     el = 0D0
     grav = 1D0
 
