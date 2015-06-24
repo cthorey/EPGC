@@ -16,7 +16,7 @@ CONTAINS
           Dt = 1D-3
        ELSEIF (tmps>200D0) THEN
           Dt = 1D-4
-       ELSEIF (tmps>3D0) THEN
+       ELSEIF (tmps>10D0) THEN
           Dt = 1D-5
        ELSEIF (tmps> 1D-5) THEN
           Dt = 1D-6
