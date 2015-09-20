@@ -108,7 +108,7 @@ def Draw_Tree(Root,Startup_Node):
     graph.write_pdf(os.path.join(Root,'Tree_Runs.pdf'))
 
 Root = '/Users/thorey/Documents/These/Projet/Refroidissement/Skin_Model/SCAPAD'
-Root = os.path.join(Root,'GRAV','MSkin_TSc_GFD_HSc_Newton_RArrhenius','Workspace_2015-06-23_2')    
+Root = os.path.join(Root,'GRAV','MSkin_TSc_GFD_HSc_Newton_RBercovici','Workspace_2015-06-24_0')    
 Startup_Node = {'el0.0':'el0.0'}
 Draw_Tree(Root,Startup_Node)
 

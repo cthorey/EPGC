@@ -51,7 +51,7 @@ CONTAINS
     ! Parametre du model
     tmps_m = 1D32  
     M = 2000    
-    Dt = 1D-7
+    Dt = 1D-4
     Dr = 1D-2
     eps_1 = 1D-4
 
