@@ -30,6 +30,7 @@ PROGRAM MAIN
   DOUBLE PRECISION :: tmps_m,Dt,Dr,tmps,tmps_n
   INTEGER :: sample,Init
   INTEGER :: k,k1,k2,z,compteur,i
+  DOUBLE PRECISION :: pow !champ de temperatre
 
   ! SCHEMA A UTILISER
   INTEGER Model,T_Schema,H_Schema,Rheology
@@ -152,7 +153,7 @@ PROGRAM MAIN
         
         ! Module Epaisseur
         CALL THICKNESS_SOLVER(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,gam,Inter_Q,eps_1,&
-             &ERROR_CODE,Model,H_Schema,Rheology,tmps)
+             &ERROR_CODE,Model,H_Schema,Rheology,tmps,pow)
 
         IF (ERROR_CODE == 1) THEN
            WRITE(NF_Name,Format_NF),Root_Code,NF,'_BUG'

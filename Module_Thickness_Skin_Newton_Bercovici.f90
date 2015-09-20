@@ -6,7 +6,7 @@ CONTAINS
 !!!!!!!!  SUBROUTINE THICKNESS_NEWTON_SOLVER
 
   SUBROUTINE  THICKNESS_SKIN_NEWTON_BERCOVICI(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,&
-       &gam,Inter_Q,z,F_err,theta,tmps)
+       &gam,Inter_Q,z,F_err,theta,tmps,pow)
 
     !*****************************************************************
     !Solve for the thickness in the thickenss evolution equation using the Newton
@@ -20,7 +20,7 @@ CONTAINS
     DOUBLE PRECISION , DIMENSION(:), INTENT(IN) :: dist,ray
 
     !Parametre du model
-    DOUBLE PRECISION , INTENT(IN) :: Dt,Dr,theta
+    DOUBLE PRECISION , INTENT(IN) :: Dt,Dr,theta,pow
     DOUBLE PRECISION, INTENT(IN) :: tmps
     
     !Nombre sans dimensions
@@ -86,9 +86,9 @@ CONTAINS
     END IF
 
     col=1
-    CALL THICKNESS(ftmps,col,N,M,H,P,T,BL,Ts,Coeff,Dt,Dr,dist,ray,qa,el,grav,nu,delta0)
+    CALL THICKNESS(ftmps,col,N,M,H,P,T,BL,Ts,Coeff,Dt,Dr,dist,ray,qa,el,grav,nu,delta0,pow)
     col=2
-    CALL THICKNESS(fguess,col,N,M,H,P,T,BL,Ts,Coeff,Dt,Dr,dist,ray,qa,el,grav,nu,delta0)
+    CALL THICKNESS(fguess,col,N,M,H,P,T,BL,Ts,Coeff,Dt,Dr,dist,ray,qa,el,grav,nu,delta0,pow)
 
     ! Jacbienne
     ALLOCATE(a1(1:N),b1(1:N),c1(1:N),d1(1:N),e1(1:N), stat = err1)
@@ -97,7 +97,7 @@ CONTAINS
        PRINT*, 'Erreur d''allocation dans coeff du systeme'; STOP
     END IF
     
-    CALL JACOBI_THICKNESS(a1,b1,c1,d1,e1,f1,g1,k1,l1,N,M,H,P,T,BL,Ts,Coeff,Dt,Dr,dist,ray,el,grav,nu,delta0)
+    CALL JACOBI_THICKNESS(a1,b1,c1,d1,e1,f1,g1,k1,l1,N,M,H,P,T,BL,Ts,Coeff,Dt,Dr,dist,ray,el,grav,nu,delta0,pow)
 
     !Systeme a inverser
     ALLOCATE(a(1:N),b(1:N),c(1:N),d(1:N),e(1:N),stat = err1)
@@ -250,7 +250,7 @@ CONTAINS
   !  SUBROUTINE THICKNESS
   !-------------------------------------------------------------------------------------
   !-------------------------------------------------------------------------------------
-  SUBROUTINE   THICKNESS(f,col,N,M,H,P,T,BL,Ts,Coeff,Dt,Dr,dist,ray,qa,el,grav,nu,delta0)
+  SUBROUTINE   THICKNESS(f,col,N,M,H,P,T,BL,Ts,Coeff,Dt,Dr,dist,ray,qa,el,grav,nu,delta0,pow)
 
     !*****************************************************************
     ! Give the vector f 
@@ -266,7 +266,7 @@ CONTAINS
     DOUBLE PRECISION ,DIMENSION(:), INTENT(IN) :: dist,ray
 
     ! Prametre du model
-    DOUBLE PRECISION ,INTENT(IN) :: Dt,Dr 
+    DOUBLE PRECISION ,INTENT(IN) :: Dt,Dr,pow
     INTEGER ,INTENT(IN) :: col,N,M
 
     ! Nombre sans dimension
@@ -276,7 +276,7 @@ CONTAINS
     DOUBLE PRECISION :: h_a,h_b,h_a2,h_b2,h_a3,h_b3,T_a,T_b
     DOUBLE PRECISION :: delta_a,delta_b,delta_a2,delta_b2,delta_a3,delta_b3
     DOUBLE PRECISION :: Ael,Bel,Agrav,Bgrav,phi_a,phi_b
-    DOUBLE PRECISION :: Ts_a,Ts_b,Delta_T_b,Delta_T_a
+    DOUBLE PRECISION :: Ts_a,Ts_b,Ds_b,Ds_a,betaa
     INTEGER :: i,err1,algo1
 
     ! Remplissage de f
@@ -286,6 +286,8 @@ CONTAINS
 
     !### REMPLISSAGE DE f ###!
 
+    betaa = 1d0-nu
+    
     DO i=1,N,1
        IF (i .NE. N) THEN
           Ael=el*(ray(i)/(dist(i)*Dr**2))
@@ -298,7 +300,27 @@ CONTAINS
           delta_a3=0.5d0*(BL(i+1,3)**3+BL(i,3)**3)
           T_a=0.5d0*(T(i,3)+T(i+1,3))
           Ts_a = 0.5d0*(Ts(i,3)+Ts(i+1,3))
-          Delta_T_a = T_a -Ts_a
+          Ds_a = T_a -Ts_a
+
+          phi_a = -576*Ds_a*betaa*delta_a**3/(12.0d0*pow**3 + 72.0d0*pow**2&
+          & + 132.0d0*pow + 72.0d0) + 288*Ds_a*betaa*delta_a**2*h_a*pow/(&
+          & 12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + 864*Ds_a*&
+          & betaa*delta_a**2*h_a/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow&
+          & + 72.0d0) - 72*Ds_a*betaa*delta_a*h_a**2*pow**2/(12.0d0*pow**3 +&
+          & 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) - 360*Ds_a*betaa*delta_a*&
+          & h_a**2*pow/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0&
+          & ) - 432*Ds_a*betaa*delta_a*h_a**2/(12.0d0*pow**3 + 72.0d0*pow**2&
+          & + 132.0d0*pow + 72.0d0) + 12*T_a*betaa*h_a**3*pow**3/(12.0d0*pow&
+          & **3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + 72*T_a*betaa*h_a**3&
+          & *pow**2/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) +&
+          & 132*T_a*betaa*h_a**3*pow/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0&
+          & *pow + 72.0d0) + 72*T_a*betaa*h_a**3/(12.0d0*pow**3 + 72.0d0*pow&
+          & **2 + 132.0d0*pow + 72.0d0) + 12*h_a**3*nu*pow**3/(12.0d0*pow**3&
+          & + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + 72*h_a**3*nu*pow**2/(&
+          & 12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + 132*h_a**&
+          & 3*nu*pow/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) +&
+          & 72*h_a**3*nu/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow +&
+          & 72.0d0)
 
           phi_a = (4.0d0/5.0d0)*T_a*delta_a**3*nu - 4.0d0/5.0d0*T_a*delta_a&
           & **3 - 2*T_a*delta_a**2*h_a*nu + 2*T_a*delta_a**2*h_a + 2*T_a*&
@@ -306,6 +328,8 @@ CONTAINS
           & h_a**3 - 4.0d0/5.0d0*Ts_a*delta_a**3*nu + (4.0d0/5.0d0)*Ts_a*&
           & delta_a**3 + 2*Ts_a*delta_a**2*h_a*nu - 2*Ts_a*delta_a**2*h_a - 2&
           & *Ts_a*delta_a*h_a**2*nu + 2*Ts_a*delta_a*h_a**2 + h_a**3*nu
+
+          
           
           ! phi_a=(nu+(1.d0-nu)*T_a)*h_a3-(2.d0/5.d0)*(1.d0-nu)*Delta_T_a*(2.d0*delta_a3-5.d0*delta_a2*h_a+5.d0*delta_a*h_a2)
        ENDIF
@@ -321,7 +345,27 @@ CONTAINS
           delta_b3=0.5d0*(BL(i,3)**3+BL(i-1,3)**3)
           T_b=0.5d0*(T(i,3)+T(i-1,3))
           Ts_b = 0.5d0*(Ts(i,3)+Ts(i-1,3))
-          Delta_T_b = T_b - Ts_b
+          Ds_b = T_b - Ts_b
+          
+          phi_b = -576*Ds_b*betaa*delta_b**3/(12.0d0*pow**3 + 72.0d0*pow**2&
+          & + 132.0d0*pow + 72.0d0) + 288*Ds_b*betaa*delta_b**2*h_b*pow/(&
+          & 12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + 864*Ds_b*&
+          & betaa*delta_b**2*h_b/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow&
+          & + 72.0d0) - 72*Ds_b*betaa*delta_b*h_b**2*pow**2/(12.0d0*pow**3 +&
+          & 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) - 360*Ds_b*betaa*delta_b*&
+          & h_b**2*pow/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0&
+          & ) - 432*Ds_b*betaa*delta_b*h_b**2/(12.0d0*pow**3 + 72.0d0*pow**2&
+          & + 132.0d0*pow + 72.0d0) + 12*T_b*betaa*h_b**3*pow**3/(12.0d0*pow&
+          & **3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + 72*T_b*betaa*h_b**3&
+          & *pow**2/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) +&
+          & 132*T_b*betaa*h_b**3*pow/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0&
+          & *pow + 72.0d0) + 72*T_b*betaa*h_b**3/(12.0d0*pow**3 + 72.0d0*pow&
+          & **2 + 132.0d0*pow + 72.0d0) + 12*h_b**3*nu*pow**3/(12.0d0*pow**3&
+          & + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + 72*h_b**3*nu*pow**2/(&
+          & 12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + 132*h_b**&
+          & 3*nu*pow/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) +&
+          & 72*h_b**3*nu/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow +&
+          & 72.0d0)
 
           phi_b = (4.0d0/5.0d0)*T_b*delta_b**3*nu - 4.0d0/5.0d0*T_b*delta_b&
           & **3 - 2*T_b*delta_b**2*h_b*nu + 2*T_b*delta_b**2*h_b + 2*T_b*&
@@ -356,7 +400,7 @@ CONTAINS
   !-------------------------------------------------------------------------------------
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  SUBROUTINE JACOBI_THICKNESS(a,b,c,d,e,f,g,k,l,N,M,H,P,T,BL,Ts,Coeff,Dt,Dr,dist,ray,el,grav,nu,delta0)
+  SUBROUTINE JACOBI_THICKNESS(a,b,c,d,e,f,g,k,l,N,M,H,P,T,BL,Ts,Coeff,Dt,Dr,dist,ray,el,grav,nu,delta0,pow)
 
     !*****************************************************************
     ! Give the jacobian coeficient a1,b1,c1
@@ -371,7 +415,7 @@ CONTAINS
     DOUBLE PRECISION ,DIMENSION(:), INTENT(IN) :: dist,ray
 
     ! Prametre du model
-    DOUBLE PRECISION ,INTENT(IN) :: Dt,Dr 
+    DOUBLE PRECISION ,INTENT(IN) :: Dt,Dr,pow
     INTEGER ,INTENT(IN) :: N,M
 
     ! Nombre sans dimension
@@ -381,9 +425,9 @@ CONTAINS
     DOUBLE PRECISION ,DIMENSION(:), ALLOCATABLE :: alpha,beta,gamma,lambda,kappa,delta,epsilonn
     DOUBLE PRECISION ::Ael,Bel,Agrav,Bgrav,h_a,h_b,h_a2,h_b2,h_a3,h_b3,T_a,T_b
     DOUBLE PRECISION ::delta_a,delta_b,delta_a2,delta_b2,delta_a3,delta_b3
-    DOUBLE PRECISION :: Ts_a,Ts_b,Delta_T_b,Delta_T_a
+    DOUBLE PRECISION :: Ts_a,Ts_b,Ds_a,Ds_b
     DOUBLE PRECISION :: phi_a,phi_b,dphib_dhi,dphib_dhi1,dphia_dhi,dphia_dhi1
-    DOUBLE PRECISION :: H1,H2,P1,P2,hi,hi2,hia,hib,hia2,hib2
+    DOUBLE PRECISION :: H1,H2,P1,P2,hi,hi2,hia,hib,hia2,hib2,betaa
     INTEGER :: i,col,algo1,err1
 
     ! Allocation + remplissage pression
@@ -404,6 +448,8 @@ CONTAINS
     delta=Coeff(:,6)
     epsilonn=Coeff(:,7)
 
+    betaa = 1d0-nu
+
     ! Remplissage de la matrice Jacobienne
     DO i=1,N,1
 
@@ -418,7 +464,7 @@ CONTAINS
           delta_a3=0.5d0*(BL(i+1,3)**3+BL(i,3)**3)
           T_a=0.5d0*(T(i,3)+T(i+1,3))
           Ts_a = 0.5d0*(Ts(i,3)+Ts(i+1,3))
-          Delta_T_a = T_a -Ts_a
+          Ds_a = T_a -Ts_a
           hia = H(i+1,col); hia2 = H(i+1,col)**2
           hi = H(i,col);hi2 = H(i,col)**2
 
@@ -444,6 +490,113 @@ CONTAINS
                & delta_a**2 - Ts_a*delta_a*hi*nu + Ts_a*delta_a*hi - Ts_a*delta_a*&
                & hia*nu + Ts_a*delta_a*hia + (3.0d0/8.0d0)*hi**2*nu + (3.0d0/4.0d0&
                & )*hi*hia*nu + (3.0d0/8.0d0)*hia**2*nu
+          
+          phi_a = -576*Ds_a*betaa*delta_a**3/(12.0d0*pow**3 + 72.0d0*pow**2&
+               & + 132.0d0*pow + 72.0d0) + 288*Ds_a*betaa*delta_a**2*h_a*pow/(&
+               & 12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + 864*Ds_a*&
+               & betaa*delta_a**2*h_a/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow&
+               & + 72.0d0) - 72*Ds_a*betaa*delta_a*h_a**2*pow**2/(12.0d0*pow**3 +&
+               & 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) - 360*Ds_a*betaa*delta_a*&
+               & h_a**2*pow/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0&
+               & ) - 432*Ds_a*betaa*delta_a*h_a**2/(12.0d0*pow**3 + 72.0d0*pow**2&
+               & + 132.0d0*pow + 72.0d0) + 12*T_a*betaa*h_a**3*pow**3/(12.0d0*pow&
+               & **3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + 72*T_a*betaa*h_a**3&
+               & *pow**2/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) +&
+               & 132*T_a*betaa*h_a**3*pow/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0&
+               & *pow + 72.0d0) + 72*T_a*betaa*h_a**3/(12.0d0*pow**3 + 72.0d0*pow&
+               & **2 + 132.0d0*pow + 72.0d0) + 12*h_a**3*nu*pow**3/(12.0d0*pow**3&
+               & + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + 72*h_a**3*nu*pow**2/(&
+               & 12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + 132*h_a**&
+               & 3*nu*pow/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) +&
+               & 72*h_a**3*nu/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow +&
+               & 72.0d0)
+
+          dphia_dhi1 = 144*Ds_a*betaa*delta_a**2*pow/(12.0d0*pow**3 + 72.0d0&
+               & *pow**2 + 132.0d0*pow + 72.0d0) + 432*Ds_a*betaa*delta_a**2/(&
+               & 12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) - 36*Ds_a*&
+               & betaa*delta_a*hi*pow**2/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*&
+               & pow + 72.0d0) - 180*Ds_a*betaa*delta_a*hi*pow/(12.0d0*pow**3 +&
+               & 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) - 216*Ds_a*betaa*delta_a*hi&
+               & /(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) - 36*Ds_a&
+               & *betaa*delta_a*hia*pow**2/(12.0d0*pow**3 + 72.0d0*pow**2 +&
+               & 132.0d0*pow + 72.0d0) - 180*Ds_a*betaa*delta_a*hia*pow/(12.0d0*&
+               & pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) - 216*Ds_a*betaa*&
+               & delta_a*hia/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0&
+               & ) + (9.0d0/2.0d0)*T_a*betaa*hi**2*pow**3/(12.0d0*pow**3 + 72.0d0*&
+               & pow**2 + 132.0d0*pow + 72.0d0) + 27*T_a*betaa*hi**2*pow**2/(&
+               & 12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + (99.0d0/&
+               & 2.0d0)*T_a*betaa*hi**2*pow/(12.0d0*pow**3 + 72.0d0*pow**2 +&
+               & 132.0d0*pow + 72.0d0) + 27*T_a*betaa*hi**2/(12.0d0*pow**3 +&
+               & 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + 9*T_a*betaa*hi*hia*pow**3&
+               & /(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + 54*T_a*&
+               & betaa*hi*hia*pow**2/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow&
+               & + 72.0d0) + 99*T_a*betaa*hi*hia*pow/(12.0d0*pow**3 + 72.0d0*pow**&
+               & 2 + 132.0d0*pow + 72.0d0) + 54*T_a*betaa*hi*hia/(12.0d0*pow**3 +&
+               & 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + (9.0d0/2.0d0)*T_a*betaa*&
+               & hia**2*pow**3/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow +&
+               & 72.0d0) + 27*T_a*betaa*hia**2*pow**2/(12.0d0*pow**3 + 72.0d0*pow&
+               & **2 + 132.0d0*pow + 72.0d0) + (99.0d0/2.0d0)*T_a*betaa*hia**2*pow&
+               & /(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + 27*T_a*&
+               & betaa*hia**2/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow +&
+               & 72.0d0) + (9.0d0/2.0d0)*hi**2*nu*pow**3/(12.0d0*pow**3 + 72.0d0*&
+               & pow**2 + 132.0d0*pow + 72.0d0) + 27*hi**2*nu*pow**2/(12.0d0*pow**&
+               & 3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + (99.0d0/2.0d0)*hi**2*&
+               & nu*pow/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) +&
+               & 27*hi**2*nu/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0&
+               & ) + 9*hi*hia*nu*pow**3/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*&
+               & pow + 72.0d0) + 54*hi*hia*nu*pow**2/(12.0d0*pow**3 + 72.0d0*pow**&
+               & 2 + 132.0d0*pow + 72.0d0) + 99*hi*hia*nu*pow/(12.0d0*pow**3 +&
+               & 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + 54*hi*hia*nu/(12.0d0*pow&
+               & **3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + (9.0d0/2.0d0)*hia**&
+               & 2*nu*pow**3/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0&
+               & ) + 27*hia**2*nu*pow**2/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*&
+               & pow + 72.0d0) + (99.0d0/2.0d0)*hia**2*nu*pow/(12.0d0*pow**3 +&
+               & 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + 27*hia**2*nu/(12.0d0*pow&
+               & **3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0)
+          
+          dphia_dhi = 144*Ds_a*betaa*delta_a**2*pow/(12.0d0*pow**3 + 72.0d0*&
+               & pow**2 + 132.0d0*pow + 72.0d0) + 432*Ds_a*betaa*delta_a**2/(&
+               & 12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) - 36*Ds_a*&
+               & betaa*delta_a*hi*pow**2/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*&
+               & pow + 72.0d0) - 180*Ds_a*betaa*delta_a*hi*pow/(12.0d0*pow**3 +&
+               & 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) - 216*Ds_a*betaa*delta_a*hi&
+               & /(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) - 36*Ds_a&
+               & *betaa*delta_a*hia*pow**2/(12.0d0*pow**3 + 72.0d0*pow**2 +&
+               & 132.0d0*pow + 72.0d0) - 180*Ds_a*betaa*delta_a*hia*pow/(12.0d0*&
+               & pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) - 216*Ds_a*betaa*&
+               & delta_a*hia/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0&
+               & ) + (9.0d0/2.0d0)*T_a*betaa*hi**2*pow**3/(12.0d0*pow**3 + 72.0d0*&
+               & pow**2 + 132.0d0*pow + 72.0d0) + 27*T_a*betaa*hi**2*pow**2/(&
+               & 12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + (99.0d0/&
+               & 2.0d0)*T_a*betaa*hi**2*pow/(12.0d0*pow**3 + 72.0d0*pow**2 +&
+               & 132.0d0*pow + 72.0d0) + 27*T_a*betaa*hi**2/(12.0d0*pow**3 +&
+               & 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + 9*T_a*betaa*hi*hia*pow**3&
+               & /(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + 54*T_a*&
+               & betaa*hi*hia*pow**2/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow&
+               & + 72.0d0) + 99*T_a*betaa*hi*hia*pow/(12.0d0*pow**3 + 72.0d0*pow**&
+               & 2 + 132.0d0*pow + 72.0d0) + 54*T_a*betaa*hi*hia/(12.0d0*pow**3 +&
+               & 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + (9.0d0/2.0d0)*T_a*betaa*&
+               & hia**2*pow**3/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow +&
+               & 72.0d0) + 27*T_a*betaa*hia**2*pow**2/(12.0d0*pow**3 + 72.0d0*pow&
+               & **2 + 132.0d0*pow + 72.0d0) + (99.0d0/2.0d0)*T_a*betaa*hia**2*pow&
+               & /(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + 27*T_a*&
+               & betaa*hia**2/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow +&
+               & 72.0d0) + (9.0d0/2.0d0)*hi**2*nu*pow**3/(12.0d0*pow**3 + 72.0d0*&
+               & pow**2 + 132.0d0*pow + 72.0d0) + 27*hi**2*nu*pow**2/(12.0d0*pow**&
+               & 3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + (99.0d0/2.0d0)*hi**2*&
+               & nu*pow/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) +&
+               & 27*hi**2*nu/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0&
+               & ) + 9*hi*hia*nu*pow**3/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*&
+               & pow + 72.0d0) + 54*hi*hia*nu*pow**2/(12.0d0*pow**3 + 72.0d0*pow**&
+               & 2 + 132.0d0*pow + 72.0d0) + 99*hi*hia*nu*pow/(12.0d0*pow**3 +&
+               & 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + 54*hi*hia*nu/(12.0d0*pow&
+               & **3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + (9.0d0/2.0d0)*hia**&
+               & 2*nu*pow**3/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0&
+               & ) + 27*hia**2*nu*pow**2/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*&
+               & pow + 72.0d0) + (99.0d0/2.0d0)*hia**2*nu*pow/(12.0d0*pow**3 +&
+               & 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + 27*hia**2*nu/(12.0d0*pow&
+               & **3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0)          
+
 
           ! print*,'new',dphia_dhi,dphia_dhi1,phi_a
           ! phi_a=(nu+(1-nu)*T_a)*h_a3-(2.d0/5.d0)*(1-nu)*Delta_T_a*(2*delta_a3-5*delta_a2*h_a+5*delta_a*h_a2)
@@ -466,7 +619,7 @@ CONTAINS
           delta_b3=0.5d0*(BL(i,3)**3+BL(i-1,3)**3)
           T_b=0.5d0*(T(i,3)+T(i-1,3))
           Ts_b = 0.5d0*(Ts(i,3)+Ts(i-1,3))
-          Delta_T_b = T_b - Ts_b
+          Ds_b = T_b - Ts_b
           hib = H(i-1,col); hib2 = H(i-1,col)**2
           hi = H(i,col);hi2 = H(i,col)**2
 
@@ -492,9 +645,114 @@ CONTAINS
                & *nu + (3.0d0/8.0d0)*T_b*hib**2 + Ts_b*delta_b**2*nu - Ts_b*&
                & delta_b**2 - Ts_b*delta_b*hi*nu + Ts_b*delta_b*hi - Ts_b*delta_b*&
                & hib*nu + Ts_b*delta_b*hib + (3.0d0/8.0d0)*hi**2*nu + (3.0d0/4.0d0&
-               & )*hi*hib*nu + (3.0d0/8.0d0)*hib**2*nu
-     
-     
+               & )*hi*hib*nu + (3.0d0/8.0d0)*hib**2*nu     
+          
+          phi_b = -576*Ds_b*betaa*delta_b**3/(12.0d0*pow**3 + 72.0d0*pow**2&
+               & + 132.0d0*pow + 72.0d0) + 288*Ds_b*betaa*delta_b**2*h_b*pow/(&
+               & 12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + 864*Ds_b*&
+               & betaa*delta_b**2*h_b/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow&
+               & + 72.0d0) - 72*Ds_b*betaa*delta_b*h_b**2*pow**2/(12.0d0*pow**3 +&
+               & 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) - 360*Ds_b*betaa*delta_b*&
+               & h_b**2*pow/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0&
+               & ) - 432*Ds_b*betaa*delta_b*h_b**2/(12.0d0*pow**3 + 72.0d0*pow**2&
+               & + 132.0d0*pow + 72.0d0) + 12*T_b*betaa*h_b**3*pow**3/(12.0d0*pow&
+               & **3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + 72*T_b*betaa*h_b**3&
+               & *pow**2/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) +&
+               & 132*T_b*betaa*h_b**3*pow/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0&
+               & *pow + 72.0d0) + 72*T_b*betaa*h_b**3/(12.0d0*pow**3 + 72.0d0*pow&
+               & **2 + 132.0d0*pow + 72.0d0) + 12*h_b**3*nu*pow**3/(12.0d0*pow**3&
+               & + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + 72*h_b**3*nu*pow**2/(&
+               & 12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + 132*h_b**&
+               & 3*nu*pow/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) +&
+               & 72*h_b**3*nu/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow +&
+               & 72.0d0)
+
+          dphib_dhi = 144*Ds_b*betaa*delta_b**2*pow/(12.0d0*pow**3 + 72.0d0*&
+               & pow**2 + 132.0d0*pow + 72.0d0) + 432*Ds_b*betaa*delta_b**2/(&
+               & 12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) - 36*Ds_b*&
+               & betaa*delta_b*hi*pow**2/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*&
+               & pow + 72.0d0) - 180*Ds_b*betaa*delta_b*hi*pow/(12.0d0*pow**3 +&
+               & 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) - 216*Ds_b*betaa*delta_b*hi&
+               & /(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) - 36*Ds_b&
+               & *betaa*delta_b*hib*pow**2/(12.0d0*pow**3 + 72.0d0*pow**2 +&
+               & 132.0d0*pow + 72.0d0) - 180*Ds_b*betaa*delta_b*hib*pow/(12.0d0*&
+               & pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) - 216*Ds_b*betaa*&
+               & delta_b*hib/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0&
+               & ) + (9.0d0/2.0d0)*T_b*betaa*hi**2*pow**3/(12.0d0*pow**3 + 72.0d0*&
+               & pow**2 + 132.0d0*pow + 72.0d0) + 27*T_b*betaa*hi**2*pow**2/(&
+               & 12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + (99.0d0/&
+               & 2.0d0)*T_b*betaa*hi**2*pow/(12.0d0*pow**3 + 72.0d0*pow**2 +&
+               & 132.0d0*pow + 72.0d0) + 27*T_b*betaa*hi**2/(12.0d0*pow**3 +&
+               & 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + 9*T_b*betaa*hi*hib*pow**3&
+               & /(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + 54*T_b*&
+               & betaa*hi*hib*pow**2/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow&
+               & + 72.0d0) + 99*T_b*betaa*hi*hib*pow/(12.0d0*pow**3 + 72.0d0*pow**&
+               & 2 + 132.0d0*pow + 72.0d0) + 54*T_b*betaa*hi*hib/(12.0d0*pow**3 +&
+               & 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + (9.0d0/2.0d0)*T_b*betaa*&
+               & hib**2*pow**3/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow +&
+               & 72.0d0) + 27*T_b*betaa*hib**2*pow**2/(12.0d0*pow**3 + 72.0d0*pow&
+               & **2 + 132.0d0*pow + 72.0d0) + (99.0d0/2.0d0)*T_b*betaa*hib**2*pow&
+               & /(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + 27*T_b*&
+               & betaa*hib**2/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow +&
+               & 72.0d0) + (9.0d0/2.0d0)*hi**2*nu*pow**3/(12.0d0*pow**3 + 72.0d0*&
+               & pow**2 + 132.0d0*pow + 72.0d0) + 27*hi**2*nu*pow**2/(12.0d0*pow**&
+               & 3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + (99.0d0/2.0d0)*hi**2*&
+               & nu*pow/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) +&
+               & 27*hi**2*nu/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0&
+               & ) + 9*hi*hib*nu*pow**3/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*&
+               & pow + 72.0d0) + 54*hi*hib*nu*pow**2/(12.0d0*pow**3 + 72.0d0*pow**&
+               & 2 + 132.0d0*pow + 72.0d0) + 99*hi*hib*nu*pow/(12.0d0*pow**3 +&
+               & 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + 54*hi*hib*nu/(12.0d0*pow&
+               & **3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + (9.0d0/2.0d0)*hib**&
+               & 2*nu*pow**3/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0&
+               & ) + 27*hib**2*nu*pow**2/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*&
+               & pow + 72.0d0) + (99.0d0/2.0d0)*hib**2*nu*pow/(12.0d0*pow**3 +&
+               & 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + 27*hib**2*nu/(12.0d0*pow&
+               & **3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0)
+
+          dphib_dhi1 = 144*Ds_b*betaa*delta_b**2*pow/(12.0d0*pow**3 + 72.0d0&
+               & *pow**2 + 132.0d0*pow + 72.0d0) + 432*Ds_b*betaa*delta_b**2/(&
+               & 12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) - 36*Ds_b*&
+               & betaa*delta_b*hi*pow**2/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*&
+               & pow + 72.0d0) - 180*Ds_b*betaa*delta_b*hi*pow/(12.0d0*pow**3 +&
+               & 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) - 216*Ds_b*betaa*delta_b*hi&
+               & /(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) - 36*Ds_b&
+               & *betaa*delta_b*hib*pow**2/(12.0d0*pow**3 + 72.0d0*pow**2 +&
+               & 132.0d0*pow + 72.0d0) - 180*Ds_b*betaa*delta_b*hib*pow/(12.0d0*&
+               & pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) - 216*Ds_b*betaa*&
+               & delta_b*hib/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0&
+               & ) + (9.0d0/2.0d0)*T_b*betaa*hi**2*pow**3/(12.0d0*pow**3 + 72.0d0*&
+               & pow**2 + 132.0d0*pow + 72.0d0) + 27*T_b*betaa*hi**2*pow**2/(&
+               & 12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + (99.0d0/&
+               & 2.0d0)*T_b*betaa*hi**2*pow/(12.0d0*pow**3 + 72.0d0*pow**2 +&
+               & 132.0d0*pow + 72.0d0) + 27*T_b*betaa*hi**2/(12.0d0*pow**3 +&
+               & 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + 9*T_b*betaa*hi*hib*pow**3&
+               & /(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + 54*T_b*&
+               & betaa*hi*hib*pow**2/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow&
+               & + 72.0d0) + 99*T_b*betaa*hi*hib*pow/(12.0d0*pow**3 + 72.0d0*pow**&
+               & 2 + 132.0d0*pow + 72.0d0) + 54*T_b*betaa*hi*hib/(12.0d0*pow**3 +&
+               & 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + (9.0d0/2.0d0)*T_b*betaa*&
+               & hib**2*pow**3/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow +&
+               & 72.0d0) + 27*T_b*betaa*hib**2*pow**2/(12.0d0*pow**3 + 72.0d0*pow&
+               & **2 + 132.0d0*pow + 72.0d0) + (99.0d0/2.0d0)*T_b*betaa*hib**2*pow&
+               & /(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + 27*T_b*&
+               & betaa*hib**2/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow +&
+               & 72.0d0) + (9.0d0/2.0d0)*hi**2*nu*pow**3/(12.0d0*pow**3 + 72.0d0*&
+               & pow**2 + 132.0d0*pow + 72.0d0) + 27*hi**2*nu*pow**2/(12.0d0*pow**&
+               & 3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + (99.0d0/2.0d0)*hi**2*&
+               & nu*pow/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) +&
+               & 27*hi**2*nu/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0&
+               & ) + 9*hi*hib*nu*pow**3/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*&
+               & pow + 72.0d0) + 54*hi*hib*nu*pow**2/(12.0d0*pow**3 + 72.0d0*pow**&
+               & 2 + 132.0d0*pow + 72.0d0) + 99*hi*hib*nu*pow/(12.0d0*pow**3 +&
+               & 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + 54*hi*hib*nu/(12.0d0*pow&
+               & **3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + (9.0d0/2.0d0)*hib**&
+               & 2*nu*pow**3/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0&
+               & ) + 27*hib**2*nu*pow**2/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*&
+               & pow + 72.0d0) + (99.0d0/2.0d0)*hib**2*nu*pow/(12.0d0*pow**3 +&
+               & 72.0d0*pow**2 + 132.0d0*pow + 72.0d0) + 27*hib**2*nu/(12.0d0*pow&
+               & **3 + 72.0d0*pow**2 + 132.0d0*pow + 72.0d0)
+
           ! phi_b=(nu+(1-nu)*T_b)*h_b3-(2.d0/5.d0)*(1-nu)*Delta_T_b*(2*delta_b3-5*delta_b2*h_b+5*delta_b*h_b2)
 
           ! dphib_dhi=(3.d0/2.d0)*(nu+(1-nu)*T_b)*H(i,col)**2-(1-nu)*Delta_T_b*(-delta_b2+delta_b*H(i,col))     ! d(phi_i-1/2)/d(h_i)

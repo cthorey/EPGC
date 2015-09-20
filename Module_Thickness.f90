@@ -16,7 +16,7 @@ MODULE MODULE_THICKNESS
 CONTAINS
 
   SUBROUTINE  THICKNESS_SOLVER(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,gam&
-       &,Inter_Q,eps_1,ERROR_CODE,Model,Schema,Rheology,tmps)
+       &,Inter_Q,eps_1,ERROR_CODE,Model,Schema,Rheology,tmps,pow)
 
     IMPLICIT NONE
     ! Tableaux
@@ -25,7 +25,7 @@ CONTAINS
     DOUBLE PRECISION, DIMENSION(:), INTENT(IN) :: dist,ray
 
     ! Parametre du model
-    DOUBLE PRECISION ,INTENT(IN) :: Dt,Dr,eps_1
+    DOUBLE PRECISION ,INTENT(IN) :: Dt,Dr,eps_1,pow
     DOUBLE PRECISION, INTENT(IN) :: tmps
     INTEGER ,INTENT(IN) :: M
     INTEGER, INTENT(INOUT) :: ERROR_CODE
@@ -50,7 +50,7 @@ CONTAINS
           
        ELSEIF (Model == 1 .AND. Schema == 0 .AND. Rheology == 0 .AND. el == 1D0 ) THEN
           CALL THICKNESS_SKIN_NEWTON_BERCOVICI(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,delta0,&
-               &gam,Inter_Q,z,F_err,theta,tmps)
+               &gam,Inter_Q,z,F_err,theta,tmps,pow)
           
        ELSEIF (Model == 1 .AND. Schema == 0 .AND. el == 0D0 .AND. Rheology == 0) THEN
           CALL THICKNESS_NEWTON_GRAV_BERCOVICI(H,P,T,BL,Ts,Dt,Dr,M,dist,ray,el,grav,sigma,nu,&
