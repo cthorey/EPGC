@@ -47,7 +47,7 @@ Namejob = 'GL_Arr'
 Model = 1
 T_Schema = 0; H_Schema = 0
 Rheology = 0
-pow = 2 
+pow = 2 # pow != 2 implementer seuelemnt pour elas bercovici
 
 Dict_Param = {'Sigma': ['2D-2'],
               'Delta0': ['5D-3'],

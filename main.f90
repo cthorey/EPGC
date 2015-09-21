@@ -175,7 +175,7 @@ PROGRAM MAIN
 
         ! Module heat transport
         CALL  THERMAL_SOLVER(Xi,H,T,Ts,BL,P,M,dist,ray,sigma,nu,Pe,psi,delta0,el,grav,gam,Inter_Q,Dr,Dt,eps_1,k,N1,tmps,&
-             &ERROR_CODE,Model,T_Schema,Rheology)
+             &ERROR_CODE,Model,T_Schema,Rheology,pow)
         IF (ERROR_CODE == 1) THEN
            WRITE(NF_Name,Format_NF),Root_Code,NF,'_BUG'
            OPEN(unit =1,file=NF_Name, action ="write",status ="replace")

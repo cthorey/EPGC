@@ -18,7 +18,7 @@ USE MODULE_THERMAL_GFD_GRAVI_ARRHENIUS
 CONTAINS
 
   SUBROUTINE THERMAL_SOLVER(Xi,H,T,Ts,BL,P,M,dist,ray,sigma,nu,Pe,psi,delta0,el,grav,gam,Inter_Q,Dr,Dt,eps_1,k,N1,tmps,&
-       &ERROR_CODE,Model,Schema,Rheology)
+       &ERROR_CODE,Model,Schema,Rheology,pow)
 
     IMPLICIT NONE
     ! Tableaux
@@ -27,7 +27,7 @@ CONTAINS
     DOUBLE PRECISION , DIMENSION(:) ,INTENT(IN) :: dist,ray
 
     ! Parametre du model
-    DOUBLE PRECISION ,INTENT(IN) :: Dt,Dr,eps_1,N1,tmps
+    DOUBLE PRECISION ,INTENT(IN) :: Dt,Dr,eps_1,N1,tmps,pow
     INTEGER ,INTENT(IN) :: M,k
     INTEGER ,INTENT(INOUT) :: ERROR_CODE
     INTEGER, INTENT(IN) :: Model,Schema,Rheology
@@ -53,7 +53,7 @@ CONTAINS
           
        ELSEIF (Model == 1 .AND. Schema == 0 .AND. Rheology == 0 .AND. el == 1D0 ) THEN
           CALL THERMAL_SKIN_NEWTON_BERCOVICI(Xi,H,P,T,Ts,BL,Dt,Dr,theta,dist,ray,M,&
-               &sigma,nu,Pe,psi,delta0,el,grav,N1,F_err,z,tmps)
+               &sigma,nu,Pe,psi,delta0,el,grav,N1,F_err,z,tmps,pow)
           
        ELSEIF (Model == 1 .AND. Schema == 1 .AND. el == 0D0 .AND. Rheology == 0) THEN
           CALL THERMAL_GFD_SOLVER_BERCOVICI(Xi,H,P,T,Ts,BL,Dt,Dr,theta,dist,ray,M,sigma,nu,Pe,&

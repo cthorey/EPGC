@@ -322,12 +322,12 @@ CONTAINS
           & 72*h_a**3*nu/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow +&
           & 72.0d0)
 
-          phi_a = (4.0d0/5.0d0)*T_a*delta_a**3*nu - 4.0d0/5.0d0*T_a*delta_a&
-          & **3 - 2*T_a*delta_a**2*h_a*nu + 2*T_a*delta_a**2*h_a + 2*T_a*&
-          & delta_a*h_a**2*nu - 2*T_a*delta_a*h_a**2 - T_a*h_a**3*nu + T_a*&
-          & h_a**3 - 4.0d0/5.0d0*Ts_a*delta_a**3*nu + (4.0d0/5.0d0)*Ts_a*&
-          & delta_a**3 + 2*Ts_a*delta_a**2*h_a*nu - 2*Ts_a*delta_a**2*h_a - 2&
-          & *Ts_a*delta_a*h_a**2*nu + 2*Ts_a*delta_a*h_a**2 + h_a**3*nu
+          ! phi_a = (4.0d0/5.0d0)*T_a*delta_a**3*nu - 4.0d0/5.0d0*T_a*delta_a&
+          ! & **3 - 2*T_a*delta_a**2*h_a*nu + 2*T_a*delta_a**2*h_a + 2*T_a*&
+          ! & delta_a*h_a**2*nu - 2*T_a*delta_a*h_a**2 - T_a*h_a**3*nu + T_a*&
+          ! & h_a**3 - 4.0d0/5.0d0*Ts_a*delta_a**3*nu + (4.0d0/5.0d0)*Ts_a*&
+          ! & delta_a**3 + 2*Ts_a*delta_a**2*h_a*nu - 2*Ts_a*delta_a**2*h_a - 2&
+          ! & *Ts_a*delta_a*h_a**2*nu + 2*Ts_a*delta_a*h_a**2 + h_a**3*nu
 
           
           
@@ -367,12 +367,12 @@ CONTAINS
           & 72*h_b**3*nu/(12.0d0*pow**3 + 72.0d0*pow**2 + 132.0d0*pow +&
           & 72.0d0)
 
-          phi_b = (4.0d0/5.0d0)*T_b*delta_b**3*nu - 4.0d0/5.0d0*T_b*delta_b&
-          & **3 - 2*T_b*delta_b**2*h_b*nu + 2*T_b*delta_b**2*h_b + 2*T_b*&
-          & delta_b*h_b**2*nu - 2*T_b*delta_b*h_b**2 - T_b*h_b**3*nu + T_b*&
-          & h_b**3 - 4.0d0/5.0d0*Ts_b*delta_b**3*nu + (4.0d0/5.0d0)*Ts_b*&
-          & delta_b**3 + 2*Ts_b*delta_b**2*h_b*nu - 2*Ts_b*delta_b**2*h_b - 2&
-          & *Ts_b*delta_b*h_b**2*nu + 2*Ts_b*delta_b*h_b**2 + h_b**3*nu
+          ! phi_b = (4.0d0/5.0d0)*T_b*delta_b**3*nu - 4.0d0/5.0d0*T_b*delta_b&
+          ! & **3 - 2*T_b*delta_b**2*h_b*nu + 2*T_b*delta_b**2*h_b + 2*T_b*&
+          ! & delta_b*h_b**2*nu - 2*T_b*delta_b*h_b**2 - T_b*h_b**3*nu + T_b*&
+          ! & h_b**3 - 4.0d0/5.0d0*Ts_b*delta_b**3*nu + (4.0d0/5.0d0)*Ts_b*&
+          ! & delta_b**3 + 2*Ts_b*delta_b**2*h_b*nu - 2*Ts_b*delta_b**2*h_b - 2&
+          ! & *Ts_b*delta_b*h_b**2*nu + 2*Ts_b*delta_b*h_b**2 + h_b**3*nu
 
           ! phi_b=(nu+(1.d0-nu)*T_b)*h_b3-(2.d0/5.d0)*(1.d0-nu)*Delta_T_b*(2.d0*delta_b3-5.d0*delta_b2*h_b+5.d0*delta_b*h_b2)
 
@@ -468,28 +468,28 @@ CONTAINS
           hia = H(i+1,col); hia2 = H(i+1,col)**2
           hi = H(i,col);hi2 = H(i,col)**2
 
-          phi_a = (4.0d0/5.0d0)*T_a*delta_a**3*nu - 4.0d0/5.0d0*T_a*delta_a&
-               & **3 - 2*T_a*delta_a**2*h_a*nu + 2*T_a*delta_a**2*h_a + 2*T_a*&
-               & delta_a*h_a**2*nu - 2*T_a*delta_a*h_a**2 - T_a*h_a**3*nu + T_a*&
-               & h_a**3 - 4.0d0/5.0d0*Ts_a*delta_a**3*nu + (4.0d0/5.0d0)*Ts_a*&
-               & delta_a**3 + 2*Ts_a*delta_a**2*h_a*nu - 2*Ts_a*delta_a**2*h_a - 2&
-               & *Ts_a*delta_a*h_a**2*nu + 2*Ts_a*delta_a*h_a**2 + h_a**3*nu
-          dphia_dhi1 = -T_a*delta_a**2*nu + T_a*delta_a**2 + T_a*delta_a*hi*&
-               & nu - T_a*delta_a*hi + T_a*delta_a*hia*nu - T_a*delta_a*hia -&
-               & 3.0d0/8.0d0*T_a*hi**2*nu + (3.0d0/8.0d0)*T_a*hi**2 - 3.0d0/4.0d0*&
-               & T_a*hi*hia*nu + (3.0d0/4.0d0)*T_a*hi*hia - 3.0d0/8.0d0*T_a*hia**2&
-               & *nu + (3.0d0/8.0d0)*T_a*hia**2 + Ts_a*delta_a**2*nu - Ts_a*&
-               & delta_a**2 - Ts_a*delta_a*hi*nu + Ts_a*delta_a*hi - Ts_a*delta_a*&
-               & hia*nu + Ts_a*delta_a*hia + (3.0d0/8.0d0)*hi**2*nu + (3.0d0/4.0d0&
-               & )*hi*hia*nu + (3.0d0/8.0d0)*hia**2*nu
-          dphia_dhi = -T_a*delta_a**2*nu + T_a*delta_a**2 + T_a*delta_a*hi*&
-               & nu - T_a*delta_a*hi + T_a*delta_a*hia*nu - T_a*delta_a*hia -&
-               & 3.0d0/8.0d0*T_a*hi**2*nu + (3.0d0/8.0d0)*T_a*hi**2 - 3.0d0/4.0d0*&
-               & T_a*hi*hia*nu + (3.0d0/4.0d0)*T_a*hi*hia - 3.0d0/8.0d0*T_a*hia**2&
-               & *nu + (3.0d0/8.0d0)*T_a*hia**2 + Ts_a*delta_a**2*nu - Ts_a*&
-               & delta_a**2 - Ts_a*delta_a*hi*nu + Ts_a*delta_a*hi - Ts_a*delta_a*&
-               & hia*nu + Ts_a*delta_a*hia + (3.0d0/8.0d0)*hi**2*nu + (3.0d0/4.0d0&
-               & )*hi*hia*nu + (3.0d0/8.0d0)*hia**2*nu
+          ! phi_a = (4.0d0/5.0d0)*T_a*delta_a**3*nu - 4.0d0/5.0d0*T_a*delta_a&
+          !      & **3 - 2*T_a*delta_a**2*h_a*nu + 2*T_a*delta_a**2*h_a + 2*T_a*&
+          !      & delta_a*h_a**2*nu - 2*T_a*delta_a*h_a**2 - T_a*h_a**3*nu + T_a*&
+          !      & h_a**3 - 4.0d0/5.0d0*Ts_a*delta_a**3*nu + (4.0d0/5.0d0)*Ts_a*&
+          !      & delta_a**3 + 2*Ts_a*delta_a**2*h_a*nu - 2*Ts_a*delta_a**2*h_a - 2&
+          !      & *Ts_a*delta_a*h_a**2*nu + 2*Ts_a*delta_a*h_a**2 + h_a**3*nu
+          ! dphia_dhi1 = -T_a*delta_a**2*nu + T_a*delta_a**2 + T_a*delta_a*hi*&
+          !      & nu - T_a*delta_a*hi + T_a*delta_a*hia*nu - T_a*delta_a*hia -&
+          !      & 3.0d0/8.0d0*T_a*hi**2*nu + (3.0d0/8.0d0)*T_a*hi**2 - 3.0d0/4.0d0*&
+          !      & T_a*hi*hia*nu + (3.0d0/4.0d0)*T_a*hi*hia - 3.0d0/8.0d0*T_a*hia**2&
+          !      & *nu + (3.0d0/8.0d0)*T_a*hia**2 + Ts_a*delta_a**2*nu - Ts_a*&
+          !      & delta_a**2 - Ts_a*delta_a*hi*nu + Ts_a*delta_a*hi - Ts_a*delta_a*&
+          !      & hia*nu + Ts_a*delta_a*hia + (3.0d0/8.0d0)*hi**2*nu + (3.0d0/4.0d0&
+          !      & )*hi*hia*nu + (3.0d0/8.0d0)*hia**2*nu
+          ! dphia_dhi = -T_a*delta_a**2*nu + T_a*delta_a**2 + T_a*delta_a*hi*&
+          !      & nu - T_a*delta_a*hi + T_a*delta_a*hia*nu - T_a*delta_a*hia -&
+          !      & 3.0d0/8.0d0*T_a*hi**2*nu + (3.0d0/8.0d0)*T_a*hi**2 - 3.0d0/4.0d0*&
+          !      & T_a*hi*hia*nu + (3.0d0/4.0d0)*T_a*hi*hia - 3.0d0/8.0d0*T_a*hia**2&
+          !      & *nu + (3.0d0/8.0d0)*T_a*hia**2 + Ts_a*delta_a**2*nu - Ts_a*&
+          !      & delta_a**2 - Ts_a*delta_a*hi*nu + Ts_a*delta_a*hi - Ts_a*delta_a*&
+          !      & hia*nu + Ts_a*delta_a*hia + (3.0d0/8.0d0)*hi**2*nu + (3.0d0/4.0d0&
+          !      & )*hi*hia*nu + (3.0d0/8.0d0)*hia**2*nu
           
           phi_a = -576*Ds_a*betaa*delta_a**3/(12.0d0*pow**3 + 72.0d0*pow**2&
                & + 132.0d0*pow + 72.0d0) + 288*Ds_a*betaa*delta_a**2*h_a*pow/(&
@@ -623,29 +623,29 @@ CONTAINS
           hib = H(i-1,col); hib2 = H(i-1,col)**2
           hi = H(i,col);hi2 = H(i,col)**2
 
-          phi_b = (4.0d0/5.0d0)*T_b*delta_b**3*nu - 4.0d0/5.0d0*T_b*delta_b&
-               & **3 - 2*T_b*delta_b**2*h_b*nu + 2*T_b*delta_b**2*h_b + 2*T_b*&
-               & delta_b*h_b**2*nu - 2*T_b*delta_b*h_b**2 - T_b*h_b**3*nu + T_b*&
-               & h_b**3 - 4.0d0/5.0d0*Ts_b*delta_b**3*nu + (4.0d0/5.0d0)*Ts_b*&
-               & delta_b**3 + 2*Ts_b*delta_b**2*h_b*nu - 2*Ts_b*delta_b**2*h_b - 2&
-               & *Ts_b*delta_b*h_b**2*nu + 2*Ts_b*delta_b*h_b**2 + h_b**3*nu
+          ! phi_b = (4.0d0/5.0d0)*T_b*delta_b**3*nu - 4.0d0/5.0d0*T_b*delta_b&
+          !      & **3 - 2*T_b*delta_b**2*h_b*nu + 2*T_b*delta_b**2*h_b + 2*T_b*&
+          !      & delta_b*h_b**2*nu - 2*T_b*delta_b*h_b**2 - T_b*h_b**3*nu + T_b*&
+          !      & h_b**3 - 4.0d0/5.0d0*Ts_b*delta_b**3*nu + (4.0d0/5.0d0)*Ts_b*&
+          !      & delta_b**3 + 2*Ts_b*delta_b**2*h_b*nu - 2*Ts_b*delta_b**2*h_b - 2&
+          !      & *Ts_b*delta_b*h_b**2*nu + 2*Ts_b*delta_b*h_b**2 + h_b**3*nu
           
-          dphib_dhi = -T_b*delta_b**2*nu + T_b*delta_b**2 + T_b*delta_b*hi*&
-               & nu - T_b*delta_b*hi + T_b*delta_b*hib*nu - T_b*delta_b*hib -&
-               & 3.0d0/8.0d0*T_b*hi**2*nu + (3.0d0/8.0d0)*T_b*hi**2 - 3.0d0/4.0d0*&
-               & T_b*hi*hib*nu + (3.0d0/4.0d0)*T_b*hi*hib - 3.0d0/8.0d0*T_b*hib**2&
-               & *nu + (3.0d0/8.0d0)*T_b*hib**2 + Ts_b*delta_b**2*nu - Ts_b*&
-               & delta_b**2 - Ts_b*delta_b*hi*nu + Ts_b*delta_b*hi - Ts_b*delta_b*&
-               & hib*nu + Ts_b*delta_b*hib + (3.0d0/8.0d0)*hi**2*nu + (3.0d0/4.0d0&
-               & )*hi*hib*nu + (3.0d0/8.0d0)*hib**2*nu
-          dphib_dhi1 = -T_b*delta_b**2*nu + T_b*delta_b**2 + T_b*delta_b*hi*&
-               & nu - T_b*delta_b*hi + T_b*delta_b*hib*nu - T_b*delta_b*hib -&
-               & 3.0d0/8.0d0*T_b*hi**2*nu + (3.0d0/8.0d0)*T_b*hi**2 - 3.0d0/4.0d0*&
-               & T_b*hi*hib*nu + (3.0d0/4.0d0)*T_b*hi*hib - 3.0d0/8.0d0*T_b*hib**2&
-               & *nu + (3.0d0/8.0d0)*T_b*hib**2 + Ts_b*delta_b**2*nu - Ts_b*&
-               & delta_b**2 - Ts_b*delta_b*hi*nu + Ts_b*delta_b*hi - Ts_b*delta_b*&
-               & hib*nu + Ts_b*delta_b*hib + (3.0d0/8.0d0)*hi**2*nu + (3.0d0/4.0d0&
-               & )*hi*hib*nu + (3.0d0/8.0d0)*hib**2*nu     
+          ! dphib_dhi = -T_b*delta_b**2*nu + T_b*delta_b**2 + T_b*delta_b*hi*&
+          !      & nu - T_b*delta_b*hi + T_b*delta_b*hib*nu - T_b*delta_b*hib -&
+          !      & 3.0d0/8.0d0*T_b*hi**2*nu + (3.0d0/8.0d0)*T_b*hi**2 - 3.0d0/4.0d0*&
+          !      & T_b*hi*hib*nu + (3.0d0/4.0d0)*T_b*hi*hib - 3.0d0/8.0d0*T_b*hib**2&
+          !      & *nu + (3.0d0/8.0d0)*T_b*hib**2 + Ts_b*delta_b**2*nu - Ts_b*&
+          !      & delta_b**2 - Ts_b*delta_b*hi*nu + Ts_b*delta_b*hi - Ts_b*delta_b*&
+          !      & hib*nu + Ts_b*delta_b*hib + (3.0d0/8.0d0)*hi**2*nu + (3.0d0/4.0d0&
+          !      & )*hi*hib*nu + (3.0d0/8.0d0)*hib**2*nu
+          ! dphib_dhi1 = -T_b*delta_b**2*nu + T_b*delta_b**2 + T_b*delta_b*hi*&
+          !      & nu - T_b*delta_b*hi + T_b*delta_b*hib*nu - T_b*delta_b*hib -&
+          !      & 3.0d0/8.0d0*T_b*hi**2*nu + (3.0d0/8.0d0)*T_b*hi**2 - 3.0d0/4.0d0*&
+          !      & T_b*hi*hib*nu + (3.0d0/4.0d0)*T_b*hi*hib - 3.0d0/8.0d0*T_b*hib**2&
+          !      & *nu + (3.0d0/8.0d0)*T_b*hib**2 + Ts_b*delta_b**2*nu - Ts_b*&
+          !      & delta_b**2 - Ts_b*delta_b*hi*nu + Ts_b*delta_b*hi - Ts_b*delta_b*&
+          !      & hib*nu + Ts_b*delta_b*hib + (3.0d0/8.0d0)*hi**2*nu + (3.0d0/4.0d0&
+          !      & )*hi*hib*nu + (3.0d0/8.0d0)*hib**2*nu     
           
           phi_b = -576*Ds_b*betaa*delta_b**3/(12.0d0*pow**3 + 72.0d0*pow**2&
                & + 132.0d0*pow + 72.0d0) + 288*Ds_b*betaa*delta_b**2*h_b*pow/(&

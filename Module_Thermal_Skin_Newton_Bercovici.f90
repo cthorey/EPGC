@@ -9,7 +9,7 @@ CONTAINS
 !!!!!!!!  Model couplage : Bercovici rheology (1995) 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  SUBROUTINE THERMAL_SKIN_NEWTON_BERCOVICI(Xi,H,P,T,Ts,BL,Dt,Dr,theta,dist,ray,M,sigma,nu,Pe,psi,delta0,el,grav,N1,F_err,z,tmps)
+  SUBROUTINE THERMAL_SKIN_NEWTON_BERCOVICI(Xi,H,P,T,Ts,BL,Dt,Dr,theta,dist,ray,M,sigma,nu,Pe,psi,delta0,el,grav,N1,F_err,z,tmps,pow)
 
     !*****************************************************************
     ! Solve for the parameter Xi, and split in Temperature and thermal layer
@@ -24,7 +24,7 @@ CONTAINS
     DOUBLE PRECISION , DIMENSION(:), INTENT(IN) :: dist,ray
 
     !Parametre du model
-    DOUBLE PRECISION , INTENT(IN) :: Dt,Dr,theta,tmps
+    DOUBLE PRECISION , INTENT(IN) :: Dt,Dr,theta,tmps,pow
 
     !Nombre sans dimensions
     DOUBLE PRECISION , INTENT(IN) :: sigma,nu,Pe,psi,delta0,el,grav,N1
@@ -56,9 +56,9 @@ CONTAINS
     END IF
 
     col=1
-    CALL TEMPERATURE_BALMFORTH(Xi_tmps,col,N,Xi,H,T,Ts,BL,P,dist,ray,Dr,nu,Pe,delta0,el,grav,N1,tmps+Dt,psi,Dt)
+    CALL TEMPERATURE_BALMFORTH(Xi_tmps,col,N,Xi,H,T,Ts,BL,P,dist,ray,Dr,nu,Pe,delta0,el,grav,N1,tmps+Dt,psi,Dt,pow)
     col=2
-    CALL TEMPERATURE_BALMFORTH(Xi_guess,col,N,Xi,H,T,Ts,BL,P,dist,ray,Dr,nu,Pe,delta0,el,grav,N1,tmps+Dt,psi,Dt)
+    CALL TEMPERATURE_BALMFORTH(Xi_guess,col,N,Xi,H,T,Ts,BL,P,dist,ray,Dr,nu,Pe,delta0,el,grav,N1,tmps+Dt,psi,Dt,pow)
 
     ! Jacobienner
     ALLOCATE(a1(1:N),b1(1:N),c1(1:N),stat=err1)
@@ -66,7 +66,7 @@ CONTAINS
        PRINT*, 'Erreur allocation dans coeff Temperature'; STOP
     END IF
 
-    CALL JACOBI_TEMPERATURE_BALMFORTH(a1,b1,c1,N,H,BL,T,Ts,Xi,P,Dr,dist,ray,nu,Pe,delta0,el,grav)
+    CALL JACOBI_TEMPERATURE_BALMFORTH(a1,b1,c1,N,H,BL,T,Ts,Xi,P,Dr,dist,ray,nu,Pe,delta0,el,grav,pow)
 
     !Systeme a inverser
     ALLOCATE(a(1:N),b(1:N),c(1:N),S(1:N),stat= err1)
@@ -96,7 +96,7 @@ CONTAINS
        Xi(i,3)=Xi_m(i)+Xi(i,2)
        IF (Xi(i,3) >H(i,3)/2D0) THEN
           Xi(i:,3) = H(i:,3)/2D0
-          PRINT*,'Xi trop grand'
+!          PRINT*,'Xi trop grand'
           EXIT
        ENDIF
     END DO
@@ -366,7 +366,7 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
   !-------------------------------------------------------------------------------------
   !-------------------------------------------------------------------------------------
 
-  SUBROUTINE TEMPERATURE_BALMFORTH(f,col,N,Xi,H,T,Ts,BL,P,dist,ray,Dr,nu,Pe,delta0,el,grav,N1,tmps,psi,Dt)
+  SUBROUTINE TEMPERATURE_BALMFORTH(f,col,N,Xi,H,T,Ts,BL,P,dist,ray,Dr,nu,Pe,delta0,el,grav,N1,tmps,psi,Dt,pow)
 
     !*****************************************************************
     ! Give the vector f
@@ -380,7 +380,7 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
     DOUBLE PRECISION ,DIMENSION(:), INTENT(IN) :: dist,ray
 
     ! Prametre du model
-    DOUBLE PRECISION ,INTENT(IN) :: Dr 
+    DOUBLE PRECISION ,INTENT(IN) :: Dr,pow
     INTEGER ,INTENT(IN) :: col,N
 
     ! Nombre sans dimension
@@ -390,7 +390,7 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
     DOUBLE PRECISION, PARAMETER :: pi=3.14159265
 
     DOUBLE PRECISION :: h_a,delta_a,delta_a2,eta_a,Ai,T_a
-    DOUBLE PRECISIOn :: omega_a,sigma_a
+    DOUBLE PRECISIOn :: omega_a,sigma_a,betaa
 
     DOUBLE PRECISION :: h_b,delta_b,delta_b2,eta_b,Bi,T_b
     DOUBLE PRECISIOn :: omega_b,sigma_b,Ts_a,Ts_b,Ds_b,Ds_a
@@ -399,6 +399,8 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
 
     ! Remplissage de f
 
+    betaa = 1D0-nu
+    
     DO i=1,N,1   
 
        IF1:IF (i .NE. 1) THEN
@@ -410,26 +412,127 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
           T_b = 0.5d0*(T(i,col)+T(i-1,col))
           Ts_b = 0.5d0*(Ts(i,col)+Ts(i-1,col))
           Ds_b = T_b-Ts_b
+          
+          omega_b = 12.0d0*Ds_b*betaa*delta_b**2*eta_b*pow/(pow**3 + 6*pow**&
+               & 2 + 11*pow + 6) + 12.0d0*Ds_b*betaa*delta_b**2*eta_b/(pow**3 + 6*&
+               & pow**2 + 11*pow + 6) - 6.0d0*Ds_b*betaa*delta_b*eta_b*h_b*pow**2/&
+               & (pow**3 + 6*pow**2 + 11*pow + 6) - 24.0d0*Ds_b*betaa*delta_b*&
+               & eta_b*h_b*pow/(pow**3 + 6*pow**2 + 11*pow + 6) - 18.0d0*Ds_b*&
+               & betaa*delta_b*eta_b*h_b/(pow**3 + 6*pow**2 + 11*pow + 6) - 2.0d0*&
+               & T_b*betaa*delta_b**2*eta_b*pow**3/(pow**3 + 6*pow**2 + 11*pow + 6&
+               & ) - 12.0d0*T_b*betaa*delta_b**2*eta_b*pow**2/(pow**3 + 6*pow**2 +&
+               & 11*pow + 6) - 22.0d0*T_b*betaa*delta_b**2*eta_b*pow/(pow**3 + 6*&
+               & pow**2 + 11*pow + 6) - 12.0d0*T_b*betaa*delta_b**2*eta_b/(pow**3&
+               & + 6*pow**2 + 11*pow + 6) + 3.0d0*T_b*betaa*delta_b*eta_b*h_b*pow&
+               & **3/(pow**3 + 6*pow**2 + 11*pow + 6) + 18.0d0*T_b*betaa*delta_b*&
+               & eta_b*h_b*pow**2/(pow**3 + 6*pow**2 + 11*pow + 6) + 33.0d0*T_b*&
+               & betaa*delta_b*eta_b*h_b*pow/(pow**3 + 6*pow**2 + 11*pow + 6) +&
+               & 18.0d0*T_b*betaa*delta_b*eta_b*h_b/(pow**3 + 6*pow**2 + 11*pow +&
+               & 6) - 2.0d0*delta_b**2*eta_b*nu*pow**3/(pow**3 + 6*pow**2 + 11*pow&
+               & + 6) - 12.0d0*delta_b**2*eta_b*nu*pow**2/(pow**3 + 6*pow**2 + 11*&
+               & pow + 6) - 22.0d0*delta_b**2*eta_b*nu*pow/(pow**3 + 6*pow**2 + 11&
+               & *pow + 6) - 12.0d0*delta_b**2*eta_b*nu/(pow**3 + 6*pow**2 + 11*&
+               & pow + 6) + 3.0d0*delta_b*eta_b*h_b*nu*pow**3/(pow**3 + 6*pow**2 +&
+               & 11*pow + 6) + 18.0d0*delta_b*eta_b*h_b*nu*pow**2/(pow**3 + 6*pow&
+               & **2 + 11*pow + 6) + 33.0d0*delta_b*eta_b*h_b*nu*pow/(pow**3 + 6*&
+               & pow**2 + 11*pow + 6) + 18.0d0*delta_b*eta_b*h_b*nu/(pow**3 + 6*&
+               & pow**2 + 11*pow + 6)
 
-          omega_b = (7.0d0/5.0d0)*T_b*delta_b**2*eta_b*nu - 7.0d0/5.0d0*T_b*&
-               & delta_b**2*eta_b - 3.0d0/2.0d0*T_b*delta_b*eta_b*h_b*nu + (3.0d0/&
-               & 2.0d0)*T_b*delta_b*eta_b*h_b + (3.0d0/5.0d0)*Ts_b*delta_b**2*&
-               & eta_b*nu - 3.0d0/5.0d0*Ts_b*delta_b**2*eta_b - 3.0d0/2.0d0*Ts_b*&
-               & delta_b*eta_b*h_b*nu + (3.0d0/2.0d0)*Ts_b*delta_b*eta_b*h_b - 2*&
-               & delta_b**2*eta_b*nu + 3*delta_b*eta_b*h_b*nu
+          sigma_b = 4.0d0*Ds_b**2*betaa*delta_b**3*eta_b*pow**4/(pow**6 + 16&
+               & *pow**5 + 100*pow**4 + 310*pow**3 + 499*pow**2 + 394*pow + 120) +&
+               & 16.0d0*Ds_b**2*betaa*delta_b**3*eta_b*pow**3/(pow**6 + 16*pow**5&
+               & + 100*pow**4 + 310*pow**3 + 499*pow**2 + 394*pow + 120) - 52.0d0*&
+               & Ds_b**2*betaa*delta_b**3*eta_b*pow**2/(pow**6 + 16*pow**5 + 100*&
+               & pow**4 + 310*pow**3 + 499*pow**2 + 394*pow + 120) - 280.0d0*Ds_b&
+               & **2*betaa*delta_b**3*eta_b*pow/(pow**6 + 16*pow**5 + 100*pow**4 +&
+               & 310*pow**3 + 499*pow**2 + 394*pow + 120) - 216.0d0*Ds_b**2*betaa*&
+               & delta_b**3*eta_b/(pow**6 + 16*pow**5 + 100*pow**4 + 310*pow**3 +&
+               & 499*pow**2 + 394*pow + 120) - 2.0d0*Ds_b**2*betaa*delta_b**2*&
+               & eta_b*h_b*pow**5/(pow**6 + 16*pow**5 + 100*pow**4 + 310*pow**3 +&
+               & 499*pow**2 + 394*pow + 120) - 18.0d0*Ds_b**2*betaa*delta_b**2*&
+               & eta_b*h_b*pow**4/(pow**6 + 16*pow**5 + 100*pow**4 + 310*pow**3 +&
+               & 499*pow**2 + 394*pow + 120) - 26.0d0*Ds_b**2*betaa*delta_b**2*&
+               & eta_b*h_b*pow**3/(pow**6 + 16*pow**5 + 100*pow**4 + 310*pow**3 +&
+               & 499*pow**2 + 394*pow + 120) + 150.0d0*Ds_b**2*betaa*delta_b**2*&
+               & eta_b*h_b*pow**2/(pow**6 + 16*pow**5 + 100*pow**4 + 310*pow**3 +&
+               & 499*pow**2 + 394*pow + 120) + 460.0d0*Ds_b**2*betaa*delta_b**2*&
+               & eta_b*h_b*pow/(pow**6 + 16*pow**5 + 100*pow**4 + 310*pow**3 + 499&
+               & *pow**2 + 394*pow + 120) + 300.0d0*Ds_b**2*betaa*delta_b**2*eta_b&
+               & *h_b/(pow**6 + 16*pow**5 + 100*pow**4 + 310*pow**3 + 499*pow**2 +&
+               & 394*pow + 120) - 0.2d0*Ds_b*T_b*betaa*delta_b**3*eta_b*pow**6/(&
+               & pow**6 + 16*pow**5 + 100*pow**4 + 310*pow**3 + 499*pow**2 + 394*&
+               & pow + 120) - 1.2d0*Ds_b*T_b*betaa*delta_b**3*eta_b*pow**5/(pow**6&
+               & + 16*pow**5 + 100*pow**4 + 310*pow**3 + 499*pow**2 + 394*pow +&
+               & 120) + 10.0d0*Ds_b*T_b*betaa*delta_b**3*eta_b*pow**4/(pow**6 + 16&
+               & *pow**5 + 100*pow**4 + 310*pow**3 + 499*pow**2 + 394*pow + 120) +&
+               & 108.0d0*Ds_b*T_b*betaa*delta_b**3*eta_b*pow**3/(pow**6 + 16*pow**&
+               & 5 + 100*pow**4 + 310*pow**3 + 499*pow**2 + 394*pow + 120) +&
+               & 350.2d0*Ds_b*T_b*betaa*delta_b**3*eta_b*pow**2/(pow**6 + 16*pow**&
+               & 5 + 100*pow**4 + 310*pow**3 + 499*pow**2 + 394*pow + 120) +&
+               & 469.2d0*Ds_b*T_b*betaa*delta_b**3*eta_b*pow/(pow**6 + 16*pow**5 +&
+               & 100*pow**4 + 310*pow**3 + 499*pow**2 + 394*pow + 120) + 216.0d0*&
+               & Ds_b*T_b*betaa*delta_b**3*eta_b/(pow**6 + 16*pow**5 + 100*pow**4&
+               & + 310*pow**3 + 499*pow**2 + 394*pow + 120) + 0.5d0*Ds_b*T_b*betaa&
+               & *delta_b**2*eta_b*h_b*pow**6/(pow**6 + 16*pow**5 + 100*pow**4 +&
+               & 310*pow**3 + 499*pow**2 + 394*pow + 120) + 5.0d0*Ds_b*T_b*betaa*&
+               & delta_b**2*eta_b*h_b*pow**5/(pow**6 + 16*pow**5 + 100*pow**4 +&
+               & 310*pow**3 + 499*pow**2 + 394*pow + 120) + 5.0d0*Ds_b*T_b*betaa*&
+               & delta_b**2*eta_b*h_b*pow**4/(pow**6 + 16*pow**5 + 100*pow**4 +&
+               & 310*pow**3 + 499*pow**2 + 394*pow + 120) - 100.0d0*Ds_b*T_b*betaa&
+               & *delta_b**2*eta_b*h_b*pow**3/(pow**6 + 16*pow**5 + 100*pow**4 +&
+               & 310*pow**3 + 499*pow**2 + 394*pow + 120) - 425.5d0*Ds_b*T_b*betaa&
+               & *delta_b**2*eta_b*h_b*pow**2/(pow**6 + 16*pow**5 + 100*pow**4 +&
+               & 310*pow**3 + 499*pow**2 + 394*pow + 120) - 625.0d0*Ds_b*T_b*betaa&
+               & *delta_b**2*eta_b*h_b*pow/(pow**6 + 16*pow**5 + 100*pow**4 + 310*&
+               & pow**3 + 499*pow**2 + 394*pow + 120) - 300.0d0*Ds_b*T_b*betaa*&
+               & delta_b**2*eta_b*h_b/(pow**6 + 16*pow**5 + 100*pow**4 + 310*pow**&
+               & 3 + 499*pow**2 + 394*pow + 120) - 0.2d0*Ds_b*delta_b**3*eta_b*nu*&
+               & pow**6/(pow**6 + 16*pow**5 + 100*pow**4 + 310*pow**3 + 499*pow**2&
+               & + 394*pow + 120) - 1.2d0*Ds_b*delta_b**3*eta_b*nu*pow**5/(pow**6&
+               & + 16*pow**5 + 100*pow**4 + 310*pow**3 + 499*pow**2 + 394*pow +&
+               & 120) + 10.0d0*Ds_b*delta_b**3*eta_b*nu*pow**4/(pow**6 + 16*pow**5&
+               & + 100*pow**4 + 310*pow**3 + 499*pow**2 + 394*pow + 120) + 108.0d0&
+               & *Ds_b*delta_b**3*eta_b*nu*pow**3/(pow**6 + 16*pow**5 + 100*pow**4&
+               & + 310*pow**3 + 499*pow**2 + 394*pow + 120) + 350.2d0*Ds_b*delta_b&
+               & **3*eta_b*nu*pow**2/(pow**6 + 16*pow**5 + 100*pow**4 + 310*pow**3&
+               & + 499*pow**2 + 394*pow + 120) + 469.2d0*Ds_b*delta_b**3*eta_b*nu*&
+               & pow/(pow**6 + 16*pow**5 + 100*pow**4 + 310*pow**3 + 499*pow**2 +&
+               & 394*pow + 120) + 216.0d0*Ds_b*delta_b**3*eta_b*nu/(pow**6 + 16*&
+               & pow**5 + 100*pow**4 + 310*pow**3 + 499*pow**2 + 394*pow + 120) +&
+               & 0.5d0*Ds_b*delta_b**2*eta_b*h_b*nu*pow**6/(pow**6 + 16*pow**5 +&
+               & 100*pow**4 + 310*pow**3 + 499*pow**2 + 394*pow + 120) + 5.0d0*&
+               & Ds_b*delta_b**2*eta_b*h_b*nu*pow**5/(pow**6 + 16*pow**5 + 100*pow&
+               & **4 + 310*pow**3 + 499*pow**2 + 394*pow + 120) + 5.0d0*Ds_b*&
+               & delta_b**2*eta_b*h_b*nu*pow**4/(pow**6 + 16*pow**5 + 100*pow**4 +&
+               & 310*pow**3 + 499*pow**2 + 394*pow + 120) - 100.0d0*Ds_b*delta_b**&
+               & 2*eta_b*h_b*nu*pow**3/(pow**6 + 16*pow**5 + 100*pow**4 + 310*pow&
+               & **3 + 499*pow**2 + 394*pow + 120) - 425.5d0*Ds_b*delta_b**2*eta_b&
+               & *h_b*nu*pow**2/(pow**6 + 16*pow**5 + 100*pow**4 + 310*pow**3 +&
+               & 499*pow**2 + 394*pow + 120) - 625.0d0*Ds_b*delta_b**2*eta_b*h_b*&
+               & nu*pow/(pow**6 + 16*pow**5 + 100*pow**4 + 310*pow**3 + 499*pow**2&
+               & + 394*pow + 120) - 300.0d0*Ds_b*delta_b**2*eta_b*h_b*nu/(pow**6 +&
+               & 16*pow**5 + 100*pow**4 + 310*pow**3 + 499*pow**2 + 394*pow + 120)
 
-          sigma_b = -38.0d0/105.0d0*T_b**2*delta_b**3*eta_b*nu + (38.0d0/&
-               & 105.0d0)*T_b**2*delta_b**3*eta_b + (1.0d0/3.0d0)*T_b**2*delta_b**&
-               & 2*eta_b*h_b*nu - 1.0d0/3.0d0*T_b**2*delta_b**2*eta_b*h_b + (9.0d0&
-               & /35.0d0)*T_b*Ts_b*delta_b**3*eta_b*nu - 9.0d0/35.0d0*T_b*Ts_b*&
-               & delta_b**3*eta_b - 1.0d0/6.0d0*T_b*Ts_b*delta_b**2*eta_b*h_b*nu +&
-               & (1.0d0/6.0d0)*T_b*Ts_b*delta_b**2*eta_b*h_b + (7.0d0/15.0d0)*T_b*&
-               & delta_b**3*eta_b*nu - 1.0d0/2.0d0*T_b*delta_b**2*eta_b*h_b*nu + (&
-               & 11.0d0/105.0d0)*Ts_b**2*delta_b**3*eta_b*nu - 11.0d0/105.0d0*Ts_b&
-               & **2*delta_b**3*eta_b - 1.0d0/6.0d0*Ts_b**2*delta_b**2*eta_b*h_b*&
-               & nu + (1.0d0/6.0d0)*Ts_b**2*delta_b**2*eta_b*h_b - 7.0d0/15.0d0*&
-               & Ts_b*delta_b**3*eta_b*nu + (1.0d0/2.0d0)*Ts_b*delta_b**2*eta_b*&
-               & h_b*nu
+
+          ! omega_b = (7.0d0/5.0d0)*T_b*delta_b**2*eta_b*nu - 7.0d0/5.0d0*T_b*&
+          !      & delta_b**2*eta_b - 3.0d0/2.0d0*T_b*delta_b*eta_b*h_b*nu + (3.0d0/&
+          !      & 2.0d0)*T_b*delta_b*eta_b*h_b + (3.0d0/5.0d0)*Ts_b*delta_b**2*&
+          !      & eta_b*nu - 3.0d0/5.0d0*Ts_b*delta_b**2*eta_b - 3.0d0/2.0d0*Ts_b*&
+          !      & delta_b*eta_b*h_b*nu + (3.0d0/2.0d0)*Ts_b*delta_b*eta_b*h_b - 2*&
+          !      & delta_b**2*eta_b*nu + 3*delta_b*eta_b*h_b*nu
+
+          ! sigma_b = -38.0d0/105.0d0*T_b**2*delta_b**3*eta_b*nu + (38.0d0/&
+          !      & 105.0d0)*T_b**2*delta_b**3*eta_b + (1.0d0/3.0d0)*T_b**2*delta_b**&
+          !      & 2*eta_b*h_b*nu - 1.0d0/3.0d0*T_b**2*delta_b**2*eta_b*h_b + (9.0d0&
+          !      & /35.0d0)*T_b*Ts_b*delta_b**3*eta_b*nu - 9.0d0/35.0d0*T_b*Ts_b*&
+          !      & delta_b**3*eta_b - 1.0d0/6.0d0*T_b*Ts_b*delta_b**2*eta_b*h_b*nu +&
+          !      & (1.0d0/6.0d0)*T_b*Ts_b*delta_b**2*eta_b*h_b + (7.0d0/15.0d0)*T_b*&
+          !      & delta_b**3*eta_b*nu - 1.0d0/2.0d0*T_b*delta_b**2*eta_b*h_b*nu + (&
+          !      & 11.0d0/105.0d0)*Ts_b**2*delta_b**3*eta_b*nu - 11.0d0/105.0d0*Ts_b&
+          !      & **2*delta_b**3*eta_b - 1.0d0/6.0d0*Ts_b**2*delta_b**2*eta_b*h_b*&
+          !      & nu + (1.0d0/6.0d0)*Ts_b**2*delta_b**2*eta_b*h_b - 7.0d0/15.0d0*&
+          !      & Ts_b*delta_b**3*eta_b*nu + (1.0d0/2.0d0)*Ts_b*delta_b**2*eta_b*&
+          !      & h_b*nu
 
 
           ! omega_b = (eta_b*delta_b)/10.d0*(nu*(-20.d0*delta_b+30.d0*h_b)+&
@@ -447,26 +550,126 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
           T_a = 0.5d0*(T(i,col)+T(i+1,col))
           Ts_a = 0.5d0*(Ts(i,col)+Ts(i+1,col))
           Ds_a = T_a-Ts_a
+          
+          omega_a = 12.0d0*Ds_a*betaa*delta_a**2*eta_a*pow/(pow**3 + 6*pow**&
+               & 2 + 11*pow + 6) + 12.0d0*Ds_a*betaa*delta_a**2*eta_a/(pow**3 + 6*&
+               & pow**2 + 11*pow + 6) - 6.0d0*Ds_a*betaa*delta_a*eta_a*h_a*pow**2/&
+               & (pow**3 + 6*pow**2 + 11*pow + 6) - 24.0d0*Ds_a*betaa*delta_a*&
+               & eta_a*h_a*pow/(pow**3 + 6*pow**2 + 11*pow + 6) - 18.0d0*Ds_a*&
+               & betaa*delta_a*eta_a*h_a/(pow**3 + 6*pow**2 + 11*pow + 6) - 2.0d0*&
+               & T_a*betaa*delta_a**2*eta_a*pow**3/(pow**3 + 6*pow**2 + 11*pow + 6&
+               & ) - 12.0d0*T_a*betaa*delta_a**2*eta_a*pow**2/(pow**3 + 6*pow**2 +&
+               & 11*pow + 6) - 22.0d0*T_a*betaa*delta_a**2*eta_a*pow/(pow**3 + 6*&
+               & pow**2 + 11*pow + 6) - 12.0d0*T_a*betaa*delta_a**2*eta_a/(pow**3&
+               & + 6*pow**2 + 11*pow + 6) + 3.0d0*T_a*betaa*delta_a*eta_a*h_a*pow&
+               & **3/(pow**3 + 6*pow**2 + 11*pow + 6) + 18.0d0*T_a*betaa*delta_a*&
+               & eta_a*h_a*pow**2/(pow**3 + 6*pow**2 + 11*pow + 6) + 33.0d0*T_a*&
+               & betaa*delta_a*eta_a*h_a*pow/(pow**3 + 6*pow**2 + 11*pow + 6) +&
+               & 18.0d0*T_a*betaa*delta_a*eta_a*h_a/(pow**3 + 6*pow**2 + 11*pow +&
+               & 6) - 2.0d0*delta_a**2*eta_a*nu*pow**3/(pow**3 + 6*pow**2 + 11*pow&
+               & + 6) - 12.0d0*delta_a**2*eta_a*nu*pow**2/(pow**3 + 6*pow**2 + 11*&
+               & pow + 6) - 22.0d0*delta_a**2*eta_a*nu*pow/(pow**3 + 6*pow**2 + 11&
+               & *pow + 6) - 12.0d0*delta_a**2*eta_a*nu/(pow**3 + 6*pow**2 + 11*&
+               & pow + 6) + 3.0d0*delta_a*eta_a*h_a*nu*pow**3/(pow**3 + 6*pow**2 +&
+               & 11*pow + 6) + 18.0d0*delta_a*eta_a*h_a*nu*pow**2/(pow**3 + 6*pow&
+               & **2 + 11*pow + 6) + 33.0d0*delta_a*eta_a*h_a*nu*pow/(pow**3 + 6*&
+               & pow**2 + 11*pow + 6) + 18.0d0*delta_a*eta_a*h_a*nu/(pow**3 + 6*&
+               & pow**2 + 11*pow + 6)
 
-          omega_a = (7.0d0/5.0d0)*T_a*delta_a**2*eta_a*nu - 7.0d0/5.0d0*T_a*&
-               & delta_a**2*eta_a - 3.0d0/2.0d0*T_a*delta_a*eta_a*h_a*nu + (3.0d0/&
-               & 2.0d0)*T_a*delta_a*eta_a*h_a + (3.0d0/5.0d0)*Ts_a*delta_a**2*&
-               & eta_a*nu - 3.0d0/5.0d0*Ts_a*delta_a**2*eta_a - 3.0d0/2.0d0*Ts_a*&
-               & delta_a*eta_a*h_a*nu + (3.0d0/2.0d0)*Ts_a*delta_a*eta_a*h_a - 2*&
-               & delta_a**2*eta_a*nu + 3*delta_a*eta_a*h_a*nu
+          sigma_a = 4.0d0*Ds_a**2*betaa*delta_a**3*eta_a*pow**4/(pow**6 + 16&
+               & *pow**5 + 100*pow**4 + 310*pow**3 + 499*pow**2 + 394*pow + 120) +&
+               & 16.0d0*Ds_a**2*betaa*delta_a**3*eta_a*pow**3/(pow**6 + 16*pow**5&
+               & + 100*pow**4 + 310*pow**3 + 499*pow**2 + 394*pow + 120) - 52.0d0*&
+               & Ds_a**2*betaa*delta_a**3*eta_a*pow**2/(pow**6 + 16*pow**5 + 100*&
+               & pow**4 + 310*pow**3 + 499*pow**2 + 394*pow + 120) - 280.0d0*Ds_a&
+               & **2*betaa*delta_a**3*eta_a*pow/(pow**6 + 16*pow**5 + 100*pow**4 +&
+               & 310*pow**3 + 499*pow**2 + 394*pow + 120) - 216.0d0*Ds_a**2*betaa*&
+               & delta_a**3*eta_a/(pow**6 + 16*pow**5 + 100*pow**4 + 310*pow**3 +&
+               & 499*pow**2 + 394*pow + 120) - 2.0d0*Ds_a**2*betaa*delta_a**2*&
+               & eta_a*h_a*pow**5/(pow**6 + 16*pow**5 + 100*pow**4 + 310*pow**3 +&
+               & 499*pow**2 + 394*pow + 120) - 18.0d0*Ds_a**2*betaa*delta_a**2*&
+               & eta_a*h_a*pow**4/(pow**6 + 16*pow**5 + 100*pow**4 + 310*pow**3 +&
+               & 499*pow**2 + 394*pow + 120) - 26.0d0*Ds_a**2*betaa*delta_a**2*&
+               & eta_a*h_a*pow**3/(pow**6 + 16*pow**5 + 100*pow**4 + 310*pow**3 +&
+               & 499*pow**2 + 394*pow + 120) + 150.0d0*Ds_a**2*betaa*delta_a**2*&
+               & eta_a*h_a*pow**2/(pow**6 + 16*pow**5 + 100*pow**4 + 310*pow**3 +&
+               & 499*pow**2 + 394*pow + 120) + 460.0d0*Ds_a**2*betaa*delta_a**2*&
+               & eta_a*h_a*pow/(pow**6 + 16*pow**5 + 100*pow**4 + 310*pow**3 + 499&
+               & *pow**2 + 394*pow + 120) + 300.0d0*Ds_a**2*betaa*delta_a**2*eta_a&
+               & *h_a/(pow**6 + 16*pow**5 + 100*pow**4 + 310*pow**3 + 499*pow**2 +&
+               & 394*pow + 120) - 0.2d0*Ds_a*T_a*betaa*delta_a**3*eta_a*pow**6/(&
+               & pow**6 + 16*pow**5 + 100*pow**4 + 310*pow**3 + 499*pow**2 + 394*&
+               & pow + 120) - 1.2d0*Ds_a*T_a*betaa*delta_a**3*eta_a*pow**5/(pow**6&
+               & + 16*pow**5 + 100*pow**4 + 310*pow**3 + 499*pow**2 + 394*pow +&
+               & 120) + 10.0d0*Ds_a*T_a*betaa*delta_a**3*eta_a*pow**4/(pow**6 + 16&
+               & *pow**5 + 100*pow**4 + 310*pow**3 + 499*pow**2 + 394*pow + 120) +&
+               & 108.0d0*Ds_a*T_a*betaa*delta_a**3*eta_a*pow**3/(pow**6 + 16*pow**&
+               & 5 + 100*pow**4 + 310*pow**3 + 499*pow**2 + 394*pow + 120) +&
+               & 350.2d0*Ds_a*T_a*betaa*delta_a**3*eta_a*pow**2/(pow**6 + 16*pow**&
+               & 5 + 100*pow**4 + 310*pow**3 + 499*pow**2 + 394*pow + 120) +&
+               & 469.2d0*Ds_a*T_a*betaa*delta_a**3*eta_a*pow/(pow**6 + 16*pow**5 +&
+               & 100*pow**4 + 310*pow**3 + 499*pow**2 + 394*pow + 120) + 216.0d0*&
+               & Ds_a*T_a*betaa*delta_a**3*eta_a/(pow**6 + 16*pow**5 + 100*pow**4&
+               & + 310*pow**3 + 499*pow**2 + 394*pow + 120) + 0.5d0*Ds_a*T_a*betaa&
+               & *delta_a**2*eta_a*h_a*pow**6/(pow**6 + 16*pow**5 + 100*pow**4 +&
+               & 310*pow**3 + 499*pow**2 + 394*pow + 120) + 5.0d0*Ds_a*T_a*betaa*&
+               & delta_a**2*eta_a*h_a*pow**5/(pow**6 + 16*pow**5 + 100*pow**4 +&
+               & 310*pow**3 + 499*pow**2 + 394*pow + 120) + 5.0d0*Ds_a*T_a*betaa*&
+               & delta_a**2*eta_a*h_a*pow**4/(pow**6 + 16*pow**5 + 100*pow**4 +&
+               & 310*pow**3 + 499*pow**2 + 394*pow + 120) - 100.0d0*Ds_a*T_a*betaa&
+               & *delta_a**2*eta_a*h_a*pow**3/(pow**6 + 16*pow**5 + 100*pow**4 +&
+               & 310*pow**3 + 499*pow**2 + 394*pow + 120) - 425.5d0*Ds_a*T_a*betaa&
+               & *delta_a**2*eta_a*h_a*pow**2/(pow**6 + 16*pow**5 + 100*pow**4 +&
+               & 310*pow**3 + 499*pow**2 + 394*pow + 120) - 625.0d0*Ds_a*T_a*betaa&
+               & *delta_a**2*eta_a*h_a*pow/(pow**6 + 16*pow**5 + 100*pow**4 + 310*&
+               & pow**3 + 499*pow**2 + 394*pow + 120) - 300.0d0*Ds_a*T_a*betaa*&
+               & delta_a**2*eta_a*h_a/(pow**6 + 16*pow**5 + 100*pow**4 + 310*pow**&
+               & 3 + 499*pow**2 + 394*pow + 120) - 0.2d0*Ds_a*delta_a**3*eta_a*nu*&
+               & pow**6/(pow**6 + 16*pow**5 + 100*pow**4 + 310*pow**3 + 499*pow**2&
+               & + 394*pow + 120) - 1.2d0*Ds_a*delta_a**3*eta_a*nu*pow**5/(pow**6&
+               & + 16*pow**5 + 100*pow**4 + 310*pow**3 + 499*pow**2 + 394*pow +&
+               & 120) + 10.0d0*Ds_a*delta_a**3*eta_a*nu*pow**4/(pow**6 + 16*pow**5&
+               & + 100*pow**4 + 310*pow**3 + 499*pow**2 + 394*pow + 120) + 108.0d0&
+               & *Ds_a*delta_a**3*eta_a*nu*pow**3/(pow**6 + 16*pow**5 + 100*pow**4&
+               & + 310*pow**3 + 499*pow**2 + 394*pow + 120) + 350.2d0*Ds_a*delta_a&
+               & **3*eta_a*nu*pow**2/(pow**6 + 16*pow**5 + 100*pow**4 + 310*pow**3&
+               & + 499*pow**2 + 394*pow + 120) + 469.2d0*Ds_a*delta_a**3*eta_a*nu*&
+               & pow/(pow**6 + 16*pow**5 + 100*pow**4 + 310*pow**3 + 499*pow**2 +&
+               & 394*pow + 120) + 216.0d0*Ds_a*delta_a**3*eta_a*nu/(pow**6 + 16*&
+               & pow**5 + 100*pow**4 + 310*pow**3 + 499*pow**2 + 394*pow + 120) +&
+               & 0.5d0*Ds_a*delta_a**2*eta_a*h_a*nu*pow**6/(pow**6 + 16*pow**5 +&
+               & 100*pow**4 + 310*pow**3 + 499*pow**2 + 394*pow + 120) + 5.0d0*&
+               & Ds_a*delta_a**2*eta_a*h_a*nu*pow**5/(pow**6 + 16*pow**5 + 100*pow&
+               & **4 + 310*pow**3 + 499*pow**2 + 394*pow + 120) + 5.0d0*Ds_a*&
+               & delta_a**2*eta_a*h_a*nu*pow**4/(pow**6 + 16*pow**5 + 100*pow**4 +&
+               & 310*pow**3 + 499*pow**2 + 394*pow + 120) - 100.0d0*Ds_a*delta_a**&
+               & 2*eta_a*h_a*nu*pow**3/(pow**6 + 16*pow**5 + 100*pow**4 + 310*pow&
+               & **3 + 499*pow**2 + 394*pow + 120) - 425.5d0*Ds_a*delta_a**2*eta_a&
+               & *h_a*nu*pow**2/(pow**6 + 16*pow**5 + 100*pow**4 + 310*pow**3 +&
+               & 499*pow**2 + 394*pow + 120) - 625.0d0*Ds_a*delta_a**2*eta_a*h_a*&
+               & nu*pow/(pow**6 + 16*pow**5 + 100*pow**4 + 310*pow**3 + 499*pow**2&
+               & + 394*pow + 120) - 300.0d0*Ds_a*delta_a**2*eta_a*h_a*nu/(pow**6 +&
+               & 16*pow**5 + 100*pow**4 + 310*pow**3 + 499*pow**2 + 394*pow + 120)
 
-          sigma_a = -38.0d0/105.0d0*T_a**2*delta_a**3*eta_a*nu + (38.0d0/&
-               & 105.0d0)*T_a**2*delta_a**3*eta_a + (1.0d0/3.0d0)*T_a**2*delta_a**&
-               & 2*eta_a*h_a*nu - 1.0d0/3.0d0*T_a**2*delta_a**2*eta_a*h_a + (9.0d0&
-               & /35.0d0)*T_a*Ts_a*delta_a**3*eta_a*nu - 9.0d0/35.0d0*T_a*Ts_a*&
-               & delta_a**3*eta_a - 1.0d0/6.0d0*T_a*Ts_a*delta_a**2*eta_a*h_a*nu +&
-               & (1.0d0/6.0d0)*T_a*Ts_a*delta_a**2*eta_a*h_a + (7.0d0/15.0d0)*T_a*&
-               & delta_a**3*eta_a*nu - 1.0d0/2.0d0*T_a*delta_a**2*eta_a*h_a*nu + (&
-               & 11.0d0/105.0d0)*Ts_a**2*delta_a**3*eta_a*nu - 11.0d0/105.0d0*Ts_a&
-               & **2*delta_a**3*eta_a - 1.0d0/6.0d0*Ts_a**2*delta_a**2*eta_a*h_a*&
-               & nu + (1.0d0/6.0d0)*Ts_a**2*delta_a**2*eta_a*h_a - 7.0d0/15.0d0*&
-               & Ts_a*delta_a**3*eta_a*nu + (1.0d0/2.0d0)*Ts_a*delta_a**2*eta_a*&
-               & h_a*nu
+          ! omega_a = (7.0d0/5.0d0)*T_a*delta_a**2*eta_a*nu - 7.0d0/5.0d0*T_a*&
+          !      & delta_a**2*eta_a - 3.0d0/2.0d0*T_a*delta_a*eta_a*h_a*nu + (3.0d0/&
+          !      & 2.0d0)*T_a*delta_a*eta_a*h_a + (3.0d0/5.0d0)*Ts_a*delta_a**2*&
+          !      & eta_a*nu - 3.0d0/5.0d0*Ts_a*delta_a**2*eta_a - 3.0d0/2.0d0*Ts_a*&
+          !      & delta_a*eta_a*h_a*nu + (3.0d0/2.0d0)*Ts_a*delta_a*eta_a*h_a - 2*&
+          !      & delta_a**2*eta_a*nu + 3*delta_a*eta_a*h_a*nu
+
+          ! sigma_a = -38.0d0/105.0d0*T_a**2*delta_a**3*eta_a*nu + (38.0d0/&
+          !      & 105.0d0)*T_a**2*delta_a**3*eta_a + (1.0d0/3.0d0)*T_a**2*delta_a**&
+          !      & 2*eta_a*h_a*nu - 1.0d0/3.0d0*T_a**2*delta_a**2*eta_a*h_a + (9.0d0&
+          !      & /35.0d0)*T_a*Ts_a*delta_a**3*eta_a*nu - 9.0d0/35.0d0*T_a*Ts_a*&
+          !      & delta_a**3*eta_a - 1.0d0/6.0d0*T_a*Ts_a*delta_a**2*eta_a*h_a*nu +&
+          !      & (1.0d0/6.0d0)*T_a*Ts_a*delta_a**2*eta_a*h_a + (7.0d0/15.0d0)*T_a*&
+          !      & delta_a**3*eta_a*nu - 1.0d0/2.0d0*T_a*delta_a**2*eta_a*h_a*nu + (&
+          !      & 11.0d0/105.0d0)*Ts_a**2*delta_a**3*eta_a*nu - 11.0d0/105.0d0*Ts_a&
+          !      & **2*delta_a**3*eta_a - 1.0d0/6.0d0*Ts_a**2*delta_a**2*eta_a*h_a*&
+          !      & nu + (1.0d0/6.0d0)*Ts_a**2*delta_a**2*eta_a*h_a - 7.0d0/15.0d0*&
+          !      & Ts_a*delta_a**3*eta_a*nu + (1.0d0/2.0d0)*Ts_a*delta_a**2*eta_a*&
+          !      & h_a*nu
 
           ! print*,'New',omega_a,sigma_a
           ! omega_a = (eta_a*delta_a)/10.d0*(nu*(-20.d0*delta_a+30.d0*h_a)+&
@@ -503,7 +706,7 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
   !-------------------------------------------------------------------------------------
   !-------------------------------------------------------------------------------------
 
-  SUBROUTINE JACOBI_TEMPERATURE_BALMFORTH(a,b,c,N,H,BL,T,Ts,Xi,P,Dr,dist,ray,nu,Pe,delta0,el,grav)
+  SUBROUTINE JACOBI_TEMPERATURE_BALMFORTH(a,b,c,N,H,BL,T,Ts,Xi,P,Dr,dist,ray,nu,Pe,delta0,el,grav,pow)
 
     !*****************************************************************
     ! Give the jacobian coeficient a1,b1,c1
@@ -517,7 +720,7 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
     DOUBLE PRECISION ,DIMENSION(:), INTENT(IN) :: dist,ray
 
     ! Prametre du model
-    DOUBLE PRECISION ,INTENT(IN) :: Dr 
+    DOUBLE PRECISION ,INTENT(IN) :: Dr,pow
     INTEGER ,INTENT(IN) :: N
 
     ! Nombre sans dimension
@@ -529,12 +732,13 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
     DOUBLE PRECISIOn :: omega_a,sigma_a
     DOUBLE PRECISION :: h_b,delta_b,delta_b2,eta_b,Bi,T_b,zeta_b
     DOUBLE PRECISIOn :: omega_b,sigma_b,Ds_b,Ds_a,Ts_a,Ts_b
-    DOUBLE PRECISION :: loss
+    DOUBLE PRECISION :: loss,betaa
 
     INTEGER :: i,col
 
     ! Remplissage de la matrice Jacobienne
-
+    betaa = 1D0-nu
+    
     col=2
 
     DO i=1,N,1
@@ -548,12 +752,38 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
           Ts_b = 0.5d0*(Ts(i,col)+Ts(i-1,col))
           Ds_b = T_b-Ts_b
 
-          omega_b = (7.0d0/5.0d0)*T_b*delta_b**2*eta_b*nu - 7.0d0/5.0d0*T_b*&
-               & delta_b**2*eta_b - 3.0d0/2.0d0*T_b*delta_b*eta_b*h_b*nu + (3.0d0/&
-               & 2.0d0)*T_b*delta_b*eta_b*h_b + (3.0d0/5.0d0)*Ts_b*delta_b**2*&
-               & eta_b*nu - 3.0d0/5.0d0*Ts_b*delta_b**2*eta_b - 3.0d0/2.0d0*Ts_b*&
-               & delta_b*eta_b*h_b*nu + (3.0d0/2.0d0)*Ts_b*delta_b*eta_b*h_b - 2*&
-               & delta_b**2*eta_b*nu + 3*delta_b*eta_b*h_b*nu
+          omega_b = 12.0d0*Ds_b*betaa*delta_b**2*eta_b*pow/(pow**3 + 6*pow**&
+               & 2 + 11*pow + 6) + 12.0d0*Ds_b*betaa*delta_b**2*eta_b/(pow**3 + 6*&
+               & pow**2 + 11*pow + 6) - 6.0d0*Ds_b*betaa*delta_b*eta_b*h_b*pow**2/&
+               & (pow**3 + 6*pow**2 + 11*pow + 6) - 24.0d0*Ds_b*betaa*delta_b*&
+               & eta_b*h_b*pow/(pow**3 + 6*pow**2 + 11*pow + 6) - 18.0d0*Ds_b*&
+               & betaa*delta_b*eta_b*h_b/(pow**3 + 6*pow**2 + 11*pow + 6) - 2.0d0*&
+               & T_b*betaa*delta_b**2*eta_b*pow**3/(pow**3 + 6*pow**2 + 11*pow + 6&
+               & ) - 12.0d0*T_b*betaa*delta_b**2*eta_b*pow**2/(pow**3 + 6*pow**2 +&
+               & 11*pow + 6) - 22.0d0*T_b*betaa*delta_b**2*eta_b*pow/(pow**3 + 6*&
+               & pow**2 + 11*pow + 6) - 12.0d0*T_b*betaa*delta_b**2*eta_b/(pow**3&
+               & + 6*pow**2 + 11*pow + 6) + 3.0d0*T_b*betaa*delta_b*eta_b*h_b*pow&
+               & **3/(pow**3 + 6*pow**2 + 11*pow + 6) + 18.0d0*T_b*betaa*delta_b*&
+               & eta_b*h_b*pow**2/(pow**3 + 6*pow**2 + 11*pow + 6) + 33.0d0*T_b*&
+               & betaa*delta_b*eta_b*h_b*pow/(pow**3 + 6*pow**2 + 11*pow + 6) +&
+               & 18.0d0*T_b*betaa*delta_b*eta_b*h_b/(pow**3 + 6*pow**2 + 11*pow +&
+               & 6) - 2.0d0*delta_b**2*eta_b*nu*pow**3/(pow**3 + 6*pow**2 + 11*pow&
+               & + 6) - 12.0d0*delta_b**2*eta_b*nu*pow**2/(pow**3 + 6*pow**2 + 11*&
+               & pow + 6) - 22.0d0*delta_b**2*eta_b*nu*pow/(pow**3 + 6*pow**2 + 11&
+               & *pow + 6) - 12.0d0*delta_b**2*eta_b*nu/(pow**3 + 6*pow**2 + 11*&
+               & pow + 6) + 3.0d0*delta_b*eta_b*h_b*nu*pow**3/(pow**3 + 6*pow**2 +&
+               & 11*pow + 6) + 18.0d0*delta_b*eta_b*h_b*nu*pow**2/(pow**3 + 6*pow&
+               & **2 + 11*pow + 6) + 33.0d0*delta_b*eta_b*h_b*nu*pow/(pow**3 + 6*&
+               & pow**2 + 11*pow + 6) + 18.0d0*delta_b*eta_b*h_b*nu/(pow**3 + 6*&
+               & pow**2 + 11*pow + 6)
+          
+          
+          ! omega_b = (7.0d0/5.0d0)*T_b*delta_b**2*eta_b*nu - 7.0d0/5.0d0*T_b*&
+          !      & delta_b**2*eta_b - 3.0d0/2.0d0*T_b*delta_b*eta_b*h_b*nu + (3.0d0/&
+          !      & 2.0d0)*T_b*delta_b*eta_b*h_b + (3.0d0/5.0d0)*Ts_b*delta_b**2*&
+          !      & eta_b*nu - 3.0d0/5.0d0*Ts_b*delta_b**2*eta_b - 3.0d0/2.0d0*Ts_b*&
+          !      & delta_b*eta_b*h_b*nu + (3.0d0/2.0d0)*Ts_b*delta_b*eta_b*h_b - 2*&
+          !      & delta_b**2*eta_b*nu + 3*delta_b*eta_b*h_b*nu
 
           ! omega_b = (eta_b*delta_b)/10.d0*(nu*(-20.d0*delta_b+30.d0*h_b)+&
           !      &(1.d0-nu)*(6.d0*Ds_b*delta_b-15.d0*Ds_b*h_b-20.d0*T_b*delta_b+30.d0*T_b*h_b))
@@ -568,12 +798,38 @@ SUBROUTINE XI_SPLIT_BALMFORTH(Xi,T,BL,Ts,H,N,delta0,Dt,tmps,N1,Pe,el)
           Ts_a = 0.5d0*(Ts(i,col)+Ts(i+1,col))
           Ds_a = T_a-Ts_a
 
-          omega_a = (7.0d0/5.0d0)*T_a*delta_a**2*eta_a*nu - 7.0d0/5.0d0*T_a*&
-               & delta_a**2*eta_a - 3.0d0/2.0d0*T_a*delta_a*eta_a*h_a*nu + (3.0d0/&
-               & 2.0d0)*T_a*delta_a*eta_a*h_a + (3.0d0/5.0d0)*Ts_a*delta_a**2*&
-               & eta_a*nu - 3.0d0/5.0d0*Ts_a*delta_a**2*eta_a - 3.0d0/2.0d0*Ts_a*&
-               & delta_a*eta_a*h_a*nu + (3.0d0/2.0d0)*Ts_a*delta_a*eta_a*h_a - 2*&
-               & delta_a**2*eta_a*nu + 3*delta_a*eta_a*h_a*nu
+
+          omega_a = 12.0d0*Ds_a*betaa*delta_a**2*eta_a*pow/(pow**3 + 6*pow**&
+               & 2 + 11*pow + 6) + 12.0d0*Ds_a*betaa*delta_a**2*eta_a/(pow**3 + 6*&
+               & pow**2 + 11*pow + 6) - 6.0d0*Ds_a*betaa*delta_a*eta_a*h_a*pow**2/&
+               & (pow**3 + 6*pow**2 + 11*pow + 6) - 24.0d0*Ds_a*betaa*delta_a*&
+               & eta_a*h_a*pow/(pow**3 + 6*pow**2 + 11*pow + 6) - 18.0d0*Ds_a*&
+               & betaa*delta_a*eta_a*h_a/(pow**3 + 6*pow**2 + 11*pow + 6) - 2.0d0*&
+               & T_a*betaa*delta_a**2*eta_a*pow**3/(pow**3 + 6*pow**2 + 11*pow + 6&
+               & ) - 12.0d0*T_a*betaa*delta_a**2*eta_a*pow**2/(pow**3 + 6*pow**2 +&
+               & 11*pow + 6) - 22.0d0*T_a*betaa*delta_a**2*eta_a*pow/(pow**3 + 6*&
+               & pow**2 + 11*pow + 6) - 12.0d0*T_a*betaa*delta_a**2*eta_a/(pow**3&
+               & + 6*pow**2 + 11*pow + 6) + 3.0d0*T_a*betaa*delta_a*eta_a*h_a*pow&
+               & **3/(pow**3 + 6*pow**2 + 11*pow + 6) + 18.0d0*T_a*betaa*delta_a*&
+               & eta_a*h_a*pow**2/(pow**3 + 6*pow**2 + 11*pow + 6) + 33.0d0*T_a*&
+               & betaa*delta_a*eta_a*h_a*pow/(pow**3 + 6*pow**2 + 11*pow + 6) +&
+               & 18.0d0*T_a*betaa*delta_a*eta_a*h_a/(pow**3 + 6*pow**2 + 11*pow +&
+               & 6) - 2.0d0*delta_a**2*eta_a*nu*pow**3/(pow**3 + 6*pow**2 + 11*pow&
+               & + 6) - 12.0d0*delta_a**2*eta_a*nu*pow**2/(pow**3 + 6*pow**2 + 11*&
+               & pow + 6) - 22.0d0*delta_a**2*eta_a*nu*pow/(pow**3 + 6*pow**2 + 11&
+               & *pow + 6) - 12.0d0*delta_a**2*eta_a*nu/(pow**3 + 6*pow**2 + 11*&
+               & pow + 6) + 3.0d0*delta_a*eta_a*h_a*nu*pow**3/(pow**3 + 6*pow**2 +&
+               & 11*pow + 6) + 18.0d0*delta_a*eta_a*h_a*nu*pow**2/(pow**3 + 6*pow&
+               & **2 + 11*pow + 6) + 33.0d0*delta_a*eta_a*h_a*nu*pow/(pow**3 + 6*&
+               & pow**2 + 11*pow + 6) + 18.0d0*delta_a*eta_a*h_a*nu/(pow**3 + 6*&
+               & pow**2 + 11*pow + 6)
+          
+          ! omega_a = (7.0d0/5.0d0)*T_a*delta_a**2*eta_a*nu - 7.0d0/5.0d0*T_a*&
+          !      & delta_a**2*eta_a - 3.0d0/2.0d0*T_a*delta_a*eta_a*h_a*nu + (3.0d0/&
+          !      & 2.0d0)*T_a*delta_a*eta_a*h_a + (3.0d0/5.0d0)*Ts_a*delta_a**2*&
+          !      & eta_a*nu - 3.0d0/5.0d0*Ts_a*delta_a**2*eta_a - 3.0d0/2.0d0*Ts_a*&
+          !      & delta_a*eta_a*h_a*nu + (3.0d0/2.0d0)*Ts_a*delta_a*eta_a*h_a - 2*&
+          !      & delta_a**2*eta_a*nu + 3*delta_a*eta_a*h_a*nu
 
           ! omega_a = (eta_a*delta_a)/10.d0*(nu*(-20.d0*delta_a+30.d0*h_a)+&
           !      &(1.d0-nu)*(6.d0*Ds_a*delta_a-15.d0*Ds_a*h_a-20.d0*T_a*delta_a+30.d0*T_a*h_a))
