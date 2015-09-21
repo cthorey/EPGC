@@ -5,9 +5,15 @@ folders = []
 folders.append(os.path.join(Racine,'ELAS','MSkin_TSc_Newton_HSc_Newton_RBercovici','Run_2015-05-30_0'))
 folders.append(os.path.join(Racine,'ELAS','MSkin_TSc_Newton_HSc_Newton_RBercovici','Run_2015-06-02_0'))
 folders.append(os.path.join(Racine,'ELAS','MSkin_TSc_Newton_HSc_Newton_RArrhenius','Run_2015-06-02_0'))
+folders.append(os.path.join(Racine,'ELAS','MSkin_TSc_Newton_HSc_Newton_RArrhenius','Run_2015-06-11_0'))
 folders.append(os.path.join(Racine,'GRAV','MSkin_TSc_GFD_HSc_Newton_RArrhenius','Run_2015-05-30_0'))
-folders.append(os.path.join(Racine,'GRAV','MSkin_TSc_GFD_HSc_Newton_RBercovici','Run_2015-06-02_0'))
-folders.append(os.path.join(Racine,'GRAV','MSkin_TSc_GFD_HSc_Newton_RBercovici','Run_2015-05-30_0'))
+folders.append(os.path.join(Racine,'GRAV','MSkin_TSc_GFD_HSc_Newton_RBercovici','Run_2015-06-23_3'))
+folders.append(os.path.join(Racine,'GRAV','MSkin_TSc_GFD_HSc_Newton_RArrhenius','Run_2015-06-23_2'))
+folders.append(os.path.join(Racine,'GRAV','MSkin_TSc_GFD_HSc_Newton_RArrhenius','Run_2015-06-24_0'))
+folders.append(os.path.join(Racine,'GRAV','MSkin_TSc_GFD_HSc_Newton_RArrhenius','Run_2015-06-24_1'))
+folders.append(os.path.join(Racine,'GRAV','MSkin_TSc_GFD_HSc_Newton_RBercovici','Run_2015-06-24_0'))
+folders.append(os.path.join(Racine,'ELASGRAV','MSkin_TSc_Newton_HSc_Newton_RBercovici','Run_2015-07-05_0'))
+folders.append(os.path.join(Racine,'ELASGRAV','MSkin_TSc_Newton_HSc_Newton_RArrhenius','Run_2015-06-26_0'))
 def Extract_Compteur(s):
     return int(s.split('_')[1].split('.')[0])
 

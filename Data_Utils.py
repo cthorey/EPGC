@@ -179,8 +179,13 @@ runs = []
 # runs.append(os.path.join('ELAS','MSkin_TSc_Newton_HSc_Newton_RBercovici','Run_2015-06-02_0'))
 # runs.append(os.path.join('GRAV','MSkin_TSc_GFD_HSc_Newton_RBercovici','Run_2015-06-23_0'))
 # runs.append(os.path.join('GRAV','MSkin_TSc_GFD_HSc_Newton_RBercovici','Run_2015-06-23_1'))
-runs.append(os.path.join('GRAV','MSkin_TSc_GFD_HSc_Newton_RBercovici','Run_2015-06-23_2'))
-runs.append(os.path.join('GRAV','MSkin_TSc_GFD_HSc_Newton_RArrhenius','Run_2015-06-23_1'))
+# runs.append(os.path.join('GRAV','MSkin_TSc_GFD_HSc_Newton_RBercovici','Run_2015-06-23_3'))
+# runs.append(os.path.join('GRAV','MSkin_TSc_GFD_HSc_Newton_RArrhenius','Run_2015-06-23_2'))
+# runs.append(os.path.join('GRAV','MSkin_TSc_GFD_HSc_Newton_RBercovici','Run_2015-06-24_0'))
+# runs.append(os.path.join('GRAV','MSkin_TSc_GFD_HSc_Newton_RArrhenius','Run_2015-06-24_0'))
+# runs.append(os.path.join('GRAV','MSkin_TSc_GFD_HSc_Newton_RArrhenius','Run_2015-06-24_1'))
+runs.append(os.path.join('GRAV','MSkin_TSc_GFD_HSc_Newton_RArrhenius','Run_2015-06-24_1'))
+runs.append(os.path.join('ELASGRAV','MSkin_TSc_Newton_HSc_Newton_RBercovici','Run_2015-07-05_0'))
 # runs.append(os.path.join('GRAV','Run_2015-06-23_0'))
 
 for run in runs:
