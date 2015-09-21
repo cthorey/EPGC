@@ -90,7 +90,7 @@ PROGRAM MAIN
   CALL  CONSTANTE(M,tmps_m,Dt,Dr,sample,el,grav,delta0,sigma,nu,Pe,psi,N1,gam,Inter_Q,&
        &eps_1,Format_O,Format_NSD,Init,Input_Racine,Output_Racine,Input_Data_Name&
        &,Format_NSD_Init_0,Format_NSD_Init_1,Format_Input_Data,Format_RV,Format_Backup,&
-       &NF,Format_NF,Root_Code,Model,T_Schema,H_Schema,Rheology)
+       &NF,Format_NF,Root_Code,Model,T_Schema,H_Schema,Rheology,pow)
   
   ! Allocation des tableaux
   ALLOCATE(H(1:M,4),Xi(1:M,4),Ts(1:M,4),BL(1:M,4),T(1:M,4),&
@@ -107,14 +107,13 @@ PROGRAM MAIN
        &Dt,Dr,eps_1,el,grav,delta0,sigma,nu,Pe,Psi,N1,gam,Inter_Q,sample,Init,compteur,tmps_m,&
        &R_Intrusion,Input_Data_Name,Input_racine,Output_Racine,NF,Format_NF,Root_Code&
        &,Format_NSD_Init_0,Format_NSD_Init_1,Format_Input_Data,Format_RV,Format_Backup&
-       &,Model,T_Schema,H_Schema,Rheology)
+       &,Model,T_Schema,H_Schema,Rheology,pow)
 
   ! Debut de la boucle sur le temps
   tmps_n = 0D0
   ERROR_CODE = 0
   R_Intrusion = 0
 
-  
   ! Temps auquelle on imprime un fichier
   ALLOCATE(time_frame(250))
   CALL logspace(Dt,1D5,time_frame)
