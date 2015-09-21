@@ -47,15 +47,16 @@ Namejob = 'EGSigmax'
 Model = 1
 T_Schema = 0; H_Schema = 0
 Rheology = 0
+pow = 2 # pow != 2 implementer seuelemnt pour elas bercovici
 
 Dict_Param = {'Sigma': ['2D-2'],
               'Delta0': ['5D-3'],
-              'Grav': ['1D0'],
+              'Grav': ['0D0'],
               'El': ['1D0'],
-              'Nu': ['1D0','1D-3'],
-              'Pe': ['1D0','1D-2'],
+              'Nu': ['1D0'],
+              'Pe': ['1D0'],
               'Psi': ['1D0'],
-              'N1' : ['1D-1'],
+              'N1' : ['1D5'],
               'gam':['0D0'],
               'Inter_Q':['1D20'],
               'Dr' : ['1D-2'],
@@ -109,7 +110,8 @@ Dict_Rheology = {0: 'Bercovici', 1: 'Roscoe', 2: 'Arrhenius'}
 Root_Run = os.path.join(Destination_Folder(Dict_Param['El'][0],Dict_Param['Grav'][0],Root),'M'+Dict_Model[Model]+'_'\
                         'TSc_'+Dict_Schema[T_Schema]+'_'\
                         'HSc_'+Dict_Schema[H_Schema]+'_'\
-                        'R'+Dict_Rheology[Rheology])
+                        'R'+Dict_Rheology[Rheology] + '_'\
+                        'Pow' + str(pow))
 Journal = Journal_name(Dict_Param['El'][0],Dict_Param['Grav'][0])
 
 if not os.path.isdir(Destination_Folder(Dict_Param['El'][0],Dict_Param['Grav'][0],Root)):
@@ -169,6 +171,7 @@ if Init == 0 :
             f.write('T_Schema = '+Dict_Schema[T_Schema]+'\n')
             f.write('H_Schema = '+Dict_Schema[H_Schema]+'\n')
             f.write('Rheology = '+Dict_Rheology[Rheology]+'\n')
+            f.write('Pow = ' + str(pow) +'\n')
             f.write('\n'+'-----------------------------'+'\n')
             f.write('Liste des parametres, i.e. Nombre de Runs'+'\n')
             for key,item in Dict_Param.iteritems():
@@ -260,6 +263,8 @@ for run in Dict_Run:
                         to_write = l.replace('Null',str(H_Schema))
                     elif l == '    Rheology = Null\n':
                         to_write = l.replace('Null',str(Rheology))
+                    elif l == '    pow = Null\n':
+                        to_write = l.replace('Null',str(pow))                        
                     elif l == '    M = Null\n':
                         to_write = l.replace('Null',str(M_grid))
                     elif l == '    Sigma = Null\n':

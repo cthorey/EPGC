@@ -5,7 +5,7 @@ CONTAINS
   SUBROUTINE  CONSTANTE(M,tmps_m,Dt,Dr,sample,el,grav,delta0,sigma,nu,Pe,psi,N1,gam,Inter_Q,&
        &eps_1,Format_O,Format_NSD,Init,Input_Racine,Output_Racine,Input_Data_Name&
        &,Format_NSD_Init_0,Format_NSD_Init_1,Format_Input_Data,Format_RV,Format_Backup,&
-       &NF,Format_NF,Root_Code,Model,T_Schema,H_Schema,Rheology)
+       &NF,Format_NF,Root_Code,Model,T_Schema,H_Schema,Rheology,pow)
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!  DECLARATION DES VARIABLES 
@@ -15,7 +15,7 @@ CONTAINS
     ! Parametre du model
     INTEGER, INTENT(INOUT) :: M,sample,Init
     INTEGER, INTENT(INOUT) :: Model,T_Schema,H_Schema,Rheology
-    DOUBLE PRECISION, INTENT(INOUT) :: Dt,Dr,tmps_m
+    DOUBLE PRECISION, INTENT(INOUT) :: Dt,Dr,tmps_m,pow
 
     ! Nombre sans dimension
     DOUBLE PRECISION , INTENT(OUT) :: el,grav,delta0,sigma,nu,Pe,Psi,N1,gam,Inter_Q
@@ -42,23 +42,24 @@ CONTAINS
     
     !Choix du model
     Model = 1
-    T_Schema = 1
+    T_Schema = 0
     H_Schema = 0
-    Rheology = 2
-    el = 0D0
+    Rheology = 0
+    el = 1D0
     grav = 1D0
-
+    pow = 2D0
+    
     ! Parametre du model
     tmps_m = 1D32  
     M = 2000    
-    Dt = 1D-7
+    Dt = 1D-6
     Dr = 1D-2
     eps_1 = 1D-4
 
     ! Nombre sans dimensions
-    delta0 = 0D0
+    delta0 = 5D-3
     sigma = 2D-2
-    nu = 1D-3
+    nu = 1D0
     Pe = 1D-1
     psi = 1D0
     N1 = 1D5
@@ -128,7 +129,7 @@ CONTAINS
        &Dt,Dr,eps_1,el,grav,delta0,sigma,nu,Pe,Psi,N1,gam,Inter_Q,sample,Init,compteur,tmps_m,&
        &R_Intrusion,Input_Data_Name,Input_racine,Output_Racine,NF,Format_NF,Root_Code&
        &,Format_NSD_Init_0,Format_NSD_Init_1,Format_Input_Data,Format_RV,Format_Backup&
-       &,Model,T_Schema,H_Schema,Rheology)
+       &,Model,T_Schema,H_Schema,Rheology,pow)
 
     IMPLICIT NONE
 
@@ -148,7 +149,7 @@ CONTAINS
          &,Psi,N1,gam,Inter_Q
 
     ! Parameter du model
-    DOUBLE PRECISION , INTENT(INOUT) :: Dt,Dr,eps_1,tmps_m
+    DOUBLE PRECISION , INTENT(INOUT) :: Dt,Dr,eps_1,tmps_m,pow
     INTEGER, INTENT(INOUT) :: M
 
     ! String variable pour les nom fichiers
@@ -171,7 +172,7 @@ CONTAINS
        CALL  CONSTANTE(M,tmps_m,Dt,Dr,sample,el,grav,delta0,sigma,nu,Pe,psi,N1,gam,Inter_Q,&
        &eps_1,Format_O,Format_NSD,Init,Input_Racine,Output_Racine,Input_Data_Name&
        &,Format_NSD_Init_0,Format_NSD_Init_1,Format_Input_Data,Format_RV,Format_Backup,&
-       &NF,Format_NF,Root_Code,Model,T_Schema,H_Schema,Rheology)
+       &NF,Format_NF,Root_Code,Model,T_Schema,H_Schema,Rheology,pow)
 
        compteur = 1
        dist = 0;ray = 0
