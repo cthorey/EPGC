@@ -46,17 +46,17 @@ elif _platform == "darwin":
 Namejob = 'GL_Arr'
 Model = 1
 T_Schema = 0; H_Schema = 0
-Rheology = 0
+Rheology = 2
 pow = 2 # pow != 2 implementer seuelemnt pour elas bercovici
 
 Dict_Param = {'Sigma': ['2D-2'],
-              'Delta0': ['5D-3'],
-              'Grav': ['0D0'],
-              'El': ['1D0'],
+              'Delta0': ['0D0'],
+              'Grav': ['1D0'],
+              'El': ['0D0'],
               'Nu': ['1D0'],
               'Pe': ['1D0'],
               'Psi': ['1D0'],
-              'N1' : ['1D5'],
+              'N1' : ['1D0'],
               'gam':['0D0'],
               'Inter_Q':['1D20'],
               'Dr' : ['1D-2'],
