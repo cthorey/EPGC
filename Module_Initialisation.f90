@@ -45,7 +45,7 @@ CONTAINS
     T_Schema = 0
     H_Schema = 0
     Rheology = 0
-    el = 1D0
+    el = 0D0
     grav = 1D0
     pow = 2D0
     
