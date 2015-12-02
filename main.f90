@@ -237,7 +237,7 @@ PROGRAM MAIN
      k = k+1
      tmps_n = tmps
      tmps = tmps+Dt
-     print*,tmps
+
   END DO TEMPS
 
   DEALLOCATE(H,T,Xi,BL,Ts)

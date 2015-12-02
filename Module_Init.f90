@@ -177,6 +177,8 @@ CONTAINS
        H = delta0
        T = 1D0
        BL = 1D-4
+       ! T = 0D0
+       ! BL = H/2D0
        Ts = 0D0
        P = 0d0
        Xi = BL*(1-2D0*T/3D0-Ts/3D0)
