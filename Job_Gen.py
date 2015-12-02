@@ -50,19 +50,11 @@ Rheology = 2
 pow = 2 # pow != 2 implementer seuelemnt pour elas bercovici
 
 Dict_Param = {'Sigma': ['2D-2'],
-<<<<<<< HEAD
               'Delta0': ['5D-3'],
               'Grav': ['0D0'],
               'El': ['1D0'],
               'Nu': ['1D0','1D-2','1D-3'],
               'Pe': ['1D0','1D-2','1D-3'],
-=======
-              'Delta0': ['0D0'],
-              'Grav': ['1D0'],
-              'El': ['0D0'],
-              'Nu': ['1D0'],
-              'Pe': ['1D0'],
->>>>>>> bba63d32cfb2192d8f68bfd628cb46920af72b5a
               'Psi': ['1D0'],
               'N1' : ['1D0'],
               'gam':['0D0'],
